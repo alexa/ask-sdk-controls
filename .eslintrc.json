@@ -5,11 +5,7 @@
         // "plugin:@typescript-eslint/recommended-requiring-type-checking"  // TODO: fix errors and turn on.
     ],
     "parser": "@typescript-eslint/parser",
-    "plugins": [
-        "@typescript-eslint",
-        "@typescript-eslint/eslint-plugin",
-        "eslint-plugin-tsdoc"
-    ],
+    "plugins": ["@typescript-eslint", "@typescript-eslint/eslint-plugin", "eslint-plugin-tsdoc"],
     "env": {
         "commonjs": true,
         "node": true,
@@ -26,11 +22,13 @@
             "modules": true,
             "impliedStrict": true
         },
+
+        // NOTE: change this to an absolute path if viewing the code via a skill
+        // codebase with files in /lambda. This fixes 'Can't open tsconfig.json'
+        // errors
         "project": "tsconfig.json"
     },
     "rules": {
-
-
         // ---------------------------------------------------------
         // --- Rules from eslint:recommended that we override
         // ---------------------------------------------------------
@@ -44,7 +42,18 @@
 
         "eqeqeq": ["error", "smart"],
         "guard-for-in": "error",
-        "id-blacklist": ["error", "any", "Number", "number", "String", "string", "Boolean", "boolean", "Undefined", "undefined"],
+        "id-blacklist": [
+            "error",
+            "any",
+            "Number",
+            "number",
+            "String",
+            "string",
+            "Boolean",
+            "boolean",
+            "Undefined",
+            "undefined"
+        ],
         "id-match": "error",
         "import/no-extraneous-dependencies": ["off", { "devDependencies": false }],
         "new-parens": "error",
@@ -74,10 +83,12 @@
             {
                 "types": {
                     "Object": { "message": "Avoid using the `Object` type. Did you mean `object`?" },
-                    "Function": { "message": "Avoid using the `Function` type. Prefer a specific function type, like `() => void`." },
+                    "Function": {
+                        "message": "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
+                    },
                     "Boolean": { "message": "Avoid using the `Boolean` type. Did you mean `boolean`?" },
                     "Number": { "message": "Avoid using the `Number` type. Did you mean `number`?" },
-                    "String": { "message": "Avoid using the `String` type. Did you mean `string`?"},
+                    "String": { "message": "Avoid using the `String` type. Did you mean `string`?" },
                     "Symbol": { "message": "Avoid using the `Symbol` type. Did you mean `symbol`?" }
                 }
             }
@@ -91,7 +102,7 @@
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-misused-new": "error",
-        "@typescript-eslint/no-floating-promises": [ "error"], // prevent those nasty forgotten promises !
+        "@typescript-eslint/no-floating-promises": ["error"], // prevent those nasty forgotten promises !
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/no-parameter-properties": "off",
         "@typescript-eslint/no-this-alias": "error",
@@ -113,136 +124,6 @@
         "@typescript-eslint/unified-signatures": "error",
 
         // -- Rules form tsdoc
-        "tsdoc/syntax": "error",
-
-        // ---------------------------------------------------------
-        // Stylistic settings (as we use ESLint as our formatter)
-        // ---------------------------------------------------------
-        "no-trailing-spaces": "warn",
-        "quote-props": [
-            "error",
-            "consistent-as-needed"
-        ],
-
-        "no-template-curly-in-string": "off",
-        "curly": "error",
-        "object-curly-newline": [
-            "error",
-            {
-                "consistent": true
-            }
-        ],
-        "no-whitespace-before-property": "error",
-        "space-infix-ops": ["error"],
-        "space-in-parens": [
-            "error",
-            "never"
-        ],
-        "spaced-comment": [
-            "error",
-            "always",
-            {
-                "markers": [
-                    "/"
-                ]
-            }
-        ],
-        "no-multiple-empty-lines": "off",
-        "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
-        "prefer-template": "error",
-        "keyword-spacing": [
-            2,
-            {
-                "overrides": {
-                    "if": {
-                        "after": true
-                    },
-                    "for": {
-                        "after": true
-                    },
-                    "while": {
-                        "after": true
-                    }
-                }
-            }
-        ],
-        "comma-spacing": [
-            "error",
-            {
-                "before": false,
-                "after": true
-            }
-        ],
-        "@typescript-eslint/indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 1,
-                "ObjectExpression": "first",
-                "FunctionDeclaration": {
-                    "parameters": "first"
-                },
-                "FunctionExpression": {
-                    "parameters": "first"
-                }
-            }
-        ],
-        "max-len": [
-            "error",
-            250,
-            4
-        ],
-        "comma-dangle": [
-            "error",
-            {
-                "arrays": "only-multiline",
-                "objects": "only-multiline",
-                "imports": "never",
-                "exports": "never",
-                "functions": "ignore"
-            }
-        ],
-        "semi-spacing": "error",
-        "semi": [
-            "error",
-            "always"
-        ],
-        "space-before-function-paren": [
-            "error",
-            {
-                "anonymous": "never",
-                "asyncArrow": "always",
-                "named": "never"
-            }
-        ],
-        "@typescript-eslint/quotes": "off",
-        "@typescript-eslint/semi": [
-            "error",
-            "always"
-        ],
-        "arrow-body-style": "error",
-        "arrow-parens": [
-            "off",
-            "always"
-        ],
-        "brace-style": [
-            "off",
-            "off"
-        ],
-        "camelcase": "error"
-    },
-    "overrides": [
-        {
-            "files": [
-                "src/*.js"
-            ],
-            "excludedFiles": "doc/*",
-            "rules": {
-                "quotes": [
-                    "error",
-                    "single"
-                ]
-            }
-        }
-    ]
+        "tsdoc/syntax": "error"
+    }
 }
