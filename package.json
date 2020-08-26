@@ -9,6 +9,8 @@
         "copyTestSupportFiles": "[ -d dist/test/mock ] || mkdir dist/test/mock && cp test/mock/* dist/test/mock/",
         "watch": "tsc-watch --onSuccess 'npm run copyTestSupportFiles'",
         "lint": "eslint \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
+        "format-check": "prettier --check \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
+        "format-overwrite": "prettier -w \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
         "test": "cross-env TS_NODE_FILES=true mocha -r ts-node/register \"./test/**/*.spec.ts\"",
         "coverage": "nyc --cache npm test && nyc report --reporter=html && echo HTML report generated at coverage/index.html",
         "clean": "rm -rf ./dist",
@@ -16,7 +18,7 @@
         "rebuild": "npm run clean && npm run build",
         "docs": "rm -rf ./dist/api_docs && typedoc --out dist/api_docs src",
         "pre-release": "standard-version",
-        "release": "npm run coverage && npm run lint"
+        "release": "npm run coverage && npm run lint && npm run format"
     },
     "dependencies": {
         "ask-sdk-core": "^2.8.0",
@@ -41,10 +43,12 @@
         "@typescript-eslint/parser": "^3.3.0",
         "cross-env": "^7.0.2",
         "eslint": "^7.2.0",
+        "eslint-config-prettier": "^6.11.0",
         "eslint-plugin-tsdoc": "^0.2.5",
         "husky": "^4.2.5",
         "mocha": "^7.1.2",
         "nyc": "^15.0.1",
+        "prettier": "^2.1.1",
         "sinon": "^9.0.1",
         "source-map-support": "^0.5.16",
         "standard-version": "^9.0.0",
