@@ -1,7 +1,17 @@
+# Build directories
 dist
+
+# Dependency directories
 node_modules
+package-lock.json
+
+# IDE related
 .vscode
+
+# MAC OS
 .DS_Store
+
+# Docs
 .nycrc
 .nyc_output
 coverage/
