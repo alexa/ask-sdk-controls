@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 /**
  * Represents that the state of a control is not consistent and cannot be used.
  */

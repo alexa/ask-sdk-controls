@@ -34,14 +34,15 @@ const log = new Logger('AskSdkControls:ControlInteractionModelGenerator');
 
 const dummyPrompts: Prompt[] = [
     {
-        id: "Slot.Validation.564246223579.1467418044248.678461230495",
+        id: 'Slot.Validation.564246223579.1467418044248.678461230495',
         variations: [
             {
-                type: "PlainText",
-                value: "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-            }
-        ]
-    }
+                type: 'PlainText',
+                value:
+                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+            },
+        ],
+    },
 ];
 
 /**
@@ -66,7 +67,6 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
      * @param controlManager - Control manager
      */
     buildCoreModelForControls(controlManager: ControlManager): ControlInteractionModelGenerator {
-
         controlManager.buildInteractionModel(this);
         ensureDialogModel(this, this.intents);
         return this;
@@ -114,7 +114,9 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
             if (presentSlotTypesSet.has(slotTypeName)) {
                 const slotTypes = controlIMData.slotTypes.find((slotType) => slotType.name === slotTypeName);
                 if (!slotTypes) {
-                    throw new Error(`SlotType ${slotTypeName} doesn't have values registered in the ModelData.`);
+                    throw new Error(
+                        `SlotType ${slotTypeName} doesn't have values registered in the ModelData.`,
+                    );
                 }
                 this.addOrMergeSlotTypes(slotTypes);
             }
@@ -138,14 +140,15 @@ function buildDialogIntent(intent: Intent): DialogIntent {
  * @param controlIMData - Localization data
  */
 function generateCompleteIntent(controlIntent: BaseControlIntent, controlIMData: ModelData): Intent {
-
     // Special logic for SingleValueControlIntent
     if (controlIntent.name.includes('ValueControlIntent')) {
         return handleValueControlIntent(controlIntent as SingleValueControlIntent, controlIMData);
     }
 
     const intent: Intent = controlIntent.generateIntent();
-    const samples: string[] | undefined = controlIMData.intentValues.find((intentValue) => intentValue.name === controlIntent.name)?.samples;
+    const samples: string[] | undefined = controlIMData.intentValues.find(
+        (intentValue) => intentValue.name === controlIntent.name,
+    )?.samples;
 
     if (samples === undefined) {
         throw new Error(`${controlIntent.name} doesn't have samples registered in the ModelData.`);
@@ -159,7 +162,9 @@ function generateCompleteIntent(controlIntent: BaseControlIntent, controlIMData:
 // special handling for ValueControlIntent
 function handleValueControlIntent(controlIntent: SingleValueControlIntent, controlIMData: ModelData): Intent {
     const intent: Intent = controlIntent.generateIntent();
-    const samples: string[] | undefined = controlIMData.intentValues.find((intentValue) => intentValue.name === SingleValueControlIntent.name)?.samples;
+    const samples: string[] | undefined = controlIMData.intentValues.find(
+        (intentValue) => intentValue.name === SingleValueControlIntent.name,
+    )?.samples;
     if (samples === undefined) {
         throw new Error('Can not find SingleValueControlIntent samples in ModelData');
     }
@@ -176,7 +181,6 @@ function handleValueControlIntent(controlIntent: SingleValueControlIntent, contr
 // 1. Add dummy validation rule to SimpleControlIntent' target slot
 // 2. Add dummy prompt
 function ensureDialogModel(generator: ControlInteractionModelGenerator, intents: Intent[]): void {
-
     // Since one dummy validation is enough to meet slotElicitation requirement
     // And all the builtin controls integrate with the SimpleControlIntent
     // Thus add this dummy validation to the first target type slotType
@@ -203,13 +207,15 @@ function addDummyValidationRule(targetSlot: v1.skill.interactionModel.DialogSlot
     targetSlot.elicitationRequired = false;
     targetSlot.confirmationRequired = false;
     // The particular dummy model comprises a single slot-validation that will always pass.
-    targetSlot.validations = [{
-        type: "isNotInSet",
-        prompt: "Slot.Validation.564246223579.1467418044248.678461230495",
-        values: [
-            "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-        ]
-    }];
+    targetSlot.validations = [
+        {
+            type: 'isNotInSet',
+            prompt: 'Slot.Validation.564246223579.1467418044248.678461230495',
+            values: [
+                'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+            ],
+        },
+    ];
 }
 
 /**
@@ -225,7 +231,9 @@ function validateTargetSlots(interactionModel: InteractionModelData, targetSlotI
             continue;
         }
 
-        const match = presentSlotTypes.find((slotType) => slotType.values?.find((value) => value.id === targetSlotId));
+        const match = presentSlotTypes.find((slotType) =>
+            slotType.values?.find((value) => value.id === targetSlotId),
+        );
 
         if (match === undefined) {
             log.warn(`target slot with id ${targetSlotId} is not present in InteractionModel.`);
@@ -254,28 +262,27 @@ export function generateModelData(): ModelData {
     const intentValues: IntentUtterances[] = [];
     intentValues.push({
         name: ConjunctionControlIntent.name,
-        samples: i18next.t('CONJUNCTION_CONTROL_INTENT_SAMPLES', { returnObjects: true })
+        samples: i18next.t('CONJUNCTION_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
     intentValues.push({
         name: DateRangeControlIntent.name,
-        samples: i18next.t('DATE_RANGE_CONTROL_INTENT_SAMPLES', { returnObjects: true })
+        samples: i18next.t('DATE_RANGE_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
     intentValues.push({
         name: GeneralControlIntent.name,
-        samples: i18next.t('GENERAL_CONTROL_INTENT_SAMPLES', { returnObjects: true })
+        samples: i18next.t('GENERAL_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
     intentValues.push({
         name: OrdinalControlIntent.name,
-        samples: i18next.t('ORDINAL_CONTROL_INTENT_SAMPLES', { returnObjects: true })
+        samples: i18next.t('ORDINAL_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
     intentValues.push({
         name: SingleValueControlIntent.name,
-        samples: i18next.t('SINGLE_VALUE_CONTROL_INTENT_SAMPLES', { returnObjects: true })
+        samples: i18next.t('SINGLE_VALUE_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
 
     return {
         slotTypes,
-        intentValues
+        intentValues,
     };
 }
-

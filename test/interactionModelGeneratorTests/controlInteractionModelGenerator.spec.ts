@@ -14,7 +14,7 @@
 import { suite, test } from 'mocha';
 import * as _ from 'lodash';
 import { v1 } from 'ask-smapi-model';
-import { expect } from "chai";
+import { expect } from 'chai';
 import sinon from 'sinon';
 import { ContainerControl, ControlManager, ModelData, Control } from '../../src';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
@@ -27,7 +27,6 @@ import { Logger } from '../../src/logging/Logger';
 
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import { Resource } from 'i18next';
-
 
 class SingleValueTestControl extends Control implements InteractionModelContributor {
     // dummy canHandle, handle, canTakeInitiative and takeInitiative cause
@@ -46,7 +45,6 @@ class SingleValueTestControl extends Control implements InteractionModelContribu
     }
 
     getTargetIds(): string[] {
-
         return ['test'];
     }
 }
@@ -64,7 +62,6 @@ class SimpleTestControl extends Control implements InteractionModelContributor {
     }
 
     getTargetIds(): string[] {
-
         return ['test'];
     }
 }
@@ -81,11 +78,9 @@ class TestControlManager extends ControlManager {
     }
 }
 
-
 const TEST_INVOCATION_NAME: string = 'TEST_INVOCATION_NAME';
 
 suite('ControlInteractionModel Generator tests', () => {
-
     afterEach(() => {
         sinon.restore();
     });
@@ -122,29 +117,27 @@ suite('ControlInteractionModel Generator tests', () => {
                         id: 'it',
                         name: {
                             value: 'la',
-                            synonyms: [
-                                'it',
-                                "il",
-                                "le"
-                            ]
-                        }
+                            synonyms: ['it', 'il', 'le'],
+                        },
                     },
-                ]
+                ],
             };
             const i18nOverride = {
                 fr: {
                     translation: {
-                        SHARED_SLOT_TYPES_TARGET: targetInFR
-                    }
-                }
+                        SHARED_SLOT_TYPES_TARGET: targetInFR,
+                    },
+                },
             };
             const interactionModel = new ControlInteractionModelGenerator()
-                .buildCoreModelForControls(new TestControlManager({ locale: 'fr-FR', i18nResources: i18nOverride }))
+                .buildCoreModelForControls(
+                    new TestControlManager({ locale: 'fr-FR', i18nResources: i18nOverride }),
+                )
                 .withInvocationName(TEST_INVOCATION_NAME)
                 .build();
 
             const expectedInteractionModel: InteractionModelData = jsonProvider.loadFromMockControls();
-            expectedInteractionModel.interactionModel?.languageModel?.types?.map(slotType => {
+            expectedInteractionModel.interactionModel?.languageModel?.types?.map((slotType) => {
                 if (slotType.name === SharedSlotType.TARGET) {
                     slotType.values = targetInFR.values;
                 }
@@ -157,8 +150,8 @@ suite('ControlInteractionModel Generator tests', () => {
         test('When provided override is is not complete, should use the default resource', () => {
             const emptyResourceInEN: Resource = {
                 en: {
-                    translation: {}
-                }
+                    translation: {},
+                },
             };
             const interactionModel = new ControlInteractionModelGenerator()
                 .buildCoreModelForControls(new TestControlManager({ i18nResources: emptyResourceInEN }))
@@ -182,7 +175,7 @@ suite('ControlInteractionModel Generator tests', () => {
                 updateInteractionModel(generator: ControlInteractionModelGenerator) {
                     generator.addIntents({
                         name: 'testIntent',
-                        samples: ['hello world']
+                        samples: ['hello world'],
                     });
                 }
                 getTargetIds() {
@@ -205,15 +198,14 @@ suite('ControlInteractionModel Generator tests', () => {
                         intents: [
                             {
                                 name: 'testIntent',
-                                samples: ['hello world']
-                            }
+                                samples: ['hello world'],
+                            },
                         ],
                         invocationName: TEST_INVOCATION_NAME,
                         types: [],
                     },
-                    prompts: []
+                    prompts: [],
                 },
-
             });
         });
     });
@@ -226,7 +218,9 @@ suite('ControlInteractionModel Generator tests', () => {
                 .withInvocationName(TEST_INVOCATION_NAME)
                 .build();
 
-            expect(spy.calledOnceWith('target slot with id test is not present in InteractionModel.')).eq(true);
+            expect(spy.calledOnceWith('target slot with id test is not present in InteractionModel.')).eq(
+                true,
+            );
         });
     });
 });

@@ -11,13 +11,12 @@
  * permissions and limitations under the License.
  */
 
-import { Intent, Slot } from "ask-sdk-model";
+import { Intent, Slot } from 'ask-sdk-model';
 
 /**
  * Utility to construct intent objects for testing.
  */
 export class IntentBuilder {
-
     // TODO: bug/limitation: also include EntityResolution information.
     /**
      * Create an Intent object from a name and a set of slot values.
@@ -30,15 +29,15 @@ export class IntentBuilder {
         const intent: Intent = {
             name,
             confirmationStatus: 'NONE',
-            slots: {}
+            slots: {},
         };
 
         for (const prop of Object.entries(slotValues ?? {})) {
             const name = prop[0];
             const value = prop[1];
 
-            if (Array.isArray(value)){
-                if (value.length === 0){
+            if (Array.isArray(value)) {
+                if (value.length === 0) {
                     throw new Error('Slot of empty-array is not supported');
                 }
 
@@ -47,27 +46,21 @@ export class IntentBuilder {
                     name,
                     slotValue: {
                         type: 'List',
-                        values: value.map(
-                            item=>({
-                                type: 'Simple',
-                                value: item
-                            })
-                        )
-
+                        values: value.map((item) => ({
+                            type: 'Simple',
+                            value: item,
+                        })),
                     },
-                    confirmationStatus: 'NONE'
+                    confirmationStatus: 'NONE',
                 } as Slot;
-
-            }
-            else {
+            } else {
                 // Single-value slot
                 intent.slots![name] = {
                     name,
                     value: value !== undefined ? value : '',
-                    confirmationStatus: 'NONE'
+                    confirmationStatus: 'NONE',
                 };
             }
-
         }
 
         return intent;
@@ -78,8 +71,8 @@ export class IntentBuilder {
  * Represents a single slot value and whether it was an ER_MATCH.
  */
 export interface SlotResolutionValue {
-    slotValue: string,
-    isEntityResolutionMatch: boolean
+    slotValue: string;
+    isEntityResolutionMatch: boolean;
 }
 
 // TODO: API: retire this class once SimplifiedMVSIntent is covering all cases successfully.
@@ -105,13 +98,11 @@ export class SimplifiedIntent {
         if (intent.slots) {
             for (const [name, slot] of Object.entries(intent.slots)) {
                 const slotObject = getSlotResolutions(slot);
-                if (Array.isArray(slotObject)){
-                    throw new Error("Slot is multi-valued.  Use SimplifiedMVSIntent");
-                }
-                else {
+                if (Array.isArray(slotObject)) {
+                    throw new Error('Slot is multi-valued.  Use SimplifiedMVSIntent');
+                } else {
                     slotResolutions[name] = slotObject !== undefined ? slotObject : undefined;
                 }
-
             }
         }
         return new SimplifiedIntent(intent.name, slotResolutions);
@@ -136,17 +127,22 @@ export function getSlotResolutions(slot: Slot | undefined): SlotResolutionValue 
         return undefined;
     }
     // regular single-value handling
-    if (slot.resolutions && slot.resolutions.resolutionsPerAuthority && slot.resolutions.resolutionsPerAuthority.length > 0) {
+    if (
+        slot.resolutions &&
+        slot.resolutions.resolutionsPerAuthority &&
+        slot.resolutions.resolutionsPerAuthority.length > 0
+    ) {
         for (const resolutionsPerAuthority of slot.resolutions.resolutionsPerAuthority) {
             if (resolutionsPerAuthority.status.code === 'ER_SUCCESS_MATCH') {
-                return { slotValue: resolutionsPerAuthority.values[0]!.value.id, isEntityResolutionMatch: true };
+                return {
+                    slotValue: resolutionsPerAuthority.values[0]!.value.id,
+                    isEntityResolutionMatch: true,
+                };
             }
         }
     }
     return { slotValue: slot.value!, isEntityResolutionMatch: false };
 }
-
-
 
 // ---- MVS support ----
 
@@ -158,7 +154,10 @@ export function getSlotResolutions(slot: Slot | undefined): SlotResolutionValue 
 export class SimplifiedMVSIntent {
     public readonly name: string;
     public readonly slotResolutions: { [k: string]: SlotResolutionValue | SlotResolutionValue[] | undefined };
-    constructor(name: string, slotResolutions: { [k: string]: SlotResolutionValue | SlotResolutionValue[] | undefined }) {
+    constructor(
+        name: string,
+        slotResolutions: { [k: string]: SlotResolutionValue | SlotResolutionValue[] | undefined },
+    ) {
         this.name = name;
         this.slotResolutions = slotResolutions;
     }
@@ -185,7 +184,6 @@ export class SimplifiedMVSIntent {
     }
 }
 
-
 /**
  * If there is an ER-Success, this returns the canonical value id of the first match resolution along with
  * isEntityResolutionMatch: boolean to indicate the status of ER_SUCCESS_MATCH
@@ -193,7 +191,9 @@ export class SimplifiedMVSIntent {
  *
  * @param slot - Slot
  */
-export function getMVSSlotResolutions(slot: Slot | undefined): SlotResolutionValue | SlotResolutionValue[] | undefined {
+export function getMVSSlotResolutions(
+    slot: Slot | undefined,
+): SlotResolutionValue | SlotResolutionValue[] | undefined {
     if (slot === undefined) {
         return undefined;
     }
@@ -202,23 +202,29 @@ export function getMVSSlotResolutions(slot: Slot | undefined): SlotResolutionVal
         // handling for MVS which isn't in ask-sdk yet.
         const slotValue: any = (slot as any).slotValue;
         // eslint-disable-next-line no-empty
-        if (slotValue !== undefined && slotValue.type === 'List' && slotValue.values.length > 0){
+        if (slotValue !== undefined && slotValue.type === 'List' && slotValue.values.length > 0) {
             const slotValuesAsSlots = slotValue.values as Slot[];
-            const values = slotValuesAsSlots.map(slot => {
-                if (slot.resolutions && slot.resolutions.resolutionsPerAuthority && slot.resolutions.resolutionsPerAuthority.length > 0) {
+            const values = slotValuesAsSlots.map((slot) => {
+                if (
+                    slot.resolutions &&
+                    slot.resolutions.resolutionsPerAuthority &&
+                    slot.resolutions.resolutionsPerAuthority.length > 0
+                ) {
                     for (const resolutionsPerAuthority of slot.resolutions.resolutionsPerAuthority) {
                         if (resolutionsPerAuthority.status.code === 'ER_SUCCESS_MATCH') {
-                            return { slotValue: resolutionsPerAuthority.values[0]!.value.id, isEntityResolutionMatch: true };
-                        }
-                        else {
-                            return { slotValue: slot.value ?? "", isEntityResolutionMatch: false };
+                            return {
+                                slotValue: resolutionsPerAuthority.values[0]!.value.id,
+                                isEntityResolutionMatch: true,
+                            };
+                        } else {
+                            return { slotValue: slot.value ?? '', isEntityResolutionMatch: false };
                         }
                     }
-                    return { slotValue: slot.value ?? "", isEntityResolutionMatch: false };
+                    return { slotValue: slot.value ?? '', isEntityResolutionMatch: false };
+                } else {
+                    return { slotValue: slot.value ?? '', isEntityResolutionMatch: false };
                 }
-                else {
-                    return { slotValue: slot.value ?? "", isEntityResolutionMatch: false };
-                }});
+            });
 
             return values;
         }
@@ -229,13 +235,19 @@ export function getMVSSlotResolutions(slot: Slot | undefined): SlotResolutionVal
     }
 
     // regular single-value handling
-    if (slot.resolutions && slot.resolutions.resolutionsPerAuthority && slot.resolutions.resolutionsPerAuthority.length > 0) {
+    if (
+        slot.resolutions &&
+        slot.resolutions.resolutionsPerAuthority &&
+        slot.resolutions.resolutionsPerAuthority.length > 0
+    ) {
         for (const resolutionsPerAuthority of slot.resolutions.resolutionsPerAuthority) {
             if (resolutionsPerAuthority.status.code === 'ER_SUCCESS_MATCH') {
-                return { slotValue: resolutionsPerAuthority.values[0]!.value.id, isEntityResolutionMatch: true };
+                return {
+                    slotValue: resolutionsPerAuthority.values[0]!.value.id,
+                    isEntityResolutionMatch: true,
+                };
             }
         }
     }
     return { slotValue: slot.value!, isEntityResolutionMatch: false };
 }
-

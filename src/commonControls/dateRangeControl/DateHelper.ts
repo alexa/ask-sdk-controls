@@ -23,7 +23,6 @@ export function dateToAlexaDateFormat(date: Date): string {
 // transform yyyy-mm-dd to Date
 // TODO: Handle all ALEXA.DATE format such as '2015-W49-WE'
 export function alexaDateFormatToDate(date: string): Date {
-
     return new Date(date);
 }
 

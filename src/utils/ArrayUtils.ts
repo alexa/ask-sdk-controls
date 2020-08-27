@@ -36,7 +36,7 @@ export function moveArrayItem(arr: any[], from: number, to: number): any[] {
  * @param array - Array
  */
 export function mismatch(value: any, array: any[]): boolean {
-    return (value !== undefined && !array.includes(value));
+    return value !== undefined && !array.includes(value);
 }
 
 // TODO: API: remove
@@ -46,5 +46,5 @@ export function mismatch(value: any, array: any[]): boolean {
  * @param array - Array
  */
 export function matchIfDefined(value: any, array: any[]) {
-    return (value === undefined || array.includes(value));
+    return value === undefined || array.includes(value);
 }

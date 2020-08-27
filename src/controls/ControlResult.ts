@@ -45,7 +45,6 @@ export class ControlResult implements IControlResult {
     hasInitiativeAct(): boolean {
         return controlResultHasInitiativeAct(this);
     }
-
 }
 
 /**
@@ -64,7 +63,6 @@ export class ControlResultBuilder {
         return new ControlResult(this.acts, this.sessionBehavior);
     }
 
-
     /**
      * Add a system act.
      *
@@ -75,13 +73,14 @@ export class ControlResultBuilder {
      */
     addAct(act: SystemAct): this {
         if (this.hasInitiativeAct() && act.takesInitiative) {
-            throw new Error(`Result already contains an initiative item. (If handle() produced an initiative item and takeInitiative also ran, a common issue is missing 'await').`
-              + `Trying to add ${act.toString()}. Existing items: ${stringifyItems(this.acts)}`);
+            throw new Error(
+                `Result already contains an initiative item. (If handle() produced an initiative item and takeInitiative also ran, a common issue is missing 'await').` +
+                    `Trying to add ${act.toString()}. Existing items: ${stringifyItems(this.acts)}`,
+            );
         }
         this.acts.push(act);
         return this;
     }
-
 
     /**
      * Force the user session to end.
@@ -134,7 +133,6 @@ export class ControlResultBuilder {
 function controlResultHasInitiativeAct(result: IControlResult): boolean {
     return result.acts.find((item) => item.takesInitiative) !== undefined;
 }
-
 
 function stringifyItems(items: ISystemAct[]) {
     const itemStrs: string[] = [];

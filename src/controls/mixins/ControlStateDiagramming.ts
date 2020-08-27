@@ -17,7 +17,6 @@ import { IControl } from '../interfaces/IControl';
  * Optional interface for Controls that wish to add detail to diagnostic output.
  */
 export interface ControlStateDiagramming {
-
     /**
      * Generates a human-readable representation of the state.
      *

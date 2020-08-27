@@ -11,19 +11,27 @@
  * permissions and limitations under the License.
  */
 
-
-import { IntentRequest } from "ask-sdk-model";
+import { IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
-import _ from "lodash";
+import _ from 'lodash';
 import { InputUtil, SingleValueControlIntent, StringOrList } from '../..';
 import { Strings as $ } from '../../constants/Strings';
-import { ContainerControl, ContainerControlProps, ContainerControlState } from '../../controls/ContainerControl';
+import {
+    ContainerControl,
+    ContainerControlProps,
+    ContainerControlState,
+} from '../../controls/ContainerControl';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { ValidationResult } from '../../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
-import { ActionAndTask, ConjunctionControlIntent, generateActionTaskPairs, unpackConjunctionControlIntent } from '../../intents/ConjunctionControlIntent';
+import {
+    ActionAndTask,
+    ConjunctionControlIntent,
+    generateActionTaskPairs,
+    unpackConjunctionControlIntent,
+} from '../../intents/ConjunctionControlIntent';
 import { DateRangeControlIntent, unpackDateRangeControlIntent } from '../../intents/DateRangeControlIntent';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { unpackSingleValueControlIntent } from '../../intents/SingleValueControlIntent';
@@ -31,7 +39,13 @@ import { ControlInteractionModelGenerator } from '../../interactionModelGenerati
 import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
-import { DateRangeChangedAct, DateRangeSetAct, InvalidValueAct, ValueConfirmedAct, ValueDisconfirmedAct } from "../../systemActs/ContentActs";
+import {
+    DateRangeChangedAct,
+    DateRangeSetAct,
+    InvalidValueAct,
+    ValueConfirmedAct,
+    ValueDisconfirmedAct,
+} from '../../systemActs/ContentActs';
 import { ConfirmValueAct, RequestValueAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { DeepRequired } from '../../utils/DeepRequired';
@@ -46,12 +60,10 @@ const log = new Logger('AskSdkControls:DateRangeControl');
  * Props for a ValueControl.
  */
 export interface DateRangeControlProps extends ContainerControlProps {
-
     /**
      * Unique identifier for control instance
      */
     id: string;
-
 
     /**
      * Props for determining if the date(s) are valid.
@@ -72,7 +84,7 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateControlValidations.FUTURE_DATE_ONLY,
          * ```
          */
-        startDateValid?: DateValidationFunction | DateValidationFunction[],
+        startDateValid?: DateValidationFunction | DateValidationFunction[];
 
         /**
          * Function(s) that determine if the end date (in isolation) is valid.
@@ -89,7 +101,7 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateControlValidations.FUTURE_DATE_ONLY,
          * ```
          */
-        endDateValid?: DateValidationFunction | DateValidationFunction[],
+        endDateValid?: DateValidationFunction | DateValidationFunction[];
 
         /**
          * Function(s) that determine if the date-range is valid.
@@ -106,7 +118,7 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateRangeControlValidations.START_BEFORE_END,
          * ```
          */
-        rangeValid?: DateRangeValidationFunction | DateRangeValidationFunction[]
+        rangeValid?: DateRangeValidationFunction | DateRangeValidationFunction[];
     };
 
     /**
@@ -140,7 +152,6 @@ export interface DateRangeControlProps extends ContainerControlProps {
      */
     reprompts?: DateRangeControlPromptProps;
 
-
     /**
      * Props to customize the relationship between the control and the
      * interaction model.
@@ -148,11 +159,13 @@ export interface DateRangeControlProps extends ContainerControlProps {
     interactionModel?: DateRangeControlInteractionModelProps;
 }
 
-
 /**
  * Date range validation function
  */
-export type DateRangeValidationFunction = ((state: DateRangeControlState, input: ControlInput) => true | ValidationResult);
+export type DateRangeValidationFunction = (
+    state: DateRangeControlState,
+    input: ControlInput,
+) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -167,16 +180,15 @@ export interface DateRangeControlActionProps {
      *
      * Default: ['builtin_set']
      */
-    set?: string[],
+    set?: string[];
 
     /**
      * Action slot value IDs that are associated with the "change value" capability.
      *
      * Default ['builtin_change']
      */
-    change?: string[]
+    change?: string[];
 }
-
 
 /**
  * Props associated with the interaction model.
@@ -214,7 +226,6 @@ export interface DateRangeControlInteractionModelProps {
 }
 
 export type DateRangeControlTargetProps = {
-
     /**
      * Target-slot values associated with the control as a whole, i.e. the date
      * range.
@@ -248,7 +259,7 @@ export type DateRangeControlTargetProps = {
      * - A control will not handle an input that mentions a target that is not
      *   registered by this prop.
      */
-    self?: string[]
+    self?: string[];
 
     /**
      * Target-slot values associated with the start date in isolation.
@@ -282,7 +293,7 @@ export type DateRangeControlTargetProps = {
      * - A control will not handle an input that mentions a target that is not
      *   registered by this prop.
      */
-    startDate?: string[],
+    startDate?: string[];
 
     /**
      * Target-slot values associated with the end date in isolation.
@@ -316,7 +327,7 @@ export type DateRangeControlTargetProps = {
      * - A control will not handle an input that mentions a target that is not
      *   registered by this prop.
      */
-    endDate?: string[],
+    endDate?: string[];
 };
 
 /**
@@ -333,40 +344,47 @@ export enum DateRangeValidationFailReasonCode {
  * Built-in validation functions for use with DateControl
  */
 export namespace DateRangeControlValidations {
-    export const START_BEFORE_END: DateRangeValidationFunction = (state: DateRangeControlState, input: ControlInput): true | ValidationResult => {
+    export const START_BEFORE_END: DateRangeValidationFunction = (
+        state: DateRangeControlState,
+        input: ControlInput,
+    ): true | ValidationResult => {
         const startDate = alexaDateFormatToDate(state.startDate!);
         const endDate = alexaDateFormatToDate(state.endDate!);
         if (startDate > endDate) {
-            return { reasonCode: DateRangeValidationFailReasonCode.START_BEFORE_END, renderedReason: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_START_AFTER_END') };
+            return {
+                reasonCode: DateRangeValidationFailReasonCode.START_BEFORE_END,
+                renderedReason: i18next.t(
+                    'DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_START_AFTER_END',
+                ),
+            };
         }
         return true;
     };
 }
-
 
 /**
  * Props to customize the prompt fragments that will be added by
  * `this.renderAct()`.
  */
 export interface DateRangeControlPromptProps {
-    startDate?: DateControlPromptProps,
-    endDate?: DateControlPromptProps,
-    requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList),
+    startDate?: DateControlPromptProps;
+    endDate?: DateControlPromptProps;
+    requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList);
     valueSet?: StringOrList | ((act: DateRangeSetAct, input: ControlInput) => StringOrList);
 
     valueChanged?: StringOrList | ((act: DateRangeChangedAct, input: ControlInput) => StringOrList);
-    invalidValue?: StringOrList | ((act: InvalidValueAct<string>, input: ControlInput) => StringOrList),
-    valueDisaffirmed?: StringOrList | ((act: ValueDisconfirmedAct<string>, input: ControlInput) => StringOrList);
+    invalidValue?: StringOrList | ((act: InvalidValueAct<string>, input: ControlInput) => StringOrList);
+    valueDisaffirmed?:
+        | StringOrList
+        | ((act: ValueDisconfirmedAct<string>, input: ControlInput) => StringOrList);
     valueAffirmed?: StringOrList | ((act: ValueConfirmedAct<string>, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<string>, input: ControlInput) => StringOrList);
 }
-
 
 /**
  * State tracked by a DateRangeControl.
  */
 export class DateRangeControlState extends ContainerControlState {
-
     // TODO: refactor: collate startDate/endDate into .value
 
     /**
@@ -382,7 +400,7 @@ export class DateRangeControlState extends ContainerControlState {
     /**
      * The previous start date
      */
-    previousStartDate?: string ;
+    previousStartDate?: string;
 
     /**
      * The previous end date
@@ -418,7 +436,7 @@ export enum TargetCategory {
     EndDate = 'endDate',
     Both = 'both',
     Neither = 'neither',
-    Either = 'either'
+    Either = 'either',
 }
 
 /**
@@ -426,7 +444,7 @@ export enum TargetCategory {
  */
 export enum DateControlTarget {
     StartDate = 'startDate',
-    EndDate = 'endDate'
+    EndDate = 'endDate',
 }
 
 /**
@@ -447,7 +465,6 @@ export enum DateControlTarget {
  * - `AMAZON.YesIntent`, `AMAZON.NoIntent`
  */
 export class DateRangeControl extends ContainerControl implements InteractionModelContributor {
-
     state: DateRangeControlState;
     children: DateControl[];
 
@@ -457,7 +474,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private startDateControl: DateControl;
     private endDateControl: DateControl;
     private handleFunc: ((input: ControlInput, resultBuilder: ControlResultBuilder) => void) | undefined;
-    private takeInitiativeFunc: ((input: ControlInput, resultBuilder: ControlResultBuilder) => void) | undefined;
+    private takeInitiativeFunc:
+        | ((input: ControlInput, resultBuilder: ControlResultBuilder) => void)
+        | undefined;
 
     static mergeWithDefaultProps(props: DateRangeControlProps): DeepRequired<DateRangeControlProps> {
         const defaults: DeepRequired<DateRangeControlProps> = {
@@ -465,7 +484,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             validation: {
                 startDateValid: [],
                 endDateValid: [],
-                rangeValid: []
+                rangeValid: [],
             },
             required: true,
             confirmationRequired: false,
@@ -473,100 +492,183 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 targets: {
                     startDate: [$.Target.StartDate, $.Target.Date, $.Target.It],
                     endDate: [$.Target.EndDate, $.Target.Date, $.Target.It],
-                    self: [$.Target.Date, $.Target.DateRange, $.Target.It]
+                    self: [$.Target.Date, $.Target.DateRange, $.Target.It],
                 },
                 actions: {
                     set: [$.Action.Set],
-                    change: [$.Action.Change]
+                    change: [$.Action.Change],
                 },
             },
             prompts: {
                 startDate: {
-                    confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_START_DATE', { value: act.payload.value }),
+                    confirmValue: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_START_DATE', {
+                            value: act.payload.value,
+                        }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_DISAFFIRMED'),
-                    valueSet: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET', { value: act.payload.value }),
-                    valueChanged: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_CHANGED', { value: act.payload.value }),
+                    valueSet: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET', {
+                            value: act.payload.value,
+                        }),
+                    valueChanged: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_CHANGED', {
+                            value: act.payload.value,
+                        }),
                     invalidValue: (act) => {
                         if (act.payload.renderedReason !== undefined) {
-                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_START_WITH_REASON', { reason: act.payload.renderedReason });
+                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_START_WITH_REASON', {
+                                reason: act.payload.renderedReason,
+                            });
                         }
                         return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_DATE');
                     },
                     requestValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_START_DATE'),
-                    requestChangedValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_START_DATE'),
+                    requestChangedValue: i18next.t(
+                        'DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_START_DATE',
+                    ),
                 },
                 endDate: {
-                    confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_END_DATE', { value: act.payload.value }),
+                    confirmValue: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_END_DATE', {
+                            value: act.payload.value,
+                        }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_DISAFFIRMED'),
-                    valueSet: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_SET', { value: act.payload.value }),
-                    valueChanged: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_CHANGED', { value: act.payload.value }),
+                    valueSet: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_SET', {
+                            value: act.payload.value,
+                        }),
+                    valueChanged: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_CHANGED', {
+                            value: act.payload.value,
+                        }),
                     invalidValue: (act) => {
                         if (act.payload.renderedReason !== undefined) {
-                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_END_WITH_REASON', { reason: act.payload.renderedReason });
+                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_END_WITH_REASON', {
+                                reason: act.payload.renderedReason,
+                            });
                         }
                         return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_DATE');
                     },
                     requestValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_END_DATE'),
-                    requestChangedValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_END_DATE'),
+                    requestChangedValue: i18next.t(
+                        'DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_END_DATE',
+                    ),
                 },
-                requestValue: (act: RequestValueAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
-                valueSet: (act: DateRangeSetAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_SET', { start: act.startDate, end: act.endDate }),
-                valueChanged: (act: DateRangeChangedAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { start: act.startDate, end: act.endDate }),
+                requestValue: (act: RequestValueAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
+                valueSet: (act: DateRangeSetAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_SET', {
+                        start: act.startDate,
+                        end: act.endDate,
+                    }),
+                valueChanged: (act: DateRangeChangedAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
+                        start: act.startDate,
+                        end: act.endDate,
+                    }),
                 invalidValue: (act: InvalidValueAct<string>) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', { reason: act.payload.renderedReason });
+                        return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
+                            reason: act.payload.renderedReason,
+                        });
                     }
                     return i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
                 valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
-                confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
+                        value: act.payload.value,
+                    }),
             },
             reprompts: {
                 startDate: {
-                    confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_START_DATE', { value: act.payload.value }),
+                    confirmValue: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_START_DATE', {
+                            value: act.payload.value,
+                        }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_DISAFFIRMED'),
-                    valueSet: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_SET', { value: act.payload.value }),
-                    valueChanged: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_CHANGED', { value: act.payload.value }),
+                    valueSet: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_SET', {
+                            value: act.payload.value,
+                        }),
+                    valueChanged: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_CHANGED', {
+                            value: act.payload.value,
+                        }),
                     invalidValue: (act) => {
                         if (act.payload.reasonCode !== undefined) {
-                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_START_WITH_REASON', { reason: act.payload.reasonCode });
+                            return i18next.t(
+                                'DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_START_WITH_REASON',
+                                {
+                                    reason: act.payload.reasonCode,
+                                },
+                            );
                         }
                         return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_DATE');
                     },
                     requestValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_START_DATE'),
-                    requestChangedValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_START_DATE'),
+                    requestChangedValue: i18next.t(
+                        'DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_START_DATE',
+                    ),
                 },
                 endDate: {
-                    confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_END_DATE', { value: act.payload.value }),
+                    confirmValue: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_END_DATE', {
+                            value: act.payload.value,
+                        }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_DISAFFIRMED'),
-                    valueSet: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_SET', { value: act.payload.value }),
-                    valueChanged: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_CHANGED', { value: act.payload.value }),
+                    valueSet: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_SET', {
+                            value: act.payload.value,
+                        }),
+                    valueChanged: (act) =>
+                        i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_CHANGED', {
+                            value: act.payload.value,
+                        }),
                     invalidValue: (act) => {
                         if (act.payload.reasonCode !== undefined) {
-                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_END_WITH_REASON', { reason: act.payload.reasonCode });
+                            return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_END_WITH_REASON', {
+                                reason: act.payload.reasonCode,
+                            });
                         }
                         return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_DATE');
                     },
                     requestValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_END_DATE'),
-                    requestChangedValue: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_END_DATE'),
+                    requestChangedValue: i18next.t(
+                        'DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_END_DATE',
+                    ),
                 },
-                requestValue: (act: RequestValueAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
-                valueSet: (act: DateRangeSetAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { start: act.startDate, end: act.endDate }),
-                valueChanged: (act: DateRangeChangedAct) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { start: act.startDate, end: act.endDate }),
+                requestValue: (act: RequestValueAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
+                valueSet: (act: DateRangeSetAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', {
+                        start: act.startDate,
+                        end: act.endDate,
+                    }),
+                valueChanged: (act: DateRangeChangedAct) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
+                        start: act.startDate,
+                        end: act.endDate,
+                    }),
                 invalidValue: (act: InvalidValueAct<string>) => {
                     if (act.payload.reasonCode !== undefined) {
-                        return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', { reason: act.payload.reasonCode });
+                        return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
+                            reason: act.payload.reasonCode,
+                        });
                     }
                     return i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE');
                 },
                 valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
-                confirmValue: (act) => i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
+                        value: act.payload.value,
+                    }),
             },
         };
 
@@ -580,35 +682,33 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.startDateControl = new DateControl({
             id: `${this.props.id}_startDate`,
             interactionModel: {
-                targets: this.props.interactionModel.targets.startDate
+                targets: this.props.interactionModel.targets.startDate,
             },
             prompts: this.props.prompts.startDate,
             validation: this.props.validation.startDateValid,
             required: this.props.required,
-            confirmationRequired: this.props.confirmationRequired
+            confirmationRequired: this.props.confirmationRequired,
         });
         this.endDateControl = new DateControl({
             id: `${this.props.id}_endDate`,
             interactionModel: {
-                targets: this.props.interactionModel.targets.endDate
+                targets: this.props.interactionModel.targets.endDate,
             },
             prompts: this.props.prompts.endDate,
             validation: this.props.validation.endDateValid,
             required: this.props.required,
-            confirmationRequired: this.props.confirmationRequired
+            confirmationRequired: this.props.confirmationRequired,
         });
-        this.addChild(this.startDateControl)
-            .addChild(this.endDateControl);
+        this.addChild(this.startDateControl).addChild(this.endDateControl);
     }
 
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        return await this.canHandleForFocus(input) || this.canHandleForNoFocus(input);
+        return (await this.canHandleForFocus(input)) || this.canHandleForNoFocus(input);
     }
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-
         log.debug(`DateRangeControl[${this.id}]: handle(). Entering`);
 
         // update the priorStartDate and priorEndDate before new operation
@@ -629,7 +729,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
         // After child handle the request and child has no question
         // ask DateRangeControl whether the value is ready
-        if (!resultBuilder.hasInitiativeAct() && await this.canTakeInitiative(input)) {
+        if (!resultBuilder.hasInitiativeAct() && (await this.canTakeInitiative(input))) {
             if (this.takeInitiativeFunc !== undefined) {
                 this.takeInitiativeFunc(input, resultBuilder);
             }
@@ -645,37 +745,49 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         generator.addYesAndNoIntents();
 
         if (this.props.interactionModel.targets.self.includes($.Target.Date)) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('DATE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('DATE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE', { returnObjects: true }),
+            );
         }
         if (this.props.interactionModel.targets.self.includes($.Target.DateRange)) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE_RANGE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE_RANGE', {
+                    returnObjects: true,
+                }),
+            );
         }
         if (this.props.interactionModel.targets.startDate.includes($.Target.StartDate)) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_START_DATE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_START_DATE', {
+                    returnObjects: true,
+                }),
+            );
         }
         if (this.props.interactionModel.targets.endDate.includes($.Target.EndDate)) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_END_DATE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('DATE_RANGE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_END_DATE', { returnObjects: true }),
+            );
         }
     }
 
     // tsDoc - see InteractionModelContributor
     getTargetIds(): string[] {
-
         return this.props.interactionModel.targets.self;
     }
 
     private getStartDateFromChild(): string | undefined {
-
         return this.startDateControl.state.value;
     }
 
     private getEndDateFromChild(): string | undefined {
-
         return this.endDateControl.state.value;
     }
 
     private setStartDate(date: string | undefined): void {
-
         this.startDateControl.state.value = date;
         this.state.startDate = date;
 
@@ -684,7 +796,6 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     }
 
     private setEndDate(date: string | undefined): void {
-
         this.endDateControl.state.value = date;
         this.state.endDate = date;
 
@@ -698,18 +809,18 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
             // When the focus is on parent itself
             // give the parent priority to handle the request
-            return this.isTwoValueInput(input)
-            || this.isDateInterpretedAsDateRange(input)
-            || this.isChangeBoth(input)
-            || this.isChangeRange(input)
-            || this.isConfirmationAffirmed(input)
-            || this.isConfirmationDisAffirmed(input)
-            || this.canHandleByChild(input);
-        }
-        catch (e) {
+            return (
+                this.isTwoValueInput(input) ||
+                this.isDateInterpretedAsDateRange(input) ||
+                this.isChangeBoth(input) ||
+                this.isChangeRange(input) ||
+                this.isConfirmationAffirmed(input) ||
+                this.isConfirmationDisAffirmed(input) ||
+                this.canHandleByChild(input)
+            );
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
-
     }
 
     private async canHandleForNoFocus(input: ControlInput): Promise<boolean> {
@@ -718,18 +829,18 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
             // When the focus is on children
             // give children priority to handle the request
-            return await this.canHandleByChild(input)
-            || this.isTwoValueInput(input)
-            || this.isDateInterpretedAsDateRange(input)
-            || this.isChangeBoth(input)
-            || this.isChangeRange(input)
-            || this.isConfirmationAffirmed(input)
-            || this.isConfirmationDisAffirmed(input);
-        }
-        catch (e) {
+            return (
+                (await this.canHandleByChild(input)) ||
+                this.isTwoValueInput(input) ||
+                this.isDateInterpretedAsDateRange(input) ||
+                this.isChangeBoth(input) ||
+                this.isChangeRange(input) ||
+                this.isConfirmationAffirmed(input) ||
+                this.isConfirmationDisAffirmed(input)
+            );
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
-
     }
 
     /**
@@ -741,21 +852,58 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             const intent = (input.request as IntentRequest).intent;
             const unpackedSlots = unpackDateRangeControlIntent(intent);
             if (unpackedSlots.target !== undefined) {
-                okIf(InputUtil.targetIsMatchOrUndefined(unpackedSlots.target, this.props.interactionModel.targets.self));
+                okIf(
+                    InputUtil.targetIsMatchOrUndefined(
+                        unpackedSlots.target,
+                        this.props.interactionModel.targets.self,
+                    ),
+                );
             } else {
-                okIf(InputUtil.targetIsMatchOrUndefined(unpackedSlots["target.a"], this.props.interactionModel.targets.startDate) || InputUtil.targetIsMatchOrUndefined(unpackedSlots["target.a"], this.props.interactionModel.targets.endDate));
-                okIf(InputUtil.targetIsMatchOrUndefined(unpackedSlots["target.b"], this.props.interactionModel.targets.startDate) || InputUtil.targetIsMatchOrUndefined(unpackedSlots["target.b"], this.props.interactionModel.targets.endDate));
+                okIf(
+                    InputUtil.targetIsMatchOrUndefined(
+                        unpackedSlots['target.a'],
+                        this.props.interactionModel.targets.startDate,
+                    ) ||
+                        InputUtil.targetIsMatchOrUndefined(
+                            unpackedSlots['target.a'],
+                            this.props.interactionModel.targets.endDate,
+                        ),
+                );
+                okIf(
+                    InputUtil.targetIsMatchOrUndefined(
+                        unpackedSlots['target.b'],
+                        this.props.interactionModel.targets.startDate,
+                    ) ||
+                        InputUtil.targetIsMatchOrUndefined(
+                            unpackedSlots['target.b'],
+                            this.props.interactionModel.targets.endDate,
+                        ),
+                );
             }
-            const inputGroups: DateRangeControlIntentInput[] = generateDatesInputGroups(this.props, unpackedSlots);
+            const inputGroups: DateRangeControlIntentInput[] = generateDatesInputGroups(
+                this.props,
+                unpackedSlots,
+            );
             for (const inputGroup of inputGroups) {
                 okIf(InputUtil.valueStrDefined(inputGroup.value));
-                okIf(InputUtil.actionIsSetOrUndefined(inputGroup.action, this.props.interactionModel.actions.set) || InputUtil.actionIsMatch(inputGroup.action, this.props.interactionModel.actions.change));
-                okIf(inputGroup.target === TargetCategory.StartDate || inputGroup.target === TargetCategory.EndDate);
+                okIf(
+                    InputUtil.actionIsSetOrUndefined(
+                        inputGroup.action,
+                        this.props.interactionModel.actions.set,
+                    ) ||
+                        InputUtil.actionIsMatch(
+                            inputGroup.action,
+                            this.props.interactionModel.actions.change,
+                        ),
+                );
+                okIf(
+                    inputGroup.target === TargetCategory.StartDate ||
+                        inputGroup.target === TargetCategory.EndDate,
+                );
             }
             this.handleFunc = this.handleTwoValueInput;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -763,7 +911,10 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private handleTwoValueInput(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const intent = (input.request as IntentRequest).intent;
         const unpackedSlots = unpackDateRangeControlIntent(intent);
-        const inputGroups: DateRangeControlIntentInput[] = generateDatesInputGroups(this.props, unpackedSlots);
+        const inputGroups: DateRangeControlIntentInput[] = generateDatesInputGroups(
+            this.props,
+            unpackedSlots,
+        );
         for (const inputGroup of inputGroups) {
             if (inputGroup.target === TargetCategory.StartDate) {
                 this.setStartDate(findEdgeDateOfDateRange(inputGroup.value, true));
@@ -796,13 +947,26 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
             const intent = (input.request as IntentRequest).intent;
             const unpackedSlots = unpackSingleValueControlIntent(intent);
-            okIf(InputUtil.targetIsMatchOrUndefined(unpackedSlots.target, this.props.interactionModel.targets.self));
-            okIf(InputUtil.actionIsMatchOrUndefined(unpackedSlots.action, this.props.interactionModel.actions.set) || InputUtil.actionIsMatchOrUndefined(unpackedSlots.action, this.props.interactionModel.actions.change));
+            okIf(
+                InputUtil.targetIsMatchOrUndefined(
+                    unpackedSlots.target,
+                    this.props.interactionModel.targets.self,
+                ),
+            );
+            okIf(
+                InputUtil.actionIsMatchOrUndefined(
+                    unpackedSlots.action,
+                    this.props.interactionModel.actions.set,
+                ) ||
+                    InputUtil.actionIsMatchOrUndefined(
+                        unpackedSlots.action,
+                        this.props.interactionModel.actions.change,
+                    ),
+            );
 
             this.handleFunc = this.handleDateRangeInput;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -834,16 +998,34 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(InputUtil.isIntent(input, ConjunctionControlIntent.name));
             const intent = (input.request as IntentRequest).intent;
             const unpackedSlots = unpackConjunctionControlIntent(intent);
-            okIf(InputUtil.feedbackIsMatchOrUndefined(unpackedSlots.feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(
+                InputUtil.feedbackIsMatchOrUndefined(unpackedSlots.feedback, [
+                    $.Feedback.Affirm,
+                    $.Feedback.Disaffirm,
+                ]),
+            );
             const inputs: ActionAndTask[] = generateActionTaskPairs(unpackedSlots);
             for (const input of inputs) {
-                okIf(InputUtil.targetIsMatchOrUndefined(input.target, this.props.interactionModel.targets.startDate) || InputUtil.targetIsMatchOrUndefined(input.target, this.props.interactionModel.targets.endDate));
-                okIf(InputUtil.actionIsSetOrUndefined(input.action, this.props.interactionModel.actions.set) || InputUtil.actionIsMatch(input.action, this.props.interactionModel.actions.change));
+                okIf(
+                    InputUtil.targetIsMatchOrUndefined(
+                        input.target,
+                        this.props.interactionModel.targets.startDate,
+                    ) ||
+                        InputUtil.targetIsMatchOrUndefined(
+                            input.target,
+                            this.props.interactionModel.targets.endDate,
+                        ),
+                );
+                okIf(
+                    InputUtil.actionIsSetOrUndefined(input.action, this.props.interactionModel.actions.set) ||
+                        InputUtil.actionIsMatch(input.action, this.props.interactionModel.actions.change),
+                );
             }
             this.handleFunc = this.handleChangeValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -856,12 +1038,23 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
             const intent = (input.request as IntentRequest).intent;
             const unpackedSlots = unpackGeneralControlIntent(intent);
-            okIf(InputUtil.feedbackIsMatchOrUndefined(unpackedSlots.feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
-            okIf(InputUtil.targetIsMatchOrUndefined(unpackedSlots.target, this.props.interactionModel.targets.self));
+            okIf(
+                InputUtil.feedbackIsMatchOrUndefined(unpackedSlots.feedback, [
+                    $.Feedback.Affirm,
+                    $.Feedback.Disaffirm,
+                ]),
+            );
+            okIf(
+                InputUtil.targetIsMatchOrUndefined(
+                    unpackedSlots.target,
+                    this.props.interactionModel.targets.self,
+                ),
+            );
             this.handleFunc = this.handleChangeValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private isConfirmationAffirmed(input: ControlInput): any {
@@ -870,8 +1063,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(this.state.isConfirmingRange);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -883,14 +1075,15 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         // update children's status to avoid duplicate confirmation
         this.startDateControl.state.isValueConfirmed = true;
         this.endDateControl.state.isValueConfirmed = true;
-        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', { start: this.state.startDate, end: this.state.endDate });
+        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.state.startDate,
+            end: this.state.endDate,
+        });
         if (this.wantsToCorrectRange(input)) {
             this.correctRange(input, resultBuilder);
             return;
         }
-        resultBuilder.addAct(
-            new ValueConfirmedAct(this, { value: actPayload })
-        );
+        resultBuilder.addAct(new ValueConfirmedAct(this, { value: actPayload }));
         this.ackDateRangeValueChanged(resultBuilder);
     }
 
@@ -900,8 +1093,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(this.state.isConfirmingRange === true);
             this.handleFunc = this.handleConfirmationDisAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -909,13 +1101,15 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private handleConfirmationDisAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.isConfirmingRange = false;
-        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', { start: this.state.startDate, end: this.state.endDate });
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, {value: actPayload}));
+        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.state.startDate,
+            end: this.state.endDate,
+        });
+        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: actPayload }));
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
     private handleChangeValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-
         this.state.isChangingRange = true;
         this.state.onFocus = true;
         resultBuilder.addAct(new RequestValueAct(this));
@@ -933,79 +1127,100 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private ackDateRangeValueChanged(resultBuilder: ControlResultBuilder): void {
         // The DateRangeControl only ack date range changes
         // Only start date change or end date change will be handled by Child controls
-        if (this.state.startDate !== undefined && this.state.endDate !== undefined && (this.state.startDate !== this.state.previousStartDate && this.state.endDate !== this.state.previousEndDate)) {
+        if (
+            this.state.startDate !== undefined &&
+            this.state.endDate !== undefined &&
+            this.state.startDate !== this.state.previousStartDate &&
+            this.state.endDate !== this.state.previousEndDate
+        ) {
             // If it's the first time to set the value, DateRangeControl will send DateRangeSetAct
             // And when there's an old value exist, DateRangeControl will send DateRangeChangedAct
-            this.state.previousStartDate !== undefined && this.state.previousEndDate !== undefined ?
-                resultBuilder.addAct(new DateRangeChangedAct(this, this.state.startDate, this.state.endDate, this.state.previousStartDate, this.state.previousEndDate)) :
-                resultBuilder.addAct(new DateRangeSetAct(this, this.state.startDate, this.state.endDate));
+            this.state.previousStartDate !== undefined && this.state.previousEndDate !== undefined
+                ? resultBuilder.addAct(
+                      new DateRangeChangedAct(
+                          this,
+                          this.state.startDate,
+                          this.state.endDate,
+                          this.state.previousStartDate,
+                          this.state.previousEndDate,
+                      ),
+                  )
+                : resultBuilder.addAct(new DateRangeSetAct(this, this.state.startDate, this.state.endDate));
         }
     }
 
     private validateDateRange(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: DateRangeValidationFunction[] = typeof(this.props.validation.rangeValid) === 'function' ? [this.props.validation.rangeValid] : this.props.validation.rangeValid;
+        const listOfValidationFunc: DateRangeValidationFunction[] =
+            typeof this.props.validation.rangeValid === 'function'
+                ? [this.props.validation.rangeValid]
+                : this.props.validation.rangeValid;
         for (const validationFunction of listOfValidationFunc) {
             const validationResult: true | ValidationResult = validationFunction(this.state, input);
             if (validationResult !== true) {
-                log.debug(`DateRangeControl.validate(): validation failed. Reason: ${JSON.stringify(validationResult, null, 2)}.`);
+                log.debug(
+                    `DateRangeControl.validate(): validation failed. Reason: ${JSON.stringify(
+                        validationResult,
+                        null,
+                        2,
+                    )}.`,
+                );
                 return validationResult;
             }
         }
         return true;
     }
 
-
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
-
         if (act instanceof RequestValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.requestValue, input));
-        }
-
-        else if (act instanceof DateRangeSetAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
+            );
+        } else if (act instanceof DateRangeSetAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        }
-
-        else if (act instanceof DateRangeChangedAct) {
+        } else if (act instanceof DateRangeChangedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input));
-        }
-
-        else if (act instanceof InvalidValueAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+            );
+        } else if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input));
-        }
-
-        else if (act instanceof ConfirmValueAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
+            );
+        } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input));
-        }
-
-        else if (act instanceof ValueConfirmedAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
+            );
+        } else if (act instanceof ValueConfirmedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueAffirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueAffirmed, input));
-        }
-
-        else if (act instanceof ValueDisconfirmedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueDisaffirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueDisaffirmed, input));
-        }
-
-        else {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueAffirmed, input),
+            );
+        } else if (act instanceof ValueDisconfirmedAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.valueDisaffirmed, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueDisaffirmed, input),
+            );
+        } else {
             this.throwUnhandledActError(act);
         }
     }
 
     // tsDoc - see Control
     async canTakeInitiative(input: ControlInput): Promise<boolean> {
-
-        return this.needsValue(input)
-            || await this.canTakeInitiativeByChild(input)
-            || this.isChangingRange()
-            || this.wantsToCorrectRange(input)
-            || this.wantsToConfirmRange(input);
+        return (
+            this.needsValue(input) ||
+            (await this.canTakeInitiativeByChild(input)) ||
+            this.isChangingRange() ||
+            this.wantsToCorrectRange(input) ||
+            this.wantsToConfirmRange(input)
+        );
     }
 
     // tsDoc - see Control
@@ -1022,8 +1237,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(this.state.startDate === undefined && this.state.endDate === undefined);
             this.takeInitiativeFunc = this.requestDateRange;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private requestDateRange(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -1036,8 +1252,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(this.state.isChangingRange === true);
             this.takeInitiativeFunc = this.requestDateRange;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private wantsToCorrectRange(input: ControlInput): boolean {
@@ -1048,18 +1265,31 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(rangeValidationResult !== true);
             this.takeInitiativeFunc = this.correctRange;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private correctRange(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const rangeValidationResult: true | ValidationResult = this.validateDateRange(input);
         this.state.onFocus = true;
         if (rangeValidationResult !== true) {
-            const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', { start: this.state.startDate, end: this.state.endDate });
-            resultBuilder.addAct(new InvalidValueAct<string>(this, {value: actPayload, reasonCode: rangeValidationResult.reasonCode, renderedReason: rangeValidationResult.renderedReason }));
+            const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+                start: this.state.startDate,
+                end: this.state.endDate,
+            });
+            resultBuilder.addAct(
+                new InvalidValueAct<string>(this, {
+                    value: actPayload,
+                    reasonCode: rangeValidationResult.reasonCode,
+                    renderedReason: rangeValidationResult.renderedReason,
+                }),
+            );
             // if the range-validation failure is due to one date changing, only request that one
-            if (this.state.startDate !== this.state.previousStartDate && this.state.endDate !== this.state.previousEndDate) {
+            if (
+                this.state.startDate !== this.state.previousStartDate &&
+                this.state.endDate !== this.state.previousEndDate
+            ) {
                 resultBuilder.addAct(new RequestValueAct(this));
             } else if (this.state.startDate !== this.state.previousStartDate) {
                 resultBuilder.addAct(new RequestValueAct(this.startDateControl));
@@ -1076,13 +1306,17 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             okIf(this.state.isValueConfirmed === false);
             this.takeInitiativeFunc = this.confirmValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isConfirmingRange = true;
-        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', { start: this.state.startDate, end: this.state.endDate });
+        const actPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.state.startDate,
+            end: this.state.endDate,
+        });
         resultBuilder.addAct(new ConfirmValueAct(this, { value: actPayload }));
     }
 
@@ -1093,7 +1327,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             this.state.onFocus = false;
             this.takeInitiativeFunc = this.takeInitiativeByChild;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 }

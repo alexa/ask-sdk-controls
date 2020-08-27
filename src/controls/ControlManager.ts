@@ -12,11 +12,14 @@
  */
 
 import i18next, { Resource } from 'i18next';
-import _ from "lodash";
+import _ from 'lodash';
 import { systemResource } from '../commonControls/LanguageStrings';
 import { Control } from '../controls/Control';
 import { implementsInteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { ControlInteractionModelGenerator, generateModelData } from '../interactionModelGeneration/ControlInteractionModelGenerator';
+import {
+    ControlInteractionModelGenerator,
+    generateModelData,
+} from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
@@ -33,8 +36,8 @@ const log = new Logger('AskSdkControls:ControlManager');
  * Properties for creating a ControlManager instance.
  */
 export interface ControlManagerProps {
-    locale?: string,
-    i18nResources?: Resource
+    locale?: string;
+    i18nResources?: Resource;
 }
 
 /**
@@ -82,13 +85,12 @@ export interface ControlManagerProps {
  *    render() function, or scattered around the various Controls and Acts.
  */
 export abstract class ControlManager implements IControlManager {
-
     props: Required<ControlManagerProps>;
 
     static mergeWithDefaultProps(props: ControlManagerProps | undefined): Required<ControlManagerProps> {
         const defaults: Required<ControlManagerProps> = {
             locale: 'en-US',
-            i18nResources: {}
+            i18nResources: {},
         };
 
         return _.mergeWith(defaults, props);
@@ -158,7 +160,11 @@ export abstract class ControlManager implements IControlManager {
      *      `ControlManager.renderActsOneByOne()`.
      *
      */
-    render(result: ControlResult, input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void | Promise<void> {
+    render(
+        result: ControlResult,
+        input: ControlInput,
+        controlResponseBuilder: ControlResponseBuilder,
+    ): void | Promise<void> {
         renderActsInSequence(result.acts, input, controlResponseBuilder);
     }
 
@@ -175,7 +181,8 @@ export abstract class ControlManager implements IControlManager {
      * @param responseBuilder - Response builder
      */
     handleInternalError(input: ControlInput, error: any, responseBuilder: ControlResponseBuilder): void {
-        const err = error.stack !== undefined ? { name: error.name, msg: error.message, stack: error.stack } : error; // Error doesn't have enumerable properties, so we convert it.
+        const err =
+            error.stack !== undefined ? { name: error.name, msg: error.message, stack: error.stack } : error; // Error doesn't have enumerable properties, so we convert it.
         log.error(`Error handled: ${JSON.stringify(err)}`);
     }
 
@@ -207,7 +214,11 @@ export abstract class ControlManager implements IControlManager {
  * @param input - Input
  * @param responseBuilder - Response builder.
  */
-export function renderActsInSequence(systemActs: SystemAct[], input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+export function renderActsInSequence(
+    systemActs: SystemAct[],
+    input: ControlInput,
+    controlResponseBuilder: ControlResponseBuilder,
+): void {
     for (const act of systemActs) {
         act.control.renderAct(act, input, controlResponseBuilder);
     }
@@ -221,7 +232,11 @@ export function renderActsInSequence(systemActs: SystemAct[], input: ControlInpu
  * @param imData - Localized data for use in interaction model
  */
 // TODO: param-ordering
-export function updateIMForControlTree(generator: ControlInteractionModelGenerator, control: IControl, imData: ModelData): void {
+export function updateIMForControlTree(
+    generator: ControlInteractionModelGenerator,
+    control: IControl,
+    imData: ModelData,
+): void {
     if (control instanceof Control && implementsInteractionModelContributor(control)) {
         control.updateInteractionModel(generator, imData);
         const targetIds: string[] | undefined = control.getTargetIds();

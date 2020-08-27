@@ -11,12 +11,18 @@
  * permissions and limitations under the License.
  */
 
-
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ListFormatting } from '../intl/ListFormat';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
-import { LiteralContentPayload, RequestChangedValueByListPayload, RequestChangedValuePayload, RequestValueByListPayload, RequestValuePayload, ValueSetPayload } from './PayloadTypes';
+import {
+    LiteralContentPayload,
+    RequestChangedValueByListPayload,
+    RequestChangedValuePayload,
+    RequestValueByListPayload,
+    RequestValuePayload,
+    ValueSetPayload,
+} from './PayloadTypes';
 import { SystemAct } from './SystemAct';
 
 /**
@@ -46,8 +52,8 @@ import { SystemAct } from './SystemAct';
  *  * If Alexa's reply doesn't not explicitly encourage the user to continue the conversation, the session must be closed.
  */
 export abstract class InitiativeAct extends SystemAct {
-    constructor(control: Control){
-        super(control, {takesInitiative: true});
+    constructor(control: Control) {
+        super(control, { takesInitiative: true });
     }
 }
 
@@ -67,15 +73,15 @@ export class RequestValueAct extends InitiativeAct {
     constructor(control: Control, payload?: RequestValuePayload) {
         super(control);
         this.payload = payload ?? {};
-
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedTarget !== undefined){
+        if (this.payload.renderedTarget !== undefined) {
             controlResponseBuilder.addPromptFragment(`What value for ${this.payload.renderedTarget}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render RequestValueAct as payload.renderedTarget is undefined. ${this.toString()}. `
-            + `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`);
+        } else {
+            throw new Error(
+                `Cannot directly render RequestValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
@@ -96,16 +102,18 @@ export class RequestChangedValueAct extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedTarget !== undefined){
-            controlResponseBuilder.addPromptFragment(`What is the new value for ${this.payload.renderedTarget}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render RequestChangedValueAct as payload.renderedTarget is undefined. ${this.toString()}. `
-            + `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`);
+        if (this.payload.renderedTarget !== undefined) {
+            controlResponseBuilder.addPromptFragment(
+                `What is the new value for ${this.payload.renderedTarget}.`,
+            );
+        } else {
+            throw new Error(
+                `Cannot directly render RequestChangedValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
-
 
 /**
  * Asks the user to provide a value by speaking and showing items in the form of a list.
@@ -125,12 +133,15 @@ export class RequestValueByListAct extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined){
-            controlResponseBuilder.addPromptFragment(`What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render RequestValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. `
-            + `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`);
+        if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
+            controlResponseBuilder.addPromptFragment(
+                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+            );
+        } else {
+            throw new Error(
+                `Cannot directly render RequestValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
@@ -153,12 +164,17 @@ export class RequestChangedValueByListAct extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedTarget !== undefined){
-            controlResponseBuilder.addPromptFragment(`What is the new value for ${this.payload.renderedTarget}? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render RequestChangeValueByList as payload.renderedTarget is undefined. ${this.toString()}. `
-            + `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`);
+        if (this.payload.renderedTarget !== undefined) {
+            controlResponseBuilder.addPromptFragment(
+                `What is the new value for ${
+                    this.payload.renderedTarget
+                }? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`,
+            );
+        } else {
+            throw new Error(
+                `Cannot directly render RequestChangeValueByList as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
@@ -201,7 +217,7 @@ export class LiteralInitiativeAct extends InitiativeAct {
         super(control);
         this.payload = {
             promptFragment: payload.promptFragment,
-            repromptFragment: payload.repromptFragment ?? payload.promptFragment
+            repromptFragment: payload.repromptFragment ?? payload.promptFragment,
         };
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {

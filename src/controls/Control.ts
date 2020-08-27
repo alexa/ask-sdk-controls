@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { randomlyPick } from '../utils/ArrayUtils';
@@ -82,7 +81,6 @@ export abstract class Control implements IControl {
      * entire request, `false` otherwise.
      */
     abstract canHandle(input: ControlInput): boolean | Promise<boolean>;
-
 
     /**
      * Handles the request.
@@ -211,7 +209,6 @@ export abstract class Control implements IControl {
         throw new Error(`No NLG for ${act}`);
     }
 
-
     /**
      * Evaluate a prompt prop.
      *
@@ -219,8 +216,12 @@ export abstract class Control implements IControl {
      * @param propValue - Constant or function producing String or List-of-Strings
      * @param input - Input object
      */
-    evaluatePromptProp(act: SystemAct, propValue: StringOrList | ((act: any, input: ControlInput) => string | string[]), input: ControlInput): string {
-        const stringOrList = (typeof propValue === 'function') ? propValue.call(this, act, input) : propValue;
+    evaluatePromptProp(
+        act: SystemAct,
+        propValue: StringOrList | ((act: any, input: ControlInput) => string | string[]),
+        input: ControlInput,
+    ): string {
+        const stringOrList = typeof propValue === 'function' ? propValue.call(this, act, input) : propValue;
         if (typeof stringOrList === 'string') {
             return stringOrList;
         }
@@ -233,7 +234,10 @@ export abstract class Control implements IControl {
      * @param propValue - Constant or function producing boolean
      * @param input - The input object
      */
-    evaluateBooleanProp(propValue: boolean | ((input: ControlInput) => boolean), input: ControlInput): boolean {
-        return (typeof propValue === 'function') ? propValue.call(this, input) : propValue;
+    evaluateBooleanProp(
+        propValue: boolean | ((input: ControlInput) => boolean),
+        input: ControlInput,
+    ): boolean {
+        return typeof propValue === 'function' ? propValue.call(this, input) : propValue;
     }
 }

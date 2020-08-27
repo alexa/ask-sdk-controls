@@ -11,20 +11,19 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from "ask-sdk-model";
+import { Intent } from 'ask-sdk-model';
 import { v1 } from 'ask-smapi-model';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
 import { getSlotResolutions, IntentBuilder } from '../utils/IntentUtils';
 import { BaseControlIntent } from './BaseControlIntent';
 
-
 /**
  * Slot values conveyed by a GeneralControlIntent
  */
 export interface GeneralControlIntentSlots {
-    feedback?: string,
-    action?: string,
-    target?: string,
+    feedback?: string;
+    action?: string;
+    target?: string;
 }
 
 /**
@@ -50,13 +49,22 @@ export function unpackGeneralControlIntent(intent: Intent): GeneralControlIntent
         const slotValue = slotObject ? slotObject.slotValue : undefined;
 
         switch (name) {
-            case 'feedback': feedback = slotValue; break;
-            case 'action': action = slotValue; break;
-            case 'target': target = slotValue; break;
-            case 'head': break;
-            case 'tail': break;
+            case 'feedback':
+                feedback = slotValue;
+                break;
+            case 'action':
+                action = slotValue;
+                break;
+            case 'target':
+                target = slotValue;
+                break;
+            case 'head':
+                break;
+            case 'tail':
+                break;
 
-            default: throw new Error('not handled');
+            default:
+                throw new Error('not handled');
         }
     }
 
@@ -77,7 +85,6 @@ export function unpackGeneralControlIntent(intent: Intent): GeneralControlIntent
  * - "No, change the event date"
  */
 export class GeneralControlIntent extends BaseControlIntent {
-
     /**
      * Create Intent from specification of the slots
      */
@@ -102,20 +109,20 @@ export class GeneralControlIntent extends BaseControlIntent {
             },
             {
                 name: 'action',
-                type: SharedSlotType.ACTION
+                type: SharedSlotType.ACTION,
             },
             {
                 name: 'target',
-                type: SharedSlotType.TARGET
+                type: SharedSlotType.TARGET,
             },
             {
                 name: 'head',
-                type: SharedSlotType.HEAD
+                type: SharedSlotType.HEAD,
             },
             {
                 name: 'tail',
-                type: SharedSlotType.TAIL
-            }
+                type: SharedSlotType.TAIL,
+            },
         ];
 
         return slots;

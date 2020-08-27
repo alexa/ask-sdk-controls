@@ -10,10 +10,10 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { Intent, IntentRequest } from "ask-sdk-model";
+import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
-import _ from "lodash";
-import { Strings as $ } from "../constants/Strings";
+import _ from 'lodash';
+import { Strings as $ } from '../constants/Strings';
 import { Control, ControlProps, ControlState } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
@@ -21,21 +21,28 @@ import { InteractionModelContributor } from '../controls/mixins/InteractionModel
 import { ValidationResult } from '../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import { SingleValueControlIntent, unpackSingleValueControlIntent } from '../intents/SingleValueControlIntent';
+import {
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+} from '../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../interactionModelGeneration/ModelTypes';
-import { Logger } from "../logging/Logger";
+import { Logger } from '../logging/Logger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
-import { InvalidValueAct, ValueChangedAct, ValueConfirmedAct, ValueDisconfirmedAct, ValueSetAct } from "../systemActs/ContentActs";
-import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from "../systemActs/InitiativeActs";
+import {
+    InvalidValueAct,
+    ValueChangedAct,
+    ValueConfirmedAct,
+    ValueDisconfirmedAct,
+    ValueSetAct,
+} from '../systemActs/ContentActs';
+import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
 import { DeepRequired } from '../utils/DeepRequired';
-import { InputUtil } from "../utils/InputUtil";
+import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
 import { getEndDateOfRange, getStartDateOfRange, getUTCDate } from './dateRangeControl/DateHelper';
-
-
 
 const log = new Logger('AskSdkControls:DateControl');
 
@@ -43,7 +50,6 @@ const log = new Logger('AskSdkControls:DateControl');
  * Props for a DateControl.
  */
 export interface DateControlProps extends ControlProps {
-
     /**
      * Unique identifier for control instance
      */
@@ -107,7 +113,10 @@ export interface DateControlProps extends ControlProps {
 /**
  * ValueControl validation function
  */
-export type DateValidationFunction = (state: DateControlState, input: ControlInput) => true | ValidationResult;
+export type DateValidationFunction = (
+    state: DateControlState,
+    input: ControlInput,
+) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -213,14 +222,15 @@ export enum DateValidationFailReasonCode {
  * Built-in validation functions for use with DateControl
  */
 export namespace DateControlValidations {
-
     /**
      * Validate that the date is in the past.
      * @param state - Control state
      * @param input - Input
      */
-    export const PAST_DATE_ONLY: DateValidationFunction = (state: DateControlState, input: ControlInput): true | ValidationResult => {
-
+    export const PAST_DATE_ONLY: DateValidationFunction = (
+        state: DateControlState,
+        input: ControlInput,
+    ): true | ValidationResult => {
         const startDate = getStartDateOfRange(state.value!);
         const startDateInUTC = getUTCDate(startDate);
 
@@ -228,7 +238,7 @@ export namespace DateControlValidations {
         if (startDateInUTC > now) {
             return {
                 reasonCode: DateValidationFailReasonCode.PAST_DATE_ONLY,
-                renderedReason: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_PAST_DATE_ONLY')
+                renderedReason: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_PAST_DATE_ONLY'),
             };
         }
         return true;
@@ -239,7 +249,10 @@ export namespace DateControlValidations {
      * @param state - Control state
      * @param input - Input
      */
-    export const FUTURE_DATE_ONLY: DateValidationFunction = (state: DateControlState, input: ControlInput): true | ValidationResult => {
+    export const FUTURE_DATE_ONLY: DateValidationFunction = (
+        state: DateControlState,
+        input: ControlInput,
+    ): true | ValidationResult => {
         const endDate = getEndDateOfRange(state.value!);
         const endDateInUTC = getUTCDate(endDate);
 
@@ -247,7 +260,7 @@ export namespace DateControlValidations {
         if (endDateInUTC < now) {
             return {
                 reasonCode: DateValidationFailReasonCode.FUTURE_DATE_ONLY,
-                renderedReason: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_FUTURE_DATE_ONLY')
+                renderedReason: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALIDATION_FAIL_FUTURE_DATE_ONLY'),
             };
         }
         return true;
@@ -265,7 +278,9 @@ export interface DateControlPromptProps {
     requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList);
     requestChangedValue?: StringOrList | ((act: RequestChangedValueAct, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<number>, input: ControlInput) => StringOrList);
-    valueDisaffirmed?: StringOrList | ((act: ValueDisconfirmedAct<number>, input: ControlInput) => StringOrList);
+    valueDisaffirmed?:
+        | StringOrList
+        | ((act: ValueDisconfirmedAct<number>, input: ControlInput) => StringOrList);
     valueAffirmed?: StringOrList | ((act: ValueConfirmedAct<number>, input: ControlInput) => StringOrList);
 }
 
@@ -273,7 +288,6 @@ export interface DateControlPromptProps {
  * State tracked by a DateControl.
  */
 export class DateControlState implements ControlState {
-
     /**
      * The value, an ISO date string.
      */
@@ -298,7 +312,6 @@ export class DateControlState implements ControlState {
      * Tracks the last initiative act from the control
      */
     activeInitiativeAct?: string;
-
 }
 
 /**
@@ -317,7 +330,6 @@ export class DateControlState implements ControlState {
  * - `AMAZON.YesIntent`, `AMAZON.NoIntent`
  */
 export class DateControl extends Control implements InteractionModelContributor {
-
     state: DateControlState = new DateControlState();
 
     private rawProps: DateControlProps;
@@ -332,19 +344,26 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     static mergeWithDefaultProps(props: DateControlProps): DeepRequired<DateControlProps> {
-
-        const defaults: DeepRequired<DateControlProps> =
-        {
+        const defaults: DeepRequired<DateControlProps> = {
             id: 'dummy',
             prompts: {
-                confirmValue: (act) => i18next.t('DATE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('DATE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
+                        value: act.payload.value,
+                    }),
                 valueAffirmed: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_SET'),
-                valueChanged: (act) => i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { old: act.payload.previousValue, new: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
+                        old: act.payload.previousValue,
+                        new: act.payload.value,
+                    }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('DATE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', { reason: act.payload.renderedReason });
+                        return i18next.t('DATE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
+                            reason: act.payload.renderedReason,
+                        });
                     }
                     return i18next.t('DATE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
@@ -352,14 +371,23 @@ export class DateControl extends Control implements InteractionModelContributor 
                 requestChangedValue: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE'),
             },
             reprompts: {
-                confirmValue: (act) => i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
+                        value: act.payload.value,
+                    }),
                 valueAffirmed: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_SET'),
-                valueChanged: (act) => i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { old: act.payload.previousValue, new: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
+                        old: act.payload.previousValue,
+                        new: act.payload.value,
+                    }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', { reason: act.payload.renderedReason });
+                        return i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
+                            reason: act.payload.renderedReason,
+                        });
                     }
                     return i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE');
                 },
@@ -371,11 +399,11 @@ export class DateControl extends Control implements InteractionModelContributor 
                     set: [$.Action.Set],
                     change: [$.Action.Change],
                 },
-                targets: [$.Target.Date, $.Target.It]
+                targets: [$.Target.Date, $.Target.It],
             },
             validation: [],
             confirmationRequired: false,
-            required: true
+            required: true,
         };
 
         return _.merge(defaults, props);
@@ -383,27 +411,32 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return this.isSetWithValue(input)
-            || this.isSetWithoutValue(input)
-            || this.isChangeWithValue(input)
-            || this.isChangeWithoutValue(input)
-            || this.isBareValue(input)
-            || this.isConfirmationAffirmed(input)
-            || this.isConfirmationDisaffirmed(input);
+        return (
+            this.isSetWithValue(input) ||
+            this.isSetWithoutValue(input) ||
+            this.isChangeWithValue(input) ||
+            this.isChangeWithoutValue(input) ||
+            this.isBareValue(input) ||
+            this.isConfirmationAffirmed(input) ||
+            this.isConfirmationDisaffirmed(input)
+        );
     }
 
     private isSetWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
             this.handleFunc = this.handleSetWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -416,14 +449,17 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isSetWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             this.handleFunc = this.handleSetWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleSetWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -439,15 +475,18 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isChangeWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
             this.handleFunc = this.handleChangeWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -465,14 +504,17 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isChangeWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             this.handleFunc = this.handleChangeWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleChangeWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -488,15 +530,18 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isBareValue(input: ControlInput): any {
         try {
             okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
             this.handleFunc = this.handleBareValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -512,8 +557,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -521,9 +565,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = undefined;
         this.state.isValueConfirmed = true;
-        resultBuilder.addAct(
-            new ValueConfirmedAct(this, { value: this.state.value })
-        );
+        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
     }
 
     private isConfirmationDisaffirmed(input: ControlInput): any {
@@ -532,8 +574,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -541,13 +582,12 @@ export class DateControl extends Control implements InteractionModelContributor 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, {value: this.state.value}));
+        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-
         log.debug(`DateControl[${this.id}]: handle(). Entering`);
 
         if (this.handleFunc === undefined) {
@@ -556,22 +596,25 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
 
         this.handleFunc(input, resultBuilder);
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true){
+        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
             this.takeInitiative(input, resultBuilder);
         }
     }
 
     // tsDoc - see Control
     canTakeInitiative(input: ControlInput): boolean {
-        return this.wantsToConfirmValue(input)
-            || this.wantsToFixInvalidValue(input)
-            || this.wantsToElicitValue(input);
+        return (
+            this.wantsToConfirmValue(input) ||
+            this.wantsToFixInvalidValue(input) ||
+            this.wantsToElicitValue(input)
+        );
     }
 
     // tsDoc - see Control
     takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         if (this.initiativeFunc === undefined) {
-            const errorMsg = 'DateControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
+            const errorMsg =
+                'DateControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
@@ -580,7 +623,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToElicitValue(input: ControlInput): boolean {
-        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)){
+        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)) {
             this.initiativeFunc = this.elicitValue;
             return true;
         }
@@ -591,51 +634,58 @@ export class DateControl extends Control implements InteractionModelContributor 
         this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
     }
 
-
     // public-for-testing
-    askElicitationQuestion(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string) {
+    askElicitationQuestion(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ) {
         this.state.elicitationAction = elicitationAction;
         switch (elicitationAction) {
             case $.Action.Set:
                 resultBuilder.addAct(new RequestValueAct(this));
                 return;
             case $.Action.Change:
-                resultBuilder.addAct(new RequestChangedValueAct(this, {currentValue: this.state.value!}));
+                resultBuilder.addAct(new RequestChangedValueAct(this, { currentValue: this.state.value! }));
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
         }
     }
 
-    private validateAndAddActs(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string): void {
+    private validateAndAddActs(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ): void {
         this.state.elicitationAction = elicitationAction;
         const validationResult: true | ValidationResult = this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
-                if (this.state.previousValue !== undefined){
+                if (this.state.previousValue !== undefined) {
                     resultBuilder.addAct(
-                        new ValueChangedAct<string>(this, {previousValue: this.state.previousValue, value: this.state.value! })
+                        new ValueChangedAct<string>(this, {
+                            previousValue: this.state.previousValue,
+                            value: this.state.value!,
+                        }),
+                    );
+                } else {
+                    throw new Error(
+                        'ValueChangedAct should only be used if there is an actual previous value',
                     );
                 }
-                else {
-                    throw new Error('ValueChangedAct should only be used if there is an actual previous value');
-                }
-            }
-            else {
+            } else {
                 resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
             }
-        }
-        else {
+        } else {
             // feedback
             resultBuilder.addAct(
-                new InvalidValueAct<string>(
-                    this,
-                    {
-                        value: this.state.value!,
-                        reasonCode: validationResult.reasonCode,
-                        renderedReason: validationResult.renderedReason
-                    })
+                new InvalidValueAct<string>(this, {
+                    value: this.state.value!,
+                    reasonCode: validationResult.reasonCode,
+                    renderedReason: validationResult.renderedReason,
+                }),
             );
             this.askElicitationQuestion(input, resultBuilder, elicitationAction);
         }
@@ -643,7 +693,11 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToConfirmValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.state.isValueConfirmed === false && this.evaluateBooleanProp(this.props.confirmationRequired, input)){
+        if (
+            this.state.value !== undefined &&
+            this.state.isValueConfirmed === false &&
+            this.evaluateBooleanProp(this.props.confirmationRequired, input)
+        ) {
             this.initiativeFunc = this.confirmValue;
             return true;
         }
@@ -656,7 +710,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true){
+        if (this.state.value !== undefined && this.validate(input) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -668,11 +722,18 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private validate(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: DateValidationFunction[] = typeof(this.props.validation) === 'function' ? [this.props.validation] : this.props.validation;
+        const listOfValidationFunc: DateValidationFunction[] =
+            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
             const validationResult: true | ValidationResult = validationFunction(this.state, input);
             if (validationResult !== true) {
-                log.debug(`DateControl.validate(): validation failed. Reason: ${JSON.stringify(validationResult, null, 2)}.`);
+                log.debug(
+                    `DateControl.validate(): validation failed. Reason: ${JSON.stringify(
+                        validationResult,
+                        null,
+                        2,
+                    )}.`,
+                );
                 return validationResult;
             }
         }
@@ -699,50 +760,51 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
-
         if (act instanceof RequestValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.requestValue, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
+            );
             const slotElicitation = generateSlotElicitation();
             builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
-        }
-
-        else if (act instanceof ValueSetAct) {
+        } else if (act instanceof ValueSetAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        }
-
-        else if (act instanceof ValueChangedAct) {
+        } else if (act instanceof ValueChangedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input));
-        }
-
-        else if (act instanceof InvalidValueAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+            );
+        } else if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input));
-        }
-
-        else if (act instanceof RequestChangedValueAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input));
-        }
-
-        else if (act instanceof ConfirmValueAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
+            );
+        } else if (act instanceof RequestChangedValueAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
+            );
+        } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input));
-        }
-
-        else if (act instanceof ValueConfirmedAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
+            );
+        } else if (act instanceof ValueConfirmedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueAffirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueAffirmed, input));
-        }
-
-        else if (act instanceof ValueDisconfirmedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueDisaffirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueDisaffirmed, input));
-        }
-
-        else {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueAffirmed, input),
+            );
+        } else if (act instanceof ValueDisconfirmedAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.valueDisaffirmed, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueDisaffirmed, input),
+            );
+        } else {
             this.throwUnhandledActError(act);
         }
     }
@@ -754,7 +816,10 @@ export class DateControl extends Control implements InteractionModelContributor 
         generator.addYesAndNoIntents();
 
         if (this.props.interactionModel.targets.includes('date')) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('DATE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('DATE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE', { returnObjects: true }),
+            );
         }
     }
 
@@ -772,23 +837,23 @@ export class DateControl extends Control implements InteractionModelContributor 
  *
  * @param slotType - Slot type
  */
-function generateSlotElicitation(): { intent: Intent, slotName: string } {
+function generateSlotElicitation(): { intent: Intent; slotName: string } {
     const intent: Intent = {
         name: SingleValueControlIntent.intentName(AmazonBuiltInSlotType.DATE),
         slots: {
-            "feedback": { name: "feedback", value: '', confirmationStatus: 'NONE' },
-            "action": { name: "action", value: '', confirmationStatus: 'NONE' },
-            "target": { name: "target", value: '', confirmationStatus: 'NONE' },
-            "AMAZON.DATE": { name: "AMAZON.DATE", value: '', confirmationStatus: 'NONE' },
-            "head": { name: "head", value: '', confirmationStatus: 'NONE' },
-            "tail": { name: "tail", value: '', confirmationStatus: 'NONE' },
-            "preposition": { name: "preposition", value: '', confirmationStatus: 'NONE' }
+            feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
+            action: { name: 'action', value: '', confirmationStatus: 'NONE' },
+            target: { name: 'target', value: '', confirmationStatus: 'NONE' },
+            'AMAZON.DATE': { name: 'AMAZON.DATE', value: '', confirmationStatus: 'NONE' },
+            head: { name: 'head', value: '', confirmationStatus: 'NONE' },
+            tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
+            preposition: { name: 'preposition', value: '', confirmationStatus: 'NONE' },
         },
-        confirmationStatus: "NONE"
+        confirmationStatus: 'NONE',
     };
 
     return {
         intent,
-        slotName: AmazonBuiltInSlotType.DATE
+        slotName: AmazonBuiltInSlotType.DATE,
     };
 }

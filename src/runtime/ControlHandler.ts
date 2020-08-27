@@ -11,9 +11,9 @@
  * permissions and limitations under the License.
  */
 
-import { HandlerInput, RequestHandler } from "ask-sdk-core";
-import { Response } from "ask-sdk-model";
-import _ from "lodash";
+import { HandlerInput, RequestHandler } from 'ask-sdk-core';
+import { Response } from 'ask-sdk-model';
+import _ from 'lodash';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { isContainerControl } from '../controls/interfaces/IContainerControl';
@@ -56,9 +56,8 @@ export interface IControlResponse extends Response {
  *
  */
 export class ControlHandler implements RequestHandler {
-
-    static attributeNameState = "__controlState";
-    static attributeNameContext = "__controlContext";
+    static attributeNameState = '__controlState';
+    static attributeNameContext = '__controlContext';
 
     controlManager: IControlManager;
     rootControl?: IControl;
@@ -67,7 +66,6 @@ export class ControlHandler implements RequestHandler {
     private controlInput: IControlInput;
 
     private preparedRequestId: string;
-
 
     /**
      * Determines if the controls state will be correctly reestablished on the
@@ -78,7 +76,7 @@ export class ControlHandler implements RequestHandler {
      *    procedure gets confused due to unexpected control states in session
      *    attributes. In this situation, set `validateStateRoundtrip = false`.
      */
-    validateStateRoundtrip = true;  // TODO improve the validation testing and remove this
+    validateStateRoundtrip = true; // TODO improve the validation testing and remove this
 
     constructor(controlManager: IControlManager) {
         this.controlManager = controlManager;
@@ -91,34 +89,41 @@ export class ControlHandler implements RequestHandler {
         this.preparedRequestId = handlerInput.requestEnvelope.request.requestId;
 
         // retrieve and update the context object.
-        const retrievedContext = handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameContext];
-        this.additionalSessionContext = retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
+        const retrievedContext = handlerInput.attributesManager.getSessionAttributes()[
+            ControlHandler.attributeNameContext
+        ];
+        this.additionalSessionContext =
+            retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
         this.additionalSessionContext.turnNumber += 1;
 
         // retrieve the control state
         const stateMap = this.getStateMapFromSessionAttributes(handlerInput);
 
-
         // build the control tree and attach state
         this.rootControl = this.controlManager.createControlTree(stateMap);
-        if (this.rootControl === undefined){
-            throw new Error('controlManager.createControlTree returned \'undefined\'.');
-        }
         attachStateToControlTree(this.rootControl, stateMap);
 
         // create the input object for use in the main processing.
         const controls = ControlHandler.createControlMap(this.rootControl, {});
-        this.controlInput = new ControlInput(handlerInput, this.additionalSessionContext.turnNumber, controls);
+        this.controlInput = new ControlInput(
+            handlerInput,
+            this.additionalSessionContext.turnNumber,
+            controls,
+        );
     }
 
-
     private getStateMapFromSessionAttributes(handlerInput: HandlerInput) {
-        const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameState];
+        const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[
+            ControlHandler.attributeNameState
+        ];
         const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
         return stateMap;
     }
 
-    private static createControlMap(control: IControl, mapAcc: { [index: string]: IControl }): { [index: string]: IControl } {
+    private static createControlMap(
+        control: IControl,
+        mapAcc: { [index: string]: IControl },
+    ): { [index: string]: IControl } {
         mapAcc[control.id] = control;
         if (isContainerControl(control)) {
             for (const child of (control as any).children) {
@@ -137,10 +142,13 @@ export class ControlHandler implements RequestHandler {
         try {
             this.prepare(handlerInput);
             return this.rootControl!.canHandle(this.controlInput);
-        }
-        catch (error) {
+        } catch (error) {
             if (this.controlManager.handleInternalError) {
-                this.controlManager.handleInternalError(this.controlInput, error, new ControlResponseBuilder(handlerInput.responseBuilder));
+                this.controlManager.handleInternalError(
+                    this.controlInput,
+                    error,
+                    new ControlResponseBuilder(handlerInput.responseBuilder),
+                );
             }
             throw error; // rethrow so top-level observes it too.
         }
@@ -162,10 +170,19 @@ export class ControlHandler implements RequestHandler {
 
             const responseBuilder = new ControlResponseBuilder(handlerInput.responseBuilder);
             const resultBuilder = new ControlResultBuilder();
-            await ControlHandler.handleCore(this.rootControl!, this.controlInput, resultBuilder, processInput);
+            await ControlHandler.handleCore(
+                this.rootControl!,
+                this.controlInput,
+                resultBuilder,
+                processInput,
+            );
 
             // Compose the response
-            const response = await this.buildResponseCore(resultBuilder.build(), responseBuilder, this.controlInput);
+            const response = await this.buildResponseCore(
+                resultBuilder.build(),
+                responseBuilder,
+                this.controlInput,
+            );
 
             // Collate the Control state objects for serialization
 
@@ -174,7 +191,7 @@ export class ControlHandler implements RequestHandler {
              */
             const priorStateMap = this.getStateMapFromSessionAttributes(handlerInput);
             const currentStateMap = this.getSerializableControlStates();
-            const mergedStateMap = {...priorStateMap, ...currentStateMap};
+            const mergedStateMap = { ...priorStateMap, ...currentStateMap };
 
             const stateToSaveJson = JSON.stringify(mergedStateMap, null, 2);
             log.info(`Saving state...\n${stateToSaveJson} `);
@@ -182,18 +199,25 @@ export class ControlHandler implements RequestHandler {
             const contextToSaveJson = JSON.stringify(this.additionalSessionContext, null, 2);
             log.info(`Saving context...\n${contextToSaveJson}`);
 
-            this.controlInput.handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameState] = stateToSaveJson;
-            this.controlInput.handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameContext] = contextToSaveJson;
+            this.controlInput.handlerInput.attributesManager.getSessionAttributes()[
+                ControlHandler.attributeNameState
+            ] = stateToSaveJson;
+            this.controlInput.handlerInput.attributesManager.getSessionAttributes()[
+                ControlHandler.attributeNameContext
+            ] = contextToSaveJson;
 
             // Check that the serialized state will survive the round trip
-            if (this.validateStateRoundtrip){
+            if (this.validateStateRoundtrip) {
                 validateSerializedState(stateToSaveJson, this.controlManager, this.controlInput);
             }
             return response;
-        }
-        catch (error) {
+        } catch (error) {
             if (this.controlManager.handleInternalError) {
-                this.controlManager.handleInternalError(this.controlInput, error, new ControlResponseBuilder(handlerInput.responseBuilder));
+                this.controlManager.handleInternalError(
+                    this.controlInput,
+                    error,
+                    new ControlResponseBuilder(handlerInput.responseBuilder),
+                );
             }
 
             return { ...handlerInput.responseBuilder.getResponse(), isTurnEnding: true };
@@ -209,7 +233,9 @@ export class ControlHandler implements RequestHandler {
     userAgentInfo(): string {
         const rootControl = this.rootControl ?? this.controlManager.createControlTree({});
         let nControls = 0;
-        visitControls(rootControl, () => { nControls++; });
+        visitControls(rootControl, () => {
+            nControls++;
+        });
         return `nCtrl:${nControls}`;
     }
 
@@ -218,8 +244,15 @@ export class ControlHandler implements RequestHandler {
      *
      * Public for testing
      */
-    public static async handleCore(rootControl: IControl, input: IControlInput, resultBuilder: IControlResultBuilder, handleInput = true): Promise<void> {
-        log.info("-------------------------------------------------------------------------------------------------");
+    public static async handleCore(
+        rootControl: IControl,
+        input: IControlInput,
+        resultBuilder: IControlResultBuilder,
+        handleInput = true,
+    ): Promise<void> {
+        log.info(
+            '-------------------------------------------------------------------------------------------------',
+        );
         log.info(`Turn ${input.turnNumber} started`);
         log.info(`Input: ${requestToString(input.handlerInput.requestEnvelope.request)}`);
         log.info(`UI at start: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
@@ -228,8 +261,10 @@ export class ControlHandler implements RequestHandler {
             const canHandleResponse = await rootControl.canHandle(input);
 
             if (!canHandleResponse) {
-                log.warn(" *WARN* rootControl returned canHandle=false.  Closing session");
-                log.info(`UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
+                log.warn(' *WARN* rootControl returned canHandle=false.  Closing session');
+                log.info(
+                    `UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`,
+                );
                 return;
             }
 
@@ -249,19 +284,28 @@ export class ControlHandler implements RequestHandler {
         log.info(`UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
     }
 
-    private static async initiativePhase(rootControl: IControl, input: IControlInput, resultBuilder: IControlResultBuilder): Promise<void> {
-
-        log.debug(`UI at start of initiative phase: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
+    private static async initiativePhase(
+        rootControl: IControl,
+        input: IControlInput,
+        resultBuilder: IControlResultBuilder,
+    ): Promise<void> {
+        log.debug(
+            `UI at start of initiative phase: \n${generateControlTreeTextDiagram(
+                rootControl,
+                input.turnNumber,
+            )}`,
+        );
         const canTakeInitiative = await rootControl.canTakeInitiative(input);
         if (canTakeInitiative) {
             await rootControl.takeInitiative(input, resultBuilder);
 
             if (!resultBuilder.hasInitiativeAct()) {
-                throw new Error("Something responded with `canTakeInitiative=true` but no initiative item was produced.");
+                throw new Error(
+                    'Something responded with `canTakeInitiative=true` but no initiative item was produced.',
+                );
             }
-        }
-        else {
-            log.debug("End of handle: nothing wanted to take initiative.");
+        } else {
+            log.debug('End of handle: nothing wanted to take initiative.');
         }
 
         return;
@@ -288,8 +332,11 @@ export class ControlHandler implements RequestHandler {
      * @param repromptPrefix - Reprompt fragment to prefix to the prompt
      * generated via Controls
      */
-    public async takeInitiative(handlerInput: HandlerInput, promptPrefix: string, repromptPrefix?: string): Promise<IControlResponse> {
-
+    public async takeInitiative(
+        handlerInput: HandlerInput,
+        promptPrefix: string,
+        repromptPrefix?: string,
+    ): Promise<IControlResponse> {
         if (repromptPrefix === undefined) {
             repromptPrefix = promptPrefix;
         }
@@ -302,21 +349,23 @@ export class ControlHandler implements RequestHandler {
 
         if (response.outputSpeech === undefined) {
             response.outputSpeech = { type: 'PlainText', text: promptPrefix };
-        }
-        else if (response.outputSpeech.type === 'SSML') {
-            response.outputSpeech = { type: 'SSML', ssml: prompt.replace('<speak>', `<speak>${promptPrefix}`) };
-        }
-        else {
+        } else if (response.outputSpeech.type === 'SSML') {
+            response.outputSpeech = {
+                type: 'SSML',
+                ssml: prompt.replace('<speak>', `<speak>${promptPrefix}`),
+            };
+        } else {
             response.outputSpeech = { type: 'PlainText', text: promptPrefix + prompt };
         }
 
         if (response.reprompt === undefined) {
             response.reprompt = { outputSpeech: { type: 'PlainText', text: repromptPrefix } };
-        }
-        else if (response.reprompt.outputSpeech.type === 'SSML') {
-            response.reprompt.outputSpeech = { type: 'SSML', ssml: reprompt.replace('<speak>', `<speak>${repromptPrefix}`) };
-        }
-        else {
+        } else if (response.reprompt.outputSpeech.type === 'SSML') {
+            response.reprompt.outputSpeech = {
+                type: 'SSML',
+                ssml: reprompt.replace('<speak>', `<speak>${repromptPrefix}`),
+            };
+        } else {
             response.reprompt.outputSpeech = { type: 'PlainText', text: repromptPrefix + reprompt };
         }
 
@@ -324,34 +373,45 @@ export class ControlHandler implements RequestHandler {
     }
 
     static getPromptAndRepromptFromResponse(response: IControlResponse): [string, string] {
-        const prompt = response.outputSpeech === undefined
-            ? ''
-            : (response.outputSpeech.type === 'SSML')
+        const prompt =
+            response.outputSpeech === undefined
+                ? ''
+                : response.outputSpeech.type === 'SSML'
                 ? response.outputSpeech.ssml.replace('<ssml>', '').replace('</ssml>', '')
                 : response.outputSpeech.text;
 
-        const reprompt = response.reprompt === undefined
-            ? ''
-            : (response.reprompt.outputSpeech.type === 'SSML')
+        const reprompt =
+            response.reprompt === undefined
+                ? ''
+                : response.reprompt.outputSpeech.type === 'SSML'
                 ? response.reprompt.outputSpeech.ssml.replace('<ssml>', '').replace('</ssml>', '')
                 : response.reprompt.outputSpeech.text;
         return [prompt, reprompt];
     }
 
-
-    private async buildResponseCore(result: IControlResult, controlResponseBuilder: ControlResponseBuilder, input: IControlInput): Promise<IControlResponse> {
+    private async buildResponseCore(
+        result: IControlResult,
+        controlResponseBuilder: ControlResponseBuilder,
+        input: IControlInput,
+    ): Promise<IControlResponse> {
         await this.controlManager.render(result, input, controlResponseBuilder);
         const response = controlResponseBuilder.getResponse();
         switch (result.sessionBehavior) {
-            case SessionBehavior.OPEN: response.shouldEndSession = false; break;
-            case SessionBehavior.END: response.shouldEndSession = true; break;
-            case SessionBehavior.IDLE: response.shouldEndSession = undefined; break;
-            default: throw new Error(`unknown SessionBehavior value: ${JSON.stringify(result)}`);
+            case SessionBehavior.OPEN:
+                response.shouldEndSession = false;
+                break;
+            case SessionBehavior.END:
+                response.shouldEndSession = true;
+                break;
+            case SessionBehavior.IDLE:
+                response.shouldEndSession = undefined;
+                break;
+            default:
+                throw new Error(`unknown SessionBehavior value: ${JSON.stringify(result)}`);
         }
 
         return { ...response, isTurnEnding: result.hasInitiativeAct() };
     }
-
 
     // public for testing
     public getSerializableControlStates(): { [key: string]: any } {
@@ -391,7 +451,6 @@ export function extractStateFromControlTree(rootControl: IControl): { [key: stri
     extractStateCore(rootControl, stateObj);
     return stateObj;
 }
-
 
 function extractStateCore(control: IControl, state: any) {
     if (_.has(state, control.id)) {

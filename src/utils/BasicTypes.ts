@@ -12,10 +12,9 @@
  */
 
 /**
-  * Either a string or an array of strings
-  */
+ * Either a string or an array of strings
+ */
 export type StringOrList = string | string[];
-
 
 // TODO: API: remove or consolidate with ValidationResult / validation function types
 /**

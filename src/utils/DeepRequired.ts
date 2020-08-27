@@ -20,8 +20,8 @@
 
 export type DeepRequired<T> =
     // eslint-disable-next-line @typescript-eslint/ban-types
-    T extends Function ?
-        T :
-        {
-            [k in keyof T]-?: DeepRequired<T[k]>;
-        };
+    T extends Function
+        ? T
+        : {
+              [k in keyof T]-?: DeepRequired<T[k]>;
+          };

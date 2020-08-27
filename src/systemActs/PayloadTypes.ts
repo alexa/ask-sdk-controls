@@ -25,7 +25,6 @@ export interface ValueSetPayload<T> {
  * Payload for ValueChangedAct
  */
 export interface ValueChangedPayload<T> {
-
     value: T;
 
     /**
@@ -60,7 +59,7 @@ export interface RequestChangedValuePayload {
 
 export interface RequestValueByListPayload {
     choicesFromActivePage: string[];
-    allChoices: string[]
+    allChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }
@@ -68,7 +67,7 @@ export interface RequestValueByListPayload {
 export interface RequestChangedValueByListPayload {
     currentValue: string;
     choicesFromActivePage: string[];
-    allChoices: string[]
+    allChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }

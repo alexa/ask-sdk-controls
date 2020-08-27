@@ -11,13 +11,12 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from "ask-sdk-model";
+import { Intent } from 'ask-sdk-model';
 import { v1 } from 'ask-smapi-model';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
 import { getSlotResolutions, IntentBuilder } from '../utils/IntentUtils';
 import { AmazonBuiltInSlotType } from './AmazonBuiltInSlotType';
 import { BaseControlIntent } from './BaseControlIntent';
-
 
 /**
  * Slot values conveyed by a OrdinalControlIntent
@@ -53,10 +52,18 @@ export function unpackOrdinalControlIntent(intent: Intent): OrdinalControlIntent
         const slotValue = slotObject ? slotObject.slotValue : undefined;
 
         switch (name) {
-            case 'feedback': feedback = slotValue !== undefined ? slotValue : undefined; break;
-            case 'action': action = slotValue !== undefined ? slotValue : undefined; break;
-            case 'target': target = slotValue !== undefined ? slotValue : undefined; break;
-            case 'AMAZON.Ordinal': valueStr = slotValue !== undefined ? slotValue : undefined; break;
+            case 'feedback':
+                feedback = slotValue !== undefined ? slotValue : undefined;
+                break;
+            case 'action':
+                action = slotValue !== undefined ? slotValue : undefined;
+                break;
+            case 'target':
+                target = slotValue !== undefined ? slotValue : undefined;
+                break;
+            case 'AMAZON.Ordinal':
+                valueStr = slotValue !== undefined ? slotValue : undefined;
+                break;
             // default: ignore content-free slots
         }
     }
@@ -65,7 +72,7 @@ export function unpackOrdinalControlIntent(intent: Intent): OrdinalControlIntent
         feedback,
         action,
         target,
-        'AMAZON.Ordinal': valueStr
+        'AMAZON.Ordinal': valueStr,
     };
 }
 
@@ -79,7 +86,6 @@ export function unpackOrdinalControlIntent(intent: Intent): OrdinalControlIntent
  * - "No, change the event date"
  */
 export class OrdinalControlIntent extends BaseControlIntent {
-
     /**
      * Create Intent from specification of the slots
      */
@@ -100,32 +106,32 @@ export class OrdinalControlIntent extends BaseControlIntent {
         const slots: v1.skill.interactionModel.SlotDefinition[] = [
             {
                 name: 'feedback',
-                type: SharedSlotType.FEEDBACK
+                type: SharedSlotType.FEEDBACK,
             },
             {
                 name: 'action',
-                type: SharedSlotType.ACTION
+                type: SharedSlotType.ACTION,
             },
             {
                 name: 'target',
-                type: SharedSlotType.TARGET
+                type: SharedSlotType.TARGET,
             },
             {
                 name: 'AMAZON.Ordinal',
-                type: AmazonBuiltInSlotType.ORDINAL
+                type: AmazonBuiltInSlotType.ORDINAL,
             },
             {
                 name: 'preposition',
-                type: SharedSlotType.PREPOSITION
+                type: SharedSlotType.PREPOSITION,
             },
             {
                 name: 'head',
-                type: SharedSlotType.HEAD
+                type: SharedSlotType.HEAD,
             },
             {
                 name: 'tail',
-                type: SharedSlotType.TAIL
-            }
+                type: SharedSlotType.TAIL,
+            },
         ];
 
         return slots;

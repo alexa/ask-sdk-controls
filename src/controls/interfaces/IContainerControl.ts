@@ -11,8 +11,7 @@
  * permissions and limitations under the License.
  */
 
-
-import { IControl } from "./IControl";
+import { IControl } from './IControl';
 
 /**
  * Defines a Control that has child controls.

@@ -10,7 +10,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import Debug from "debug";
+import Debug from 'debug';
 
 const DEFAULT_LOG_LEVEL = 'error:*, warn:*';
 
@@ -35,7 +35,6 @@ const DEFAULT_LOG_LEVEL = 'error:*, warn:*';
  * `info()`, and `debug()`.
  */
 export class Logger {
-
     moduleName: string;
 
     constructor(moduleName: string) {

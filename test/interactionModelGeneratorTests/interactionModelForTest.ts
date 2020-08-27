@@ -23,22 +23,19 @@ export const jsonProvider = {
                     invocationName: 'mock skill',
                     intents: [
                         {
-                            name: "AMAZON.CancelIntent",
-                            samples: []
+                            name: 'AMAZON.CancelIntent',
+                            samples: [],
                         },
                         {
-                            name: "HelloWorldIntent",
+                            name: 'HelloWorldIntent',
                             slots: [],
-                            samples: [
-                                "sample one",
-                                "sample two"
-                            ]
-                        }
+                            samples: ['sample one', 'sample two'],
+                        },
                     ],
-                    types: []
+                    types: [],
                 },
-                prompts: []
-            }
+                prompts: [],
+            },
         };
     },
 
@@ -48,446 +45,443 @@ export const jsonProvider = {
                 languageModel: {
                     types: [
                         {
-                            name: "feedback",
+                            name: 'feedback',
                             values: [
                                 {
                                     id: $.Feedback.Affirm,
                                     name: {
-                                        value: "affirm",
+                                        value: 'affirm',
                                         synonyms: [
-                                            "yes I do",
-                                            "okay",
-                                            "kay",
-                                            "k",
-                                            "yes",
-                                            "yup",
-                                            "yep",
-                                            "yes",
-                                            "ya",
-                                            "yes I want",
-                                            "yes I need",
-                                            "yes I said",
+                                            'yes I do',
+                                            'okay',
+                                            'kay',
+                                            'k',
+                                            'yes',
+                                            'yup',
+                                            'yep',
+                                            'yes',
+                                            'ya',
+                                            'yes I want',
+                                            'yes I need',
+                                            'yes I said',
                                             "yes that's right",
                                             "that's correct",
-                                            "ah yes",
-                                            "affirmative",
-                                            "makes sense",
-                                            "right",
-                                            "sounds good",
-                                            "sure",
+                                            'ah yes',
+                                            'affirmative',
+                                            'makes sense',
+                                            'right',
+                                            'sounds good',
+                                            'sure',
                                             "that's right",
-                                            "totally",
-                                            "works for me",
-                                            "yeah",
-                                            "yeah ok",
-                                            "yes ok",
+                                            'totally',
+                                            'works for me',
+                                            'yeah',
+                                            'yeah ok',
+                                            'yes ok',
                                             "yes that's good",
-                                            "yes sure",
-                                            "yes good",
-                                            "yes exactly",
-                                            "exactly",
-                                            "yes I do",
-                                            "absolutely",
-                                            "yes absolutely",
-                                            "fine",
-                                            "yes fine"
-                                        ]
-                                    }
+                                            'yes sure',
+                                            'yes good',
+                                            'yes exactly',
+                                            'exactly',
+                                            'yes I do',
+                                            'absolutely',
+                                            'yes absolutely',
+                                            'fine',
+                                            'yes fine',
+                                        ],
+                                    },
                                 },
                                 {
                                     id: $.Feedback.Disaffirm,
                                     name: {
-                                        value: "disaffirm",
+                                        value: 'disaffirm',
                                         synonyms: [
-                                            "no",
-                                            "no no",
-                                            "no no no",
-                                            "no no no no",
-                                            "no I want",
-                                            "no I said",
-                                            "no not that",
-                                            "not even close",
-                                            "nope",
-                                            "incorrect",
-                                            "you misunderstood",
-                                            "you have it wrong",
+                                            'no',
+                                            'no no',
+                                            'no no no',
+                                            'no no no no',
+                                            'no I want',
+                                            'no I said',
+                                            'no not that',
+                                            'not even close',
+                                            'nope',
+                                            'incorrect',
+                                            'you misunderstood',
+                                            'you have it wrong',
                                             "that's wrong",
-                                            "thats wrong",
-                                            "wrong",
-                                            "absolutely not",
+                                            'thats wrong',
+                                            'wrong',
+                                            'absolutely not',
                                             "I don't think so",
-                                            "naw",
-                                            "naw",
-                                            "negative",
-                                            "never",
-                                            "no alexa",
-                                            "no amazon",
-                                            "no incorrect",
+                                            'naw',
+                                            'naw',
+                                            'negative',
+                                            'never',
+                                            'no alexa',
+                                            'no amazon',
+                                            'no incorrect',
                                             "no that's wrong",
                                             "no it's not",
-                                            "definitely not",
-                                            "no definitely not",
-                                            "not ever",
-                                            "oh no",
-                                            "ohh no",
-                                            "o no no",
-                                            "please no",
+                                            'definitely not',
+                                            'no definitely not',
+                                            'not ever',
+                                            'oh no',
+                                            'ohh no',
+                                            'o no no',
+                                            'please no',
                                             "that's not what I want",
-                                            "that was totally wrong",
-                                            "that is totally wrong",
-                                            "that is wrong"
-                                        ]
-                                    }
-                                }
-                            ]
+                                            'that was totally wrong',
+                                            'that is totally wrong',
+                                            'that is wrong',
+                                        ],
+                                    },
+                                },
+                            ],
                         },
                         {
-                            name: "head",
+                            name: 'head',
                             values: [
                                 {
                                     id: $.Head,
                                     name: {
-                                        value: "head",
+                                        value: 'head',
                                         synonyms: [
-                                            "I",
+                                            'I',
                                             "I'll",
-                                            "please",
-                                            "thanks",
-                                            "thank you",
-                                            "I will",
-                                            "I want",
-                                            "I choose",
-                                            "I want you to",
-                                            "I want you to just",
-                                            "I need",
-                                            "I need you to",
-                                            "I need you to just",
-                                            "I think",
-                                            "I think just",
-                                            "I think I want",
-                                            "I think I need",
-                                            "I think you can",
-                                            "I think you can just",
-                                            "I think that",
+                                            'please',
+                                            'thanks',
+                                            'thank you',
+                                            'I will',
+                                            'I want',
+                                            'I choose',
+                                            'I want you to',
+                                            'I want you to just',
+                                            'I need',
+                                            'I need you to',
+                                            'I need you to just',
+                                            'I think',
+                                            'I think just',
+                                            'I think I want',
+                                            'I think I need',
+                                            'I think you can',
+                                            'I think you can just',
+                                            'I think that',
                                             "I'm pretty sure",
                                             "I'm pretty sure that",
-                                            "I am pretty sure",
-                                            "I am pretty sure that",
-                                            "I believe",
-                                            "I believe that",
-                                            "You can",
-                                            "You can just",
-                                            "You can just go ahead and",
-                                            "You should",
-                                            "You should just",
-                                            "Just",
-                                            "Go ahead and",
-                                            "Just go ahead",
-                                            "Just go ahead and"
-                                        ]
-                                    }
-                                }
-                            ]
+                                            'I am pretty sure',
+                                            'I am pretty sure that',
+                                            'I believe',
+                                            'I believe that',
+                                            'You can',
+                                            'You can just',
+                                            'You can just go ahead and',
+                                            'You should',
+                                            'You should just',
+                                            'Just',
+                                            'Go ahead and',
+                                            'Just go ahead',
+                                            'Just go ahead and',
+                                        ],
+                                    },
+                                },
+                            ],
                         },
                         {
-                            name: "tail",
+                            name: 'tail',
                             values: [
                                 {
                                     id: $.Tail,
                                     name: {
-                                        value: "tail",
+                                        value: 'tail',
                                         synonyms: [
-                                            "please",
-                                            "thanks",
-                                            "please thanks",
-                                            "will be fine",
-                                            "will be fine thanks",
-                                            "is good",
-                                            "is good thanks",
-                                            "will be good",
-                                            "will be good thanks",
-                                            "is plenty",
-                                            "is plenty thanks",
-                                            "will be plenty",
-                                            "will be plenty thanks",
-                                            "is great",
-                                            "is great thanks",
-                                            "will be great",
-                                            "will be great thanks",
-                                            "will work",
-                                            "will work thanks",
-                                            "is correct",
-                                            "is correct thanks",
-                                            "is right",
-                                            "is right thanks",
-                                            "at a time"
-                                        ]
-                                    }
-                                }
-                            ]
+                                            'please',
+                                            'thanks',
+                                            'please thanks',
+                                            'will be fine',
+                                            'will be fine thanks',
+                                            'is good',
+                                            'is good thanks',
+                                            'will be good',
+                                            'will be good thanks',
+                                            'is plenty',
+                                            'is plenty thanks',
+                                            'will be plenty',
+                                            'will be plenty thanks',
+                                            'is great',
+                                            'is great thanks',
+                                            'will be great',
+                                            'will be great thanks',
+                                            'will work',
+                                            'will work thanks',
+                                            'is correct',
+                                            'is correct thanks',
+                                            'is right',
+                                            'is right thanks',
+                                            'at a time',
+                                        ],
+                                    },
+                                },
+                            ],
                         },
                         {
-                            name: "action",
+                            name: 'action',
                             values: [
                                 {
                                     id: $.Action.Set,
                                     name: {
-                                        value: "set",
+                                        value: 'set',
                                         synonyms: [
-                                            "set",
-                                            "assign",
-                                            "make",
-                                            "will be",
-                                            "must be",
-                                            "must be set to",
-                                            "must be equal to",
-                                            "should be",
-                                            "should be",
-                                            "should be set to",
-                                            "should be equal to",
-                                            "needs to be",
-                                            "needs to be set to"
-                                        ]
-                                    }
+                                            'set',
+                                            'assign',
+                                            'make',
+                                            'will be',
+                                            'must be',
+                                            'must be set to',
+                                            'must be equal to',
+                                            'should be',
+                                            'should be',
+                                            'should be set to',
+                                            'should be equal to',
+                                            'needs to be',
+                                            'needs to be set to',
+                                        ],
+                                    },
                                 },
                                 {
                                     id: $.Action.Change,
                                     name: {
-                                        value: "change",
+                                        value: 'change',
                                         synonyms: [
-                                            "update",
-                                            "move",
-                                            "alter",
-                                            "change",
-                                            "switch",
-                                            "should be",
-                                            "should be changed to",
-                                            "should be changed",
-                                            "should be updated to",
-                                            "should be updated",
-                                            "should be altered to",
-                                            "should be altered",
-                                            "needs to be changed to",
-                                            "needs to be changed",
-                                            "needs to be updated to",
-                                            "needs to be updated",
-                                            "needs to be altered to",
-                                            "needs to be altered"
-                                        ]
-                                    }
+                                            'update',
+                                            'move',
+                                            'alter',
+                                            'change',
+                                            'switch',
+                                            'should be',
+                                            'should be changed to',
+                                            'should be changed',
+                                            'should be updated to',
+                                            'should be updated',
+                                            'should be altered to',
+                                            'should be altered',
+                                            'needs to be changed to',
+                                            'needs to be changed',
+                                            'needs to be updated to',
+                                            'needs to be updated',
+                                            'needs to be altered to',
+                                            'needs to be altered',
+                                        ],
+                                    },
                                 },
-                            ]
+                            ],
                         },
                         {
-                            name: "target",
+                            name: 'target',
                             values: [
                                 {
                                     id: $.Target.It,
                                     name: {
-                                        value: "it",
-                                        synonyms: [
-                                            "it",
-                                            "this",
-                                            "that"
-                                        ]
-                                    }
-                                }
-                            ]
+                                        value: 'it',
+                                        synonyms: ['it', 'this', 'that'],
+                                    },
+                                },
+                            ],
                         },
                         {
-                            name: "preposition",
+                            name: 'preposition',
                             values: [
                                 {
                                     id: $.Preposition,
                                     name: {
-                                        value: "preposition",
+                                        value: 'preposition',
                                         synonyms: [
-                                            "the",
-                                            "to",
-                                            "to the",
-                                            "to be",
-                                            "to go",
-                                            "in",
-                                            "in to",
-                                            "into",
-                                            "is",
-                                            "equal to",
-                                            "to be equal to",
-                                            "also",
-                                            "to also be",
-                                            "to be also",
-                                            "from",
-                                            "until"
-                                        ]
-                                    }
-                                }
-                            ]
-                        }
+                                            'the',
+                                            'to',
+                                            'to the',
+                                            'to be',
+                                            'to go',
+                                            'in',
+                                            'in to',
+                                            'into',
+                                            'is',
+                                            'equal to',
+                                            'to be equal to',
+                                            'also',
+                                            'to also be',
+                                            'to be also',
+                                            'from',
+                                            'until',
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
                     ],
                     intents: [
                         {
-                            name: "TEST_ValueControlIntent",
+                            name: 'TEST_ValueControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target"
+                                    name: 'target',
+                                    type: 'target',
                                 },
                                 {
-                                    name: "preposition",
-                                    type: "preposition"
+                                    name: 'preposition',
+                                    type: 'preposition',
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
+                                    name: 'tail',
+                                    type: 'tail',
                                 },
                                 {
-                                    name: "TEST",
-                                    type: "TEST"
-                                }
+                                    name: 'TEST',
+                                    type: 'TEST',
+                                },
                             ],
                             samples: [
-                                "{TEST}",
-                                "{action} {TEST}",
-                                "{action} {preposition} {TEST}",
-                                "{action} {target} {preposition} {TEST}",
-                                "{target} {preposition} {TEST}",
-                                "{feedback} {TEST}",
-                                "{feedback} {action} {TEST}",
-                                "{feedback} {preposition} {TEST}",
-                                "{feedback} {action} {preposition} {TEST}",
-                                "{feedback} {action} {target} {preposition} {TEST}",
-                                "{feedback} {target} {preposition} {TEST}",
-                                "{head} {TEST}",
-                                "{head} {action} {TEST}",
-                                "{head} {action} {preposition} {TEST}",
-                                "{head} {action} {target} {preposition} {TEST}",
-                                "{head} {target} {preposition} {TEST}",
-                                "{TEST} {tail}",
-                                "{preposition} {TEST} {tail}",
-                                "{action} {preposition} {TEST} {tail}",
-                                "{action} {target} {preposition} {TEST} {tail}",
-                                "{target} {preposition} {TEST} {tail}",
-                                "{feedback} {TEST} {tail}",
-                                "{feedback} {preposition} {TEST} {tail}",
-                                "{feedback} {action} {TEST} {tail}",
-                                "{feedback} {action} {preposition} {TEST} {tail}",
-                                "{feedback} {action} {target} {preposition} {TEST} {tail}",
-                                "{feedback} {target} {preposition} {TEST} {tail}",
-                                "{head} {TEST} {tail}",
-                                "{head} {preposition} {TEST} {tail}",
-                                "{head} {action} {TEST} {tail}",
-                                "{head} {action} {preposition} {TEST} {tail}",
-                                "{head} {target} {preposition} {TEST} {tail}",
-                                "{head} {action} {target} {preposition} {TEST} {tail}"
-                            ]
+                                '{TEST}',
+                                '{action} {TEST}',
+                                '{action} {preposition} {TEST}',
+                                '{action} {target} {preposition} {TEST}',
+                                '{target} {preposition} {TEST}',
+                                '{feedback} {TEST}',
+                                '{feedback} {action} {TEST}',
+                                '{feedback} {preposition} {TEST}',
+                                '{feedback} {action} {preposition} {TEST}',
+                                '{feedback} {action} {target} {preposition} {TEST}',
+                                '{feedback} {target} {preposition} {TEST}',
+                                '{head} {TEST}',
+                                '{head} {action} {TEST}',
+                                '{head} {action} {preposition} {TEST}',
+                                '{head} {action} {target} {preposition} {TEST}',
+                                '{head} {target} {preposition} {TEST}',
+                                '{TEST} {tail}',
+                                '{preposition} {TEST} {tail}',
+                                '{action} {preposition} {TEST} {tail}',
+                                '{action} {target} {preposition} {TEST} {tail}',
+                                '{target} {preposition} {TEST} {tail}',
+                                '{feedback} {TEST} {tail}',
+                                '{feedback} {preposition} {TEST} {tail}',
+                                '{feedback} {action} {TEST} {tail}',
+                                '{feedback} {action} {preposition} {TEST} {tail}',
+                                '{feedback} {action} {target} {preposition} {TEST} {tail}',
+                                '{feedback} {target} {preposition} {TEST} {tail}',
+                                '{head} {TEST} {tail}',
+                                '{head} {preposition} {TEST} {tail}',
+                                '{head} {action} {TEST} {tail}',
+                                '{head} {action} {preposition} {TEST} {tail}',
+                                '{head} {target} {preposition} {TEST} {tail}',
+                                '{head} {action} {target} {preposition} {TEST} {tail}',
+                            ],
                         },
                         {
-                            name: "GeneralControlIntent",
+                            name: 'GeneralControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target"
+                                    name: 'target',
+                                    type: 'target',
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
-                                }
+                                    name: 'tail',
+                                    type: 'tail',
+                                },
                             ],
                             samples: [
-                                "{feedback} {action}",
-                                "{feedback} {action} {target}",
-                                "{feedback} {tail}",
-                                "{feedback} {action} {tail}",
-                                "{feedback} {action} {target} {tail}",
-                                "{action} {target}",
-                                "{head} {action}",
-                                "{head} {action} {target}",
-                                "{action} {tail}",
-                                "{action} {target} {tail}",
-                                "{head} {action} {tail}",
-                                "{head} {action} {target} {tail}"
-                            ]
-                        }
+                                '{feedback} {action}',
+                                '{feedback} {action} {target}',
+                                '{feedback} {tail}',
+                                '{feedback} {action} {tail}',
+                                '{feedback} {action} {target} {tail}',
+                                '{action} {target}',
+                                '{head} {action}',
+                                '{head} {action} {target}',
+                                '{action} {tail}',
+                                '{action} {target} {tail}',
+                                '{head} {action} {tail}',
+                                '{head} {action} {target} {tail}',
+                            ],
+                        },
                     ],
-                    invocationName: "TEST_INVOCATION_NAME"
+                    invocationName: 'TEST_INVOCATION_NAME',
                 },
                 prompts: [
                     {
-                        id: "Slot.Validation.564246223579.1467418044248.678461230495",
+                        id: 'Slot.Validation.564246223579.1467418044248.678461230495',
                         variations: [
                             {
-                                type: "PlainText",
-                                value: "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-                            }
-                        ]
-                    }
+                                type: 'PlainText',
+                                value:
+                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                            },
+                        ],
+                    },
                 ],
                 dialog: {
                     intents: [
                         {
-                            name: "GeneralControlIntent",
+                            name: 'GeneralControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target",
+                                    name: 'target',
+                                    type: 'target',
                                     elicitationRequired: false,
                                     confirmationRequired: false,
                                     validations: [
                                         {
-                                            type: "isNotInSet",
-                                            prompt: "Slot.Validation.564246223579.1467418044248.678461230495",
+                                            type: 'isNotInSet',
+                                            prompt: 'Slot.Validation.564246223579.1467418044248.678461230495',
                                             values: [
-                                                "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-                                            ]
-                                        }
-                                    ]
+                                                'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                            ],
+                                        },
+                                    ],
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
-                                }
+                                    name: 'tail',
+                                    type: 'tail',
+                                },
                             ],
-                            delegationStrategy: "SKILL_RESPONSE"
-                        }
-                    ]
-                }
-            }
+                            delegationStrategy: 'SKILL_RESPONSE',
+                        },
+                    ],
+                },
+            },
         };
     },
     loadFromMockControlsFR(): InteractionModelData {
@@ -496,147 +490,148 @@ export const jsonProvider = {
                 languageModel: {
                     types: [
                         {
-                            name: "feedback",
-                            values: []
+                            name: 'feedback',
+                            values: [],
                         },
                         {
-                            name: "head",
-                            values: []
+                            name: 'head',
+                            values: [],
                         },
                         {
-                            name: "tail",
-                            values: []
+                            name: 'tail',
+                            values: [],
                         },
                         {
-                            name: "action",
-                            values: []
+                            name: 'action',
+                            values: [],
                         },
                         {
-                            name: "target",
-                            values: []
+                            name: 'target',
+                            values: [],
                         },
                         {
-                            name: "preposition",
-                            values: []
-                        }
+                            name: 'preposition',
+                            values: [],
+                        },
                     ],
                     intents: [
                         {
-                            name: "TEST_ValueControlIntent",
+                            name: 'TEST_ValueControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target"
+                                    name: 'target',
+                                    type: 'target',
                                 },
                                 {
-                                    name: "preposition",
-                                    type: "preposition"
+                                    name: 'preposition',
+                                    type: 'preposition',
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
+                                    name: 'tail',
+                                    type: 'tail',
                                 },
                                 {
-                                    name: "TEST",
-                                    type: "TEST"
-                                }
+                                    name: 'TEST',
+                                    type: 'TEST',
+                                },
                             ],
-                            samples: []
+                            samples: [],
                         },
                         {
-                            name: "GeneralControlIntent",
+                            name: 'GeneralControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target"
+                                    name: 'target',
+                                    type: 'target',
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
-                                }
+                                    name: 'tail',
+                                    type: 'tail',
+                                },
                             ],
-                            samples: []
-                        }
+                            samples: [],
+                        },
                     ],
-                    invocationName: "TEST_INVOCATION_NAME"
+                    invocationName: 'TEST_INVOCATION_NAME',
                 },
                 prompts: [
                     {
-                        id: "Slot.Validation.564246223579.1467418044248.678461230495",
+                        id: 'Slot.Validation.564246223579.1467418044248.678461230495',
                         variations: [
                             {
-                                type: "PlainText",
-                                value: "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-                            }
-                        ]
-                    }
+                                type: 'PlainText',
+                                value:
+                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                            },
+                        ],
+                    },
                 ],
                 dialog: {
                     intents: [
                         {
-                            name: "GeneralControlIntent",
+                            name: 'GeneralControlIntent',
                             slots: [
                                 {
-                                    name: "feedback",
-                                    type: "feedback"
+                                    name: 'feedback',
+                                    type: 'feedback',
                                 },
                                 {
-                                    name: "action",
-                                    type: "action"
+                                    name: 'action',
+                                    type: 'action',
                                 },
                                 {
-                                    name: "target",
-                                    type: "target",
+                                    name: 'target',
+                                    type: 'target',
                                     elicitationRequired: false,
                                     confirmationRequired: false,
                                     validations: [
                                         {
-                                            type: "isNotInSet",
-                                            prompt: "Slot.Validation.564246223579.1467418044248.678461230495",
+                                            type: 'isNotInSet',
+                                            prompt: 'Slot.Validation.564246223579.1467418044248.678461230495',
                                             values: [
-                                                "This prompt is included to ensure there is a dialog model present. It is not used by skills."
-                                            ]
-                                        }
-                                    ]
+                                                'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                            ],
+                                        },
+                                    ],
                                 },
                                 {
-                                    name: "head",
-                                    type: "head"
+                                    name: 'head',
+                                    type: 'head',
                                 },
                                 {
-                                    name: "tail",
-                                    type: "tail"
-                                }
+                                    name: 'tail',
+                                    type: 'tail',
+                                },
                             ],
-                            delegationStrategy: "SKILL_RESPONSE"
-                        }
-                    ]
-                }
-            }
+                            delegationStrategy: 'SKILL_RESPONSE',
+                        },
+                    ],
+                },
+            },
         };
-    }
+    },
 };

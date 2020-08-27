@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import _ from "lodash";
+import _ from 'lodash';
 
 /**
  * Utilities for rendering lists to strings/prompts.
@@ -28,18 +28,17 @@ export namespace ListFormatting {
      * @param arr - Array
      * @param joiner - Joiner
      */
-    export function format(arr: string[], joiner = "or"): string {
+    export function format(arr: string[], joiner = 'or'): string {
         if (arr.length === 0) {
-            return "(empty)";
+            return '(empty)';
         }
         if (arr.length === 1) {
             return arr[0];
         }
         if (arr.length === 2) {
             return `${arr[0]} ${joiner} ${arr[1]}`;
-        }
-        else {
-            return `${_.join(_.take(arr, arr.length - 1), ", ")} ${joiner} ${arr[arr.length - 1]}`;
+        } else {
+            return `${_.join(_.take(arr, arr.length - 1), ', ')} ${joiner} ${arr[arr.length - 1]}`;
         }
     }
 }

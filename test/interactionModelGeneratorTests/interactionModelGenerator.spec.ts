@@ -12,7 +12,7 @@
  */
 
 import { v1 } from 'ask-smapi-model';
-import { expect } from "chai";
+import { expect } from 'chai';
 import * as _ from 'lodash';
 import { suite, test } from 'mocha';
 import { join } from 'path';
@@ -28,45 +28,36 @@ import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import Prompt = v1.skill.interactionModel.Prompt;
 
 const TEST_INTENT: Intent = {
-    name: "CustomIntent",
+    name: 'CustomIntent',
     slots: [
         {
-            name: "PhoneNumber",
-            type: "AMAZON.PhoneNumber"
-        }
+            name: 'PhoneNumber',
+            type: 'AMAZON.PhoneNumber',
+        },
     ],
-    samples: [
-        "{PhoneNumber}",
-        "give me your {PhoneNumber}"
-    ]
+    samples: ['{PhoneNumber}', 'give me your {PhoneNumber}'],
 };
 const TEST_SLOT_TYPE_VALUE = {
     id: 'TEST_ID',
     name: {
         value: 'TEST_VALUE',
-        synonyms: [
-            'TEST_SYNONYMS'
-        ]
-    }
-
+        synonyms: ['TEST_SYNONYMS'],
+    },
 };
 
 const TEST_SLOT_TYPE: SlotType = {
     name: 'TEST',
-    values: [
-        TEST_SLOT_TYPE_VALUE,
-    ]
+    values: [TEST_SLOT_TYPE_VALUE],
 };
-
 
 const TEST_DIALOG_INTENT: DialogIntent = {
     name: 'TEST_DIALOG_INTENT_NAME',
     slots: [
         {
             name: 'TEST_SLOT_NAME',
-            type: 'TEST_SLOT_TYPE'
-        }
-    ]
+            type: 'TEST_SLOT_TYPE',
+        },
+    ],
 };
 
 const TEST_DELEGATION_STRATEGY: DelegationStrategyType = 'ALWAYS';
@@ -74,9 +65,8 @@ const TEST_INVOCATION_NAME: string = 'TEST_INVOCATION_NAME';
 
 const TEST_PROMPT: Prompt = {
     id: 'TEST_ID',
-    variations: [{ type: 'SSML', value: 'TEST_VALUE' }]
+    variations: [{ type: 'SSML', value: 'TEST_VALUE' }],
 };
-
 
 suite('InteractionModel Generator tests', () => {
     const mockFilePath = join(__dirname, '..', 'mock', 'inputInteractionModel.json');
@@ -95,12 +85,10 @@ suite('InteractionModel Generator tests', () => {
                 interactionModel: {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
-                        intents: [
-                            TEST_INTENT
-                        ],
-                        types: []
+                        intents: [TEST_INTENT],
+                        types: [],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -117,12 +105,10 @@ suite('InteractionModel Generator tests', () => {
                 interactionModel: {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
-                        intents: [
-                            TEST_INTENT
-                        ],
-                        types: []
+                        intents: [TEST_INTENT],
+                        types: [],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -138,7 +124,9 @@ suite('InteractionModel Generator tests', () => {
                     .withInvocationName('test')
                     .build();
             } catch (e) {
-                expect(e.message).equal(`Intent ${testIntentWithSameName.name} is defined more than once and the definitions are not identical.`);
+                expect(e.message).equal(
+                    `Intent ${testIntentWithSameName.name} is defined more than once and the definitions are not identical.`,
+                );
 
                 return;
             }
@@ -148,7 +136,6 @@ suite('InteractionModel Generator tests', () => {
     });
 
     suite('add slotTypes tests', () => {
-
         test('addSlotTypes should successfully add single slotType to IM', () => {
             const interactionModel = new InteractionModelGenerator()
                 .addOrMergeSlotTypes(TEST_SLOT_TYPE)
@@ -160,9 +147,9 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: [TEST_SLOT_TYPE]
+                        types: [TEST_SLOT_TYPE],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -180,9 +167,9 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: [TEST_SLOT_TYPE]
+                        types: [TEST_SLOT_TYPE],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -198,7 +185,13 @@ suite('InteractionModel Generator tests', () => {
                     .withInvocationName(TEST_INVOCATION_NAME)
                     .build();
             } catch (e) {
-                expect(e.message).equal(`Cannot merge slot type ${TEST_SLOT_TYPE.name}, as the value ${JSON.stringify(modifiedTestSlotType.values![0])} and ${JSON.stringify(TEST_SLOT_TYPE.values![0])} has the same id but different name.value.`);
+                expect(e.message).equal(
+                    `Cannot merge slot type ${TEST_SLOT_TYPE.name}, as the value ${JSON.stringify(
+                        modifiedTestSlotType.values![0],
+                    )} and ${JSON.stringify(
+                        TEST_SLOT_TYPE.values![0],
+                    )} has the same id but different name.value.`,
+                );
 
                 return;
             }
@@ -215,7 +208,13 @@ suite('InteractionModel Generator tests', () => {
                     .withInvocationName(TEST_INVOCATION_NAME)
                     .build();
             } catch (e) {
-                expect(e.message).equal(`Cannot merge slot type ${TEST_SLOT_TYPE.name}, as the value ${JSON.stringify(modifiedTestSlotType.values![0])} and ${JSON.stringify(TEST_SLOT_TYPE.values![0])} has the same name.value but different id.`);
+                expect(e.message).equal(
+                    `Cannot merge slot type ${TEST_SLOT_TYPE.name}, as the value ${JSON.stringify(
+                        modifiedTestSlotType.values![0],
+                    )} and ${JSON.stringify(
+                        TEST_SLOT_TYPE.values![0],
+                    )} has the same name.value but different id.`,
+                );
 
                 return;
             }
@@ -236,24 +235,22 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: [{
-                            name: 'TEST',
-                            values: [
-                                {
-                                    id: 'TEST_ID',
-                                    name: {
-                                        value: 'TEST_VALUE',
-                                        synonyms: [
-                                            'TEST_SYNONYMS',
-                                            'new synonym'
-                                        ]
-                                    }
-
-                                },
-                            ]
-                        }]
+                        types: [
+                            {
+                                name: 'TEST',
+                                values: [
+                                    {
+                                        id: 'TEST_ID',
+                                        name: {
+                                            value: 'TEST_VALUE',
+                                            synonyms: ['TEST_SYNONYMS', 'new synonym'],
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -280,10 +277,8 @@ suite('InteractionModel Generator tests', () => {
                 id: 'EXTRA_ID',
                 name: {
                     value: 'EXTRA_VALUE',
-                    synonyms: [
-                        'EXTRA_SYNONYMS'
-                    ]
-                }
+                    synonyms: ['EXTRA_SYNONYMS'],
+                },
             };
             const interactionModel = new InteractionModelGenerator()
                 .addOrMergeSlotTypes(TEST_SLOT_TYPE)
@@ -295,15 +290,14 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: [{
-                            name: 'TEST',
-                            values: [
-                                TEST_SLOT_TYPE_VALUE,
-                                extraSlotValue
-                            ]
-                        }]
+                        types: [
+                            {
+                                name: 'TEST',
+                                values: [TEST_SLOT_TYPE_VALUE, extraSlotValue],
+                            },
+                        ],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -323,12 +317,12 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: []
+                        types: [],
                     },
                     dialog: {
-                        intents: [TEST_DIALOG_INTENT]
+                        intents: [TEST_DIALOG_INTENT],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -346,12 +340,12 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: []
+                        types: [],
                     },
                     dialog: {
-                        intents: [TEST_DIALOG_INTENT]
+                        intents: [TEST_DIALOG_INTENT],
                     },
-                    prompts: []
+                    prompts: [],
                 },
             };
 
@@ -367,7 +361,9 @@ suite('InteractionModel Generator tests', () => {
                     .withInvocationName('test')
                     .build();
             } catch (e) {
-                expect(e.message).equal(`DialogIntent ${testIntentWithSameName.name} is defined more than once and the definitions are not identical.`);
+                expect(e.message).equal(
+                    `DialogIntent ${testIntentWithSameName.name} is defined more than once and the definitions are not identical.`,
+                );
 
                 return;
             }
@@ -388,9 +384,9 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: []
+                        types: [],
                     },
-                    prompts: [TEST_PROMPT]
+                    prompts: [TEST_PROMPT],
                 },
             };
 
@@ -408,9 +404,9 @@ suite('InteractionModel Generator tests', () => {
                     languageModel: {
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
-                        types: []
+                        types: [],
                     },
-                    prompts: [TEST_PROMPT]
+                    prompts: [TEST_PROMPT],
                 },
             };
 
@@ -426,7 +422,9 @@ suite('InteractionModel Generator tests', () => {
                     .withInvocationName('test')
                     .build();
             } catch (e) {
-                expect(e.message).equal(`Prompt with id ${TEST_PROMPT.id} is defined more than once and the definitions are not identical.`);
+                expect(e.message).equal(
+                    `Prompt with id ${TEST_PROMPT.id} is defined more than once and the definitions are not identical.`,
+                );
 
                 return;
             }
@@ -439,7 +437,9 @@ suite('InteractionModel Generator tests', () => {
         test('should be able to throw error when input file not exist', () => {
             const invalidFilePath = join(__dirname, 'invalidFile.json');
             try {
-                const interactionModel = new InteractionModelGenerator().loadFromFile(invalidFilePath).build();
+                const interactionModel = new InteractionModelGenerator()
+                    .loadFromFile(invalidFilePath)
+                    .build();
             } catch (e) {
                 expect(e.message).equal('Input path is not valid.');
 
@@ -450,13 +450,11 @@ suite('InteractionModel Generator tests', () => {
         });
 
         test('should be able to generate InteractionModel by reading exist models', () => {
-
             const interactionModel = new InteractionModelGenerator().loadFromFile(mockFilePath).build();
             expect(interactionModel).deep.equal(jsonProvider.loadMockInputFile());
         });
 
         test('should be able to add custom Intent, SlotTypes, DialogIntents, DelegationStrategy, InvocationName by using function chain', () => {
-
             const interactionModel: InteractionModelData = new InteractionModelGenerator()
                 .addIntents(TEST_INTENT)
                 .addOrMergeSlotTypes(TEST_SLOT_TYPE)
@@ -467,22 +465,18 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
-                        intents: [
-                            TEST_INTENT
-                        ],
+                        intents: [TEST_INTENT],
                         types: [TEST_SLOT_TYPE],
-                        invocationName: TEST_INVOCATION_NAME
+                        invocationName: TEST_INVOCATION_NAME,
                     },
                     dialog: {
                         delegationStrategy: TEST_DELEGATION_STRATEGY,
-                        intents: [TEST_DIALOG_INTENT]
+                        intents: [TEST_DIALOG_INTENT],
                     },
-                    prompts: []
-                }
+                    prompts: [],
+                },
             };
             expect(interactionModel).deep.equal(expectedInteractionModel);
         });
     });
-
-
 });

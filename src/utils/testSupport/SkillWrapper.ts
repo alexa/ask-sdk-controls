@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { ErrorHandler, HandlerInput, RequestHandler, Skill, SkillBuilders } from "ask-sdk-core";
+import { ErrorHandler, HandlerInput, RequestHandler, Skill, SkillBuilders } from 'ask-sdk-core';
 import { Logger } from '../../logging/Logger';
 
 const log = new Logger('AskSdkControls:SkillWrapper');
@@ -33,11 +33,8 @@ export function wrapRequestHandlerAsSkill(requestHandler: RequestHandler): Skill
             log.error(`~~~~ Error handled: ${error.stack}`);
             const speakOutput = `Sorry, I had trouble doing what you asked. Please try again.`;
 
-            return handlerInput.responseBuilder
-                .speak(speakOutput)
-                .reprompt(speakOutput)
-                .getResponse();
-        }
+            return handlerInput.responseBuilder.speak(speakOutput).reprompt(speakOutput).getResponse();
+        },
     };
 
     /*
@@ -46,10 +43,7 @@ export function wrapRequestHandlerAsSkill(requestHandler: RequestHandler): Skill
      * defined are included below. The order matters - they're processed top to bottom.
      */
 
-    const _handler =
-        SkillBuilders.custom()
-            .addRequestHandlers(requestHandler)
-            .addErrorHandlers(errorHandler);
+    const _handler = SkillBuilders.custom().addRequestHandlers(requestHandler).addErrorHandlers(errorHandler);
     const skill = _handler.create();
     return skill;
 }

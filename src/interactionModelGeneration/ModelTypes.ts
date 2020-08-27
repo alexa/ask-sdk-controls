@@ -23,25 +23,25 @@ export enum SharedSlotType {
     ACTION = 'action',
     TARGET = 'target',
     CONJUNCTION = 'conjunction',
-    PREPOSITION = 'preposition'
+    PREPOSITION = 'preposition',
 }
 
 /**
  * Localized information Names of the built-in slot types used by ControlIntents
  */
 export interface ModelData {
-    slotTypes: SlotType[],
-    intentValues: IntentUtterances[] // TODO: naming: review name
+    slotTypes: SlotType[];
+    intentValues: IntentUtterances[]; // TODO: naming: review name
 }
 
 export interface SlotValue {
-    synonyms: string[],
-    id: string
+    synonyms: string[];
+    id: string;
 }
 
 export interface IntentUtterances {
-    name: string,
-    samples: string[]
+    name: string;
+    samples: string[];
 }
 
 export type ModelDataMap = { [locale: string]: ModelData };

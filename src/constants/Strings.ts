@@ -15,13 +15,12 @@
  * The strings associated with various built-ins
  */
 export namespace Strings {
-
     /**
      * Built-in feedback slot values
      */
     export enum Feedback {
-        Affirm = "builtin_affirm",
-        Disaffirm = "builtin_disaffirm",
+        Affirm = 'builtin_affirm',
+        Disaffirm = 'builtin_disaffirm',
     }
 
     /**
@@ -31,7 +30,7 @@ export namespace Strings {
         Set = 'builtin_set',
         Change = 'builtin_change',
         Select = 'builtin_select',
-        None = "builtin_none"
+        None = 'builtin_none',
     }
 
     /**
@@ -52,5 +51,4 @@ export namespace Strings {
     export const Tail = 'builtin_tail';
     export const Head = 'builtin_head';
     export const Preposition = 'builtin_preposition';
-
 }

@@ -11,10 +11,10 @@
  * permissions and limitations under the License.
  */
 
-import { Intent, IntentRequest } from "ask-sdk-model";
+import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
-import _ from "lodash";
-import { Strings as $ } from "../constants/Strings";
+import _ from 'lodash';
+import { Strings as $ } from '../constants/Strings';
 import { Control, ControlProps, ControlState } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
@@ -23,17 +23,26 @@ import { InteractionModelContributor } from '../controls/mixins/InteractionModel
 import { ValidationResult } from '../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import { SingleValueControlIntent, unpackSingleValueControlIntent } from '../intents/SingleValueControlIntent';
+import {
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+} from '../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
-import { Logger } from "../logging/Logger";
+import { Logger } from '../logging/Logger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
-import { InvalidValueAct, ValueChangedAct, ValueConfirmedAct, ValueDisconfirmedAct, ValueSetAct } from "../systemActs/ContentActs";
-import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from "../systemActs/InitiativeActs";
+import {
+    InvalidValueAct,
+    ValueChangedAct,
+    ValueConfirmedAct,
+    ValueDisconfirmedAct,
+    ValueSetAct,
+} from '../systemActs/ContentActs';
+import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
 import { DeepRequired } from '../utils/DeepRequired';
-import { InputUtil } from "../utils/InputUtil";
+import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
 
 const log = new Logger('AskSdkControls:ValueControl');
@@ -42,7 +51,6 @@ const log = new Logger('AskSdkControls:ValueControl');
  * Props for a ValueControl.
  */
 export interface ValueControlProps extends ControlProps {
-
     /**
      * Unique identifier for control instance
      */
@@ -111,7 +119,10 @@ export interface ValueControlProps extends ControlProps {
 /**
  * ValueControl validation function
  */
-export type SlotValidationFunction = (state: ValueControlState, input: ControlInput) => true | ValidationResult;
+export type SlotValidationFunction = (
+    state: ValueControlState,
+    input: ControlInput,
+) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -126,14 +137,14 @@ export interface ValueControlActionProps {
      *
      * Default: ['builtin_set']
      */
-    set?: string[],
+    set?: string[];
 
     /**
      * Action slot value IDs that are associated with the "change value" capability.
      *
      * Default ['builtin_change']
      */
-    change?: string[]
+    change?: string[];
 }
 
 /**
@@ -209,7 +220,9 @@ export class ValueControlPromptProps {
     requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList);
     requestChangedValue?: StringOrList | ((act: RequestChangedValueAct, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<any>, input: ControlInput) => StringOrList);
-    valueDisconfirmed?: StringOrList | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
+    valueDisconfirmed?:
+        | StringOrList
+        | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
     valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<any>, input: ControlInput) => StringOrList);
 }
 
@@ -217,7 +230,6 @@ export class ValueControlPromptProps {
  * State tracked by a ValueControl.
  */
 export class ValueControlState implements ControlState {
-
     /**
      * The value.
      *
@@ -269,7 +281,6 @@ export class ValueControlState implements ControlState {
  * - `AMAZON.YesIntent`, `AMAZON.NoIntent`
  */
 export class ValueControl extends Control implements InteractionModelContributor, ControlStateDiagramming {
-
     state: ValueControlState = new ValueControlState();
 
     private rawProps: ValueControlProps;
@@ -280,10 +291,12 @@ export class ValueControl extends Control implements InteractionModelContributor
     constructor(props: ValueControlProps) {
         super(props.id);
 
-        if (props.slotType === AmazonBuiltInSlotType.SEARCH_QUERY){
-            throw new Error('AMAZON.SearchQuery cannot be used with ValueControl due to the special rules regarding its use. '
-             + 'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references. '
-             + 'Use a custom intent to manage SearchQuery slots or create a regular slot for use with ValueControl.');
+        if (props.slotType === AmazonBuiltInSlotType.SEARCH_QUERY) {
+            throw new Error(
+                'AMAZON.SearchQuery cannot be used with ValueControl due to the special rules regarding its use. ' +
+                    'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references. ' +
+                    'Use a custom intent to manage SearchQuery slots or create a regular slot for use with ValueControl.',
+            );
         }
 
         this.rawProps = props;
@@ -291,9 +304,7 @@ export class ValueControl extends Control implements InteractionModelContributor
     }
 
     static mergeWithDefaultProps(props: ValueControlProps): DeepRequired<ValueControlProps> {
-
-        const defaults: DeepRequired<ValueControlProps> =
-        {
+        const defaults: DeepRequired<ValueControlProps> = {
             id: 'dummy',
             slotType: 'dummy',
             required: true,
@@ -304,38 +315,54 @@ export class ValueControl extends Control implements InteractionModelContributor
                     set: [$.Action.Set],
                     change: [$.Action.Change],
                 },
-                targets: [$.Target.It]
+                targets: [$.Target.It],
             },
             prompts: {
-                confirmValue: (act) => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
                 valueConfirmed: i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
-                valueSet: (act) => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
-                valueChanged: (act) => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                valueSet: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { value: act.payload.value }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', { value: act.payload.value, reason: act.payload.renderedReason });
+                        return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
+                            value: act.payload.value,
+                            reason: act.payload.renderedReason,
+                        });
                     }
-                    return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE', { value: act.payload.value });
+                    return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE', {
+                        value: act.payload.value,
+                    });
                 },
                 requestValue: () => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
                 requestChangedValue: () => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE'),
             },
             reprompts: {
-                confirmValue: (act) => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
                 valueConfirmed: i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
-                valueSet: (act) => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
-                valueChanged: (act) => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                valueSet: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { value: act.payload.value }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', { value: act.payload.value, reason: act.payload.renderedReason });
+                        return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
+                            value: act.payload.value,
+                            reason: act.payload.renderedReason,
+                        });
                     }
-                    return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE', { value: act.payload.value });
+                    return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE', {
+                        value: act.payload.value,
+                    });
                 },
                 requestValue: () => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
                 requestChangedValue: () => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE'),
-            }
+            },
         };
 
         return _.merge(defaults, props);
@@ -343,26 +370,30 @@ export class ValueControl extends Control implements InteractionModelContributor
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return this.isSetWithValue(input)
-            || this.isChangeWithValue(input)
-            || this.isSetWithoutValue(input)
-            || this.isChangeWithoutValue(input)
-            || this.isBareValue(input)
-            || this.isConfirmationAffirmed(input)
-            || this.isConfirmationDisaffirmed(input);
+        return (
+            this.isSetWithValue(input) ||
+            this.isChangeWithValue(input) ||
+            this.isSetWithoutValue(input) ||
+            this.isChangeWithoutValue(input) ||
+            this.isBareValue(input) ||
+            this.isConfirmationAffirmed(input) ||
+            this.isConfirmationDisaffirmed(input)
+        );
     }
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.handleFunc === undefined) {
-            log.error('ValueControl: handle called but this.handleFunc is not set. canHandle() should be called first to set this.handleFunc.');
+            log.error(
+                'ValueControl: handle called but this.handleFunc is not set. canHandle() should be called first to set this.handleFunc.',
+            );
             const intent: Intent = (input.request as IntentRequest).intent;
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
         this.handleFunc(input, resultBuilder);
 
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true){
+        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
     }
@@ -377,7 +408,9 @@ export class ValueControl extends Control implements InteractionModelContributor
     private isSetWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -385,8 +418,9 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -412,14 +446,17 @@ export class ValueControl extends Control implements InteractionModelContributor
     private isSetWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -443,7 +480,9 @@ export class ValueControl extends Control implements InteractionModelContributor
     private isChangeWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -451,9 +490,9 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -479,14 +518,17 @@ export class ValueControl extends Control implements InteractionModelContributor
     private isChangeWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -499,7 +541,6 @@ export class ValueControl extends Control implements InteractionModelContributor
         this.askElicitationQuestion(input, resultBuilder, $.Action.Change);
         return;
     }
-
 
     /**
      * Determine if the input is a value without any further information.
@@ -514,7 +555,9 @@ export class ValueControl extends Control implements InteractionModelContributor
     private isBareValue(input: ControlInput): any {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsUndefined(target));
@@ -522,8 +565,9 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             this.handleFunc = this.handleBareValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     /**
@@ -557,8 +601,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -594,8 +637,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -609,7 +651,7 @@ export class ValueControl extends Control implements InteractionModelContributor
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, {value: this.state.value}));
+        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
@@ -637,15 +679,18 @@ export class ValueControl extends Control implements InteractionModelContributor
 
     // tsDoc - see Control
     canTakeInitiative(input: ControlInput): boolean {
-        return this.wantsToConfirmValue(input)
-            || this.wantsToFixInvalidValue(input)
-            || this.wantsToElicitValue(input);
+        return (
+            this.wantsToConfirmValue(input) ||
+            this.wantsToFixInvalidValue(input) ||
+            this.wantsToElicitValue(input)
+        );
     }
 
     // tsDoc - see Control
     async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.initiativeFunc === undefined) {
-            const errorMsg = 'ValueControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
+            const errorMsg =
+                'ValueControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
@@ -661,28 +706,40 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param elicitationAction - The type of elicitation question that has been
      * asked.
      */
-    private validateAndAddActs(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string): void {
+    private validateAndAddActs(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ): void {
         this.state.elicitationAction = elicitationAction;
         const validationResult: true | ValidationResult = this.validate(input);
         if (typeof validationResult === 'boolean') {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
-                if (this.state.previousValue !== undefined){
+                if (this.state.previousValue !== undefined) {
                     resultBuilder.addAct(
-                        new ValueChangedAct<string>(this, {previousValue: this.state.previousValue, value: this.state.value! })
+                        new ValueChangedAct<string>(this, {
+                            previousValue: this.state.previousValue,
+                            value: this.state.value!,
+                        }),
+                    );
+                } else {
+                    throw new Error(
+                        'ValueChangedAct should only be used if there is an actual previous value',
                     );
                 }
-                else {
-                    throw new Error('ValueChangedAct should only be used if there is an actual previous value');
-                }
-            }
-            else {
+            } else {
                 resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
             }
-        }
-        else {
+        } else {
             // feedback
-            resultBuilder.addAct(new InvalidValueAct<string>(this, { value: this.state.value!, reasonCode: validationResult.reasonCode, renderedReason: validationResult.renderedReason }));
+            resultBuilder.addAct(
+                new InvalidValueAct<string>(this, {
+                    value: this.state.value!,
+                    reasonCode: validationResult.reasonCode,
+                    renderedReason: validationResult.renderedReason,
+                }),
+            );
             this.askElicitationQuestion(input, resultBuilder, elicitationAction);
         }
         return;
@@ -694,11 +751,18 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input.
      */
     private validate(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: SlotValidationFunction[] = typeof(this.props.validation) === 'function' ? [this.props.validation] : this.props.validation;
+        const listOfValidationFunc: SlotValidationFunction[] =
+            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
             const validationResult: true | ValidationResult = validationFunction(this.state, input);
             if (validationResult !== true) {
-                log.debug(`ValueControl.validate(): validation failed. Reason: ${JSON.stringify(validationResult, null, 2)}.`);
+                log.debug(
+                    `ValueControl.validate(): validation failed. Reason: ${JSON.stringify(
+                        validationResult,
+                        null,
+                        2,
+                    )}.`,
+                );
                 return validationResult;
             }
         }
@@ -711,7 +775,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      */
     private wantsToConfirmValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.state.isValueConfirmed === false && this.evaluateBooleanProp(this.props.confirmationRequired, input)){
+        if (
+            this.state.value !== undefined &&
+            this.state.isValueConfirmed === false &&
+            this.evaluateBooleanProp(this.props.confirmationRequired, input)
+        ) {
             this.initiativeFunc = this.confirmValue;
             return true;
         }
@@ -736,7 +804,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      */
     private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true){
+        if (this.state.value !== undefined && this.validate(input) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -759,7 +827,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      */
     private wantsToElicitValue(input: ControlInput): boolean {
-        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)){
+        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)) {
             this.initiativeFunc = this.elicitValue;
             return true;
         }
@@ -783,14 +851,18 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param resultBuilder - Result builder
      * @param elicitationAction - The style of elicitation to use.
      */
-    private askElicitationQuestion(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string) {
+    private askElicitationQuestion(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ) {
         this.state.elicitationAction = elicitationAction;
         switch (elicitationAction) {
             case $.Action.Set:
                 resultBuilder.addAct(new RequestValueAct(this));
                 return;
             case $.Action.Change:
-                resultBuilder.addAct(new RequestChangedValueAct(this, {currentValue: this.state.value!}));
+                resultBuilder.addAct(new RequestChangedValueAct(this, { currentValue: this.state.value! }));
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${this.state.elicitationAction}`);
@@ -810,46 +882,51 @@ export class ValueControl extends Control implements InteractionModelContributor
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
         if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input));
-        }
-
-        else if (act instanceof ValueSetAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
+            );
+        } else if (act instanceof ValueSetAct) {
             // We must choose how to say the value.  The default is to assume that the Slot-type IDs are speakable.
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        }
-
-        else if (act instanceof ValueChangedAct) {
+        } else if (act instanceof ValueChangedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input));
-        }
-
-        else if (act instanceof RequestValueAct || act instanceof RequestChangedValueAct) {
-            const prompt = act instanceof RequestValueAct ? this.props.prompts.requestValue : this.props.prompts.requestChangedValue;
-            const reprompt = act instanceof RequestChangedValueAct ? this.props.reprompts.requestValue : this.props.reprompts.requestChangedValue;
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+            );
+        } else if (act instanceof RequestValueAct || act instanceof RequestChangedValueAct) {
+            const prompt =
+                act instanceof RequestValueAct
+                    ? this.props.prompts.requestValue
+                    : this.props.prompts.requestChangedValue;
+            const reprompt =
+                act instanceof RequestChangedValueAct
+                    ? this.props.reprompts.requestValue
+                    : this.props.reprompts.requestChangedValue;
 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
             const slotElicitation = generateSlotElicitation(this.props.slotType);
             builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
-        }
-
-        else if (act instanceof ConfirmValueAct) {
+        } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input));
-        }
-
-        else if (act instanceof ValueConfirmedAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
+            );
+        } else if (act instanceof ValueConfirmedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input));
-        }
-
-        else if (act instanceof ValueDisconfirmedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input));
-        }
-        else {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
+            );
+        } else if (act instanceof ValueDisconfirmedAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input),
+            );
+        } else {
             this.throwUnhandledActError(act);
         }
     }
@@ -860,7 +937,6 @@ export class ValueControl extends Control implements InteractionModelContributor
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addYesAndNoIntents();
     }
-
 
     // tsDoc - see InteractionModelContributor
     getTargetIds(): string[] {
@@ -876,24 +952,24 @@ export class ValueControl extends Control implements InteractionModelContributor
  *
  * @param slotType - Slot type
  */
-function generateSlotElicitation(slotType: string): { intent: Intent, slotName: string } {
+function generateSlotElicitation(slotType: string): { intent: Intent; slotName: string } {
     const intent: Intent = {
         // TODO: refactor: use SingleValueControlIntent.intentName
         name: `${slotType}_ValueControlIntent`.replace('.', '_'),
         slots: {
             slotType: { name: slotType, value: '', confirmationStatus: 'NONE' },
-            feedback: { name: "feedback", value: '', confirmationStatus: 'NONE' },
-            action: { name: "action", value: '', confirmationStatus: 'NONE' },
-            target: { name: "target", value: '', confirmationStatus: 'NONE' },
-            head: { name: "head", value: '', confirmationStatus: 'NONE' },
-            tail: { name: "tail", value: '', confirmationStatus: 'NONE' },
-            assign: { name: "assign", value: '', confirmationStatus: 'NONE' },
+            feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
+            action: { name: 'action', value: '', confirmationStatus: 'NONE' },
+            target: { name: 'target', value: '', confirmationStatus: 'NONE' },
+            head: { name: 'head', value: '', confirmationStatus: 'NONE' },
+            tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
+            assign: { name: 'assign', value: '', confirmationStatus: 'NONE' },
         },
-        confirmationStatus: "NONE"
+        confirmationStatus: 'NONE',
     };
 
     return {
         intent,
-        slotName: slotType
+        slotName: slotType,
     };
 }

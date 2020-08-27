@@ -10,10 +10,18 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { expect } from "chai";
-import { suite, test } from "mocha";
-import { LiteralContentAct, SingleValueControlIntent, unpackSingleValueControlIntent, ValueControl, ValueControlProps, ValueControlState, ValueSetAct } from '../src';
-import { Strings as $ } from "../src/constants/Strings";
+import { expect } from 'chai';
+import { suite, test } from 'mocha';
+import {
+    LiteralContentAct,
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+    ValueControl,
+    ValueControlProps,
+    ValueControlState,
+    ValueSetAct,
+} from '../src';
+import { Strings as $ } from '../src/constants/Strings';
 import { ContainerControl, ContainerControlState } from '../src/controls/ContainerControl';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
@@ -26,14 +34,13 @@ import { SkillInvoker } from '../src/utils/testSupport/SkillInvoker';
 import { wrapRequestHandlerAsSkill } from '../src/utils/testSupport/SkillWrapper';
 import { TestInput, waitForDebugger } from '../src/utils/testSupport/TestingUtils';
 
-
 waitForDebugger();
 
 /**
  * An example of a container than manages a variable number of child controls.
  */
-suite("== dynamic controls ==", () => {
-    test("e2e", async () => {
+suite('== dynamic controls ==', () => {
+    test('e2e', async () => {
         let response;
 
         const requestHandler = new ControlHandler(new VariableControlsManager());
@@ -42,17 +49,21 @@ suite("== dynamic controls ==", () => {
         // Note: this test demonstrates SkillInvoker.invoke() directly to observe all the surface form details of the response.
 
         response = await skill.invoke(TestInput.of(GeneralControlIntent.of({ action: $.Action.Set }))); // TODO: Update tests to better demonstrate dynamic trees support.
-        expect(response.prompt).equals("I have 1 child control. What value for number 1?");
+        expect(response.prompt).equals('I have 1 child control. What value for number 1?');
 
-        response = await skill.invoke(TestInput.of(GeneralControlIntent.of({ action: "addAnother" })));
-        expect(response.prompt).equals("I have 2 child controls. What value for number 1?");
+        response = await skill.invoke(TestInput.of(GeneralControlIntent.of({ action: 'addAnother' })));
+        expect(response.prompt).equals('I have 2 child controls. What value for number 1?');
 
-        response = await skill.invoke(TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'bob' })));
-        expect(response.prompt).equals("OK. I have 2 child controls. What value for number 2?");
+        response = await skill.invoke(
+            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'bob' })),
+        );
+        expect(response.prompt).equals('OK. I have 2 child controls. What value for number 2?');
 
-        response = await skill.invoke(TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'frank' })));
-        expect(response.prompt).equals("OK. I have 2 child controls.");
-        expect(response.reprompt).equals("OK. I have 2 child controls.");
+        response = await skill.invoke(
+            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'frank' })),
+        );
+        expect(response.prompt).equals('OK. I have 2 child controls.');
+        expect(response.reprompt).equals('OK. I have 2 child controls.');
     });
 });
 
@@ -61,7 +72,6 @@ export class MyMultiControlState extends ContainerControlState {
 }
 
 export class MyMultiControl extends ContainerControl {
-
     state: MyMultiControlState;
 
     constructor(props: { id: string }, initialState?: MyMultiControlState) {
@@ -76,9 +86,10 @@ export class MyMultiControl extends ContainerControl {
         }
         const intent = request.intent;
 
-        const unpacked = (intent.name === 'GeneralControlIntent')
-            ? unpackGeneralControlIntent(intent)
-            : unpackSingleValueControlIntent(intent);
+        const unpacked =
+            intent.name === 'GeneralControlIntent'
+                ? unpackGeneralControlIntent(intent)
+                : unpackSingleValueControlIntent(intent);
 
         if (unpacked.action === 'addAnother') {
             return true;
@@ -93,9 +104,10 @@ export class MyMultiControl extends ContainerControl {
             throw new Error();
         }
         const intent = request.intent;
-        const unpacked = (intent.name === 'GeneralControlIntent')
-            ? unpackGeneralControlIntent(intent)
-            : unpackSingleValueControlIntent(intent);
+        const unpacked =
+            intent.name === 'GeneralControlIntent'
+                ? unpackGeneralControlIntent(intent)
+                : unpackSingleValueControlIntent(intent);
 
         /*
          * Special behavior #1: Always include the content act to state how many controls we currently have.
@@ -119,7 +131,10 @@ export class MyMultiControl extends ContainerControl {
          *     [ contentAct, valueSetAct, <initiativeAct> ]
          *        ^-- reorder these --^
          */
-        if (resultBuilder.acts[0] instanceof LiteralContentAct && resultBuilder.acts[1] instanceof ValueSetAct) {
+        if (
+            resultBuilder.acts[0] instanceof LiteralContentAct &&
+            resultBuilder.acts[1] instanceof ValueSetAct
+        ) {
             moveArrayItem(resultBuilder.acts, 1, 0);
         }
 
@@ -127,7 +142,9 @@ export class MyMultiControl extends ContainerControl {
     }
 
     createContentAct(count: number): LiteralContentAct {
-        return new LiteralContentAct(this, {promptFragment: `I have ${count} child control${count === 1 ? '' : 's'}.`});
+        return new LiteralContentAct(this, {
+            promptFragment: `I have ${count} child control${count === 1 ? '' : 's'}.`,
+        });
     }
 
     public static makeValueControl(index: number): Control {
@@ -135,28 +152,28 @@ export class MyMultiControl extends ContainerControl {
             id: `value${index.toString()}`,
             slotType: 'CUSTOM.name',
             prompts: {
-                requestValue: act => `What value for number ${(act.control as MyValueControl).index}?`,
-                valueSet: 'OK.'
+                requestValue: (act) => `What value for number ${(act.control as MyValueControl).index}?`,
+                valueSet: 'OK.',
             },
             reprompts: {
-                requestValue: act => `What value for number ${(act.control as MyValueControl).index}?`,
-                valueSet: 'OK.'
+                requestValue: (act) => `What value for number ${(act.control as MyValueControl).index}?`,
+                valueSet: 'OK.',
             },
             interactionModel: { targets: ['name'] },
-            index
+            index,
         });
     }
 }
 
 export class VariableControlsManager extends ControlManager {
-
     public createControlTree(state: any): Control {
-
-        const controlCount = state.multiValueContainer !== undefined ? state.multiValueContainer.count !== undefined ? state.multiValueContainer.count : 1 : 1;
-        const topControl = new MyMultiControl(
-            { id: 'multiValueContainer' },
-            { count: 1 }
-        );
+        const controlCount =
+            state.multiValueContainer !== undefined
+                ? state.multiValueContainer.count !== undefined
+                    ? state.multiValueContainer.count
+                    : 1
+                : 1;
+        const topControl = new MyMultiControl({ id: 'multiValueContainer' }, { count: 1 });
 
         for (let i = 1; i <= controlCount; i++) {
             topControl.addChild(MyMultiControl.makeValueControl(i));
@@ -164,10 +181,7 @@ export class VariableControlsManager extends ControlManager {
 
         return topControl;
     }
-
 }
-
-
 
 interface MyValueControlProps extends ValueControlProps {
     index: number;

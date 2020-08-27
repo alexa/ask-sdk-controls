@@ -11,11 +11,16 @@
  * permissions and limitations under the License.
  */
 
-
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
-import { InvalidValuePayload, LiteralContentPayload, ProblematicInputValuePayload, ValueChangedPayload, ValueSetPayload } from './PayloadTypes';
+import {
+    InvalidValuePayload,
+    LiteralContentPayload,
+    ProblematicInputValuePayload,
+    ValueChangedPayload,
+    ValueSetPayload,
+} from './PayloadTypes';
 import { SystemAct } from './SystemAct';
 
 /**
@@ -32,8 +37,8 @@ import { SystemAct } from './SystemAct';
  *    terminal turns that stop the user's session by setting `ControlResult.sessionBehavior`.
  */
 export abstract class ContentAct extends SystemAct {
-    constructor(control: Control){
-        super(control, {takesInitiative: false});
+    constructor(control: Control) {
+        super(control, { takesInitiative: false });
     }
 }
 
@@ -60,16 +65,16 @@ export class UnusableInputValueAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedReason !== undefined){
+        if (this.payload.renderedReason !== undefined) {
             controlResponseBuilder.addPromptFragment(`Sorry, ${this.payload.renderedReason}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render UnusableInputAct as payload.renderedReason is undefined. ${this.toString()}. `
-            + `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`);
+        } else {
+            throw new Error(
+                `Cannot directly render UnusableInputAct as payload.renderedReason is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
-
 
 /**
  * Communicates that input was received an interpreted successfully.
@@ -155,8 +160,6 @@ export class ValueChangedAct<T> extends ContentAct {
     }
 }
 
-
-
 // TODO: refactor: DateRangeSetAct to be ValueSetAct<DateRangeValue>
 // TODO: refactor: DateRangeChangeAct to be ValueChangeAct<DateRangeValue>
 
@@ -218,7 +221,13 @@ export class DateRangeChangedAct extends ContentAct {
     public readonly priorStartDate: string | undefined;
     public readonly priorEndDate: string | undefined;
 
-    constructor(control: Control, start: string | undefined, end: string | undefined, priorStart: string | undefined, priorEnd: string | undefined) {
+    constructor(
+        control: Control,
+        start: string | undefined,
+        end: string | undefined,
+        priorStart: string | undefined,
+        priorEnd: string | undefined,
+    ) {
         super(control);
         this.startDate = start;
         this.priorStartDate = priorStart;
@@ -254,12 +263,13 @@ export class InvalidValueAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedReason !== undefined){
+        if (this.payload.renderedReason !== undefined) {
             controlResponseBuilder.addPromptFragment(`Sorry, ${this.payload.renderedReason}.`);
-        }
-        else {
-            throw new Error(`Cannot directly render InvalidValueAct as payload.renderedReason is undefined. ${this.toString()}. `
-            + `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`);
+        } else {
+            throw new Error(
+                `Cannot directly render InvalidValueAct as payload.renderedReason is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
         }
     }
 }
@@ -295,7 +305,7 @@ export class ValueConfirmedAct<T> extends ContentAct {
 /**
  * Communicates that a value has been disconfirmed.
  *
-  * Default rendering (en-US): "My mistake."
+ * Default rendering (en-US): "My mistake."
  *
  * Usage:
  *  * Typically issued when the system issued a ConfirmValueAct and received a `disaffirm` in reply.
@@ -343,7 +353,9 @@ export class InformConfusingConfirmationAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`I'm confused whether you want ${this.control.state.value} or ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            `I'm confused whether you want ${this.control.state.value} or ${this.payload.value}.`,
+        );
     }
 }
 
@@ -370,7 +382,9 @@ export class InformConfusingDisconfirmationAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`I'm confused whether you want ${this.control.state.value} or not.`);
+        controlResponseBuilder.addPromptFragment(
+            `I'm confused whether you want ${this.control.state.value} or not.`,
+        );
     }
 }
 
@@ -425,7 +439,7 @@ export class NonUnderstandingAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment('Sorry I didn\'t understand that.');
+        controlResponseBuilder.addPromptFragment("Sorry I didn't understand that.");
     }
 }
 
@@ -443,8 +457,6 @@ export class LaunchAct extends ContentAct {
         controlResponseBuilder.addPromptFragment('Welcome.');
     }
 }
-
-
 
 /**
  * Communicates an arbitrary message to the user.
@@ -466,7 +478,7 @@ export class LiteralContentAct extends ContentAct {
         super(control);
         this.payload = {
             promptFragment: payload.promptFragment,
-            repromptFragment: payload.repromptFragment ?? payload.promptFragment
+            repromptFragment: payload.repromptFragment ?? payload.promptFragment,
         };
     }
 
