@@ -11,9 +11,8 @@
  * permissions and limitations under the License.
  */
 
-import { ui, Intent, interfaces, Directive, Response, dialog, canfulfill } from "ask-sdk-model";
+import { ui, Intent, interfaces, Directive, Response, dialog, canfulfill } from 'ask-sdk-model';
 import { ResponseBuilder } from 'ask-sdk-core';
-
 
 /**
  * A specialized ResponseBuilder for use with Controls framework
@@ -71,9 +70,7 @@ export class ControlResponseBuilder implements ResponseBuilder {
         const prompt = this.getPrompt();
         const reprompt = this.getReprompt();
 
-        this.coreBuilder
-            .speak(prompt, this.promptPlayBehavior)
-            .reprompt(reprompt, this.repromptPlayBehavior);
+        this.coreBuilder.speak(prompt, this.promptPlayBehavior).reprompt(reprompt, this.repromptPlayBehavior);
 
         return this.coreBuilder.getResponse();
     }
@@ -119,7 +116,7 @@ export class ControlResponseBuilder implements ResponseBuilder {
      */
     withPromptPlayBehavior(playBehavior?: ui.PlayBehavior): this {
         if (this.promptPlayBehavior !== undefined) {
-            throw new Error("Play behavior is already set");
+            throw new Error('Play behavior is already set');
         }
         this.promptPlayBehavior = playBehavior;
         return this;
@@ -130,12 +127,11 @@ export class ControlResponseBuilder implements ResponseBuilder {
      */
     withRepromptPlayBehavior(playBehavior?: ui.PlayBehavior): this {
         if (this.repromptPlayBehavior !== undefined) {
-            throw new Error("Play behavior is already set");
+            throw new Error('Play behavior is already set');
         }
         this.repromptPlayBehavior = playBehavior;
         return this;
     }
-
 
     // --------------------------------------
     // pass through methods
@@ -143,22 +139,33 @@ export class ControlResponseBuilder implements ResponseBuilder {
     /**
      * Disabled.  Use addPromptFragment and withPromptPlayBehavior.
      */
-    speak(speechOutput: string, playBehavior?: "ENQUEUE" | "REPLACE_ALL" | "REPLACE_ENQUEUED" | undefined): this {
-        throw new Error("Use addPromptFragment and withPromptPlayBehavior instead.");
+    speak(
+        speechOutput: string,
+        playBehavior?: 'ENQUEUE' | 'REPLACE_ALL' | 'REPLACE_ENQUEUED' | undefined,
+    ): this {
+        throw new Error('Use addPromptFragment and withPromptPlayBehavior instead.');
     }
 
     /**
      * Disabled.  Use addRepromptFragment and withRepromptPlayBehavior.
      */
-    reprompt(repromptSpeechOutput: string, playBehavior?: "ENQUEUE" | "REPLACE_ALL" | "REPLACE_ENQUEUED" | undefined): this {
-        throw new Error("Use addRepromptFragment and withRepromptPlayBehavior instead.");
+    reprompt(
+        repromptSpeechOutput: string,
+        playBehavior?: 'ENQUEUE' | 'REPLACE_ALL' | 'REPLACE_ENQUEUED' | undefined,
+    ): this {
+        throw new Error('Use addRepromptFragment and withRepromptPlayBehavior instead.');
     }
     withSimpleCard(cardTitle: string, cardContent: string): this {
         this.coreBuilder.withSimpleCard(cardTitle, cardContent);
         this.displayUsed = true;
         return this;
     }
-    withStandardCard(cardTitle: string, cardContent: string, smallImageUrl?: string | undefined, largeImageUrl?: string | undefined): this {
+    withStandardCard(
+        cardTitle: string,
+        cardContent: string,
+        smallImageUrl?: string | undefined,
+        largeImageUrl?: string | undefined,
+    ): this {
         this.coreBuilder.withStandardCard(cardTitle, cardContent, smallImageUrl, largeImageUrl);
         this.displayUsed = true;
         return this;
@@ -187,8 +194,21 @@ export class ControlResponseBuilder implements ResponseBuilder {
         this.coreBuilder.addConfirmIntentDirective(updatedIntent);
         return this;
     }
-    addAudioPlayerPlayDirective(playBehavior: ui.PlayBehavior, url: string, token: string, offsetInMilliseconds: number, expectedPreviousToken?: string | undefined, audioItemMetadata?: interfaces.audioplayer.AudioItemMetadata | undefined): this {
-        this.coreBuilder.addAudioPlayerPlayDirective(playBehavior, url, token, offsetInMilliseconds, expectedPreviousToken);
+    addAudioPlayerPlayDirective(
+        playBehavior: ui.PlayBehavior,
+        url: string,
+        token: string,
+        offsetInMilliseconds: number,
+        expectedPreviousToken?: string | undefined,
+        audioItemMetadata?: interfaces.audioplayer.AudioItemMetadata | undefined,
+    ): this {
+        this.coreBuilder.addAudioPlayerPlayDirective(
+            playBehavior,
+            url,
+            token,
+            offsetInMilliseconds,
+            expectedPreviousToken,
+        );
         return this;
     }
     addAudioPlayerStopDirective(): this {
@@ -208,7 +228,11 @@ export class ControlResponseBuilder implements ResponseBuilder {
         this.coreBuilder.addHintDirective(text);
         return this;
     }
-    addVideoAppLaunchDirective(source: string, title?: string | undefined, subtitle?: string | undefined): this {
+    addVideoAppLaunchDirective(
+        source: string,
+        title?: string | undefined,
+        subtitle?: string | undefined,
+    ): this {
         this.coreBuilder.addVideoAppLaunchDirective(source, title, subtitle);
         return this;
     }
@@ -235,16 +259,19 @@ export class ControlResponseBuilder implements ResponseBuilder {
     addDynamicEntitiesDirective(dynamicEntitiesDirective: dialog.DynamicEntitiesDirective) {
         this.coreBuilder.addDirective(dynamicEntitiesDirective);
     }
-    addAPLRenderDocumentDirective(token?: string, document?: { [key: string]: any }, datasources?: { [key: string]: any; }, packages?: any[]) {
-        this.coreBuilder.addDirective(
-            {
-                type: 'Alexa.Presentation.APL.RenderDocument',
-                token,
-                document,
-                datasources,
-                packages
-            }
-        );
+    addAPLRenderDocumentDirective(
+        token?: string,
+        document?: { [key: string]: any },
+        datasources?: { [key: string]: any },
+        packages?: any[],
+    ) {
+        this.coreBuilder.addDirective({
+            type: 'Alexa.Presentation.APL.RenderDocument',
+            token,
+            document,
+            datasources,
+            packages,
+        });
         this.displayUsed = true;
     }
 

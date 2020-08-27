@@ -13,7 +13,7 @@
 
 import { HandlerInput } from 'ask-sdk-core';
 import { Request } from 'ask-sdk-model';
-import _ from "lodash";
+import _ from 'lodash';
 import { IControlInput } from './interfaces/IControlInput';
 import { IControl } from './interfaces/IControl';
 
@@ -53,9 +53,9 @@ export class ControlInput implements IControlInput {
      *  * If controls that are not close to one another routinely need to share information
      *    it would be best to create an external datastore. Consider Redux or similar solutions.
      */
-    readonly controls: { [index: string]: IControl; };
+    readonly controls: { [index: string]: IControl };
 
-    constructor(handlerInput: HandlerInput, turnNumber: number, controlMap: { [index: string]: IControl; }) {
+    constructor(handlerInput: HandlerInput, turnNumber: number, controlMap: { [index: string]: IControl }) {
         this.handlerInput = handlerInput;
         this.request = this.handlerInput.requestEnvelope.request;
         this.turnNumber = turnNumber;

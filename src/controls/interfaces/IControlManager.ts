@@ -53,7 +53,11 @@ export interface IControlManager {
      * @param input - Input
      * @param responseBuilder - Response builder
      */
-    render(result: IControlResult, input: IControlInput, responseBuilder: ControlResponseBuilder): void | Promise<void>;
+    render(
+        result: IControlResult,
+        input: IControlInput,
+        responseBuilder: ControlResponseBuilder,
+    ): void | Promise<void>;
 
     /**
      * Custom handling of a internal error before the skill exits and closes the

@@ -12,7 +12,7 @@
  */
 
 import { suite, test } from 'mocha';
-import { Strings as $ } from "../../src/constants/Strings";
+import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
@@ -29,13 +29,16 @@ suite('ListControl e2e tests', () => {
         createControlTree(state: any): Control {
             return new ListControl({
                 id: 'apple',
-                validation: (state, input) => ['iPhone', 'iPad', 'MacBook'].includes(state.value!) ? true : { renderedReason: 'Apple Suite category validation failed' },
+                validation: (state, input) =>
+                    ['iPhone', 'iPad', 'MacBook'].includes(state.value!)
+                        ? true
+                        : { renderedReason: 'Apple Suite category validation failed' },
                 listItemIDs: ['iPhone', 'iPad', 'MacBook'],
                 slotType: 'AppleSuite',
                 confirmationRequired: true,
                 prompts: {
                     valueSet: '',
-                }
+                },
             });
         }
     }
@@ -43,54 +46,73 @@ suite('ListControl e2e tests', () => {
     test('product value valid, needs explicit affirming', async () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
-            'U: iPhone', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            'U: iPhone',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
-            'U: Yeah.', TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
-            'A: Great.'
+            'U: Yeah.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'A: Great.',
         ]);
     });
 
     test('product value after disaffirmation, requires request value act', async () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
-            'U: iPhone', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            'U: iPhone',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
-            'U: No.', TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
-            'A: My mistake. What is your selection? Some suggestions are iPhone, iPad or MacBook.'
+            'U: No.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
+            'A: My mistake. What is your selection? Some suggestions are iPhone, iPad or MacBook.',
         ]);
     });
 
     test('product value set and changing it requires confirmation and value changed act', async () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
-            'U: iPhone', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            'U: iPhone',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
-            'U: Yes.', TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'U: Yes.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
-            'U: Change to iPad.', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad', action: $.Action.Change})),
+            'U: Change to iPad.',
+            TestInput.of(
+                SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad', action: $.Action.Change }),
+            ),
             'A: OK, I changed it to iPad. Was that iPad?',
-            'U: Yes.', TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
-            'A: Great.'
+            'U: Yes.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'A: Great.',
         ]);
     });
 
     test('product value set and changing it to invalid requires confirmation and checks for validations', async () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
-            'U: iPhone', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            'U: iPhone',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
-            'U: Yes.', TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'U: Yes.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
-            'U: Change to Airpods.', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'Airpods', action: $.Action.Change})),
+            'U: Change to Airpods.',
+            TestInput.of(
+                SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'Airpods', action: $.Action.Change }),
+            ),
             'A: Sorry, Airpods is not a valid choice because Apple Suite category validation failed. What should I change it to? Some suggestions are iPhone, iPad or MacBook.',
-            'U: iPad', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
+            'U: iPad',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
-            'U: No.', TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
+            'U: No.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
             'A: My mistake. What is your selection? Some suggestions are iPhone, iPad or MacBook.',
-            'U: iPad', TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
+            'U: iPad',
+            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
-            'U: Yes.', TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
-            'A: Great.'
+            'U: Yes.',
+            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'A: Great.',
         ]);
     });
 });

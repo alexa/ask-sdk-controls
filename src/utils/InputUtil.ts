@@ -12,25 +12,26 @@
  */
 
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
-import { Strings as $ } from "../constants/Strings";
+import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import { SingleValueControlIntent, unpackSingleValueControlIntent } from '../intents/SingleValueControlIntent';
+import {
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+} from '../intents/SingleValueControlIntent';
 
 /**
  * Utilities to assist with input handling.
  */
 export namespace InputUtil {
-
     /**
      * Test and assert if an object looks like an Intent.
      * (user-defined type guard)
      */
     export function isIntentShape(x: any): x is Intent {
-        return (x.name !== undefined && x.confirmationStatus);
+        return x.name !== undefined && x.confirmationStatus;
     }
-
 
     /**
      * Test if the input is a LaunchRequest.
@@ -61,7 +62,10 @@ export namespace InputUtil {
      * @param input - Input
      */
     export function isSingleValueControlIntent(input: ControlInput, slotType: string): boolean {
-        return input.request.type === 'IntentRequest' && input.request.intent.name === SingleValueControlIntent.intentName(slotType);
+        return (
+            input.request.type === 'IntentRequest' &&
+            input.request.intent.name === SingleValueControlIntent.intentName(slotType)
+        );
     }
 
     /**
@@ -69,7 +73,9 @@ export namespace InputUtil {
      * @param input - Input
      */
     export function isFallbackIntent(input: ControlInput): boolean {
-        return input.request.type === 'IntentRequest' && input.request.intent.name === 'AMAZON.FallbackIntent';
+        return (
+            input.request.type === 'IntentRequest' && input.request.intent.name === 'AMAZON.FallbackIntent'
+        );
     }
 
     /**
@@ -77,7 +83,11 @@ export namespace InputUtil {
      * @param input - Input
      */
     export function isAPLUserEventWithArgs(input: ControlInput): boolean {
-        return input.request.type === 'Alexa.Presentation.APL.UserEvent' && input.request.arguments !== undefined && input.request.arguments.length > 0;
+        return (
+            input.request.type === 'Alexa.Presentation.APL.UserEvent' &&
+            input.request.arguments !== undefined &&
+            input.request.arguments.length > 0
+        );
     }
 
     /**
@@ -86,7 +96,10 @@ export namespace InputUtil {
      * @param input - Input
      */
     export function isAPLUserEventWithMatchingControlId(input: ControlInput, controlId: string): boolean {
-        return isAPLUserEventWithArgs(input) && ((input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![0] === controlId);
+        return (
+            isAPLUserEventWithArgs(input) &&
+            (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![0] === controlId
+        );
     }
 
     /**
@@ -95,7 +108,7 @@ export namespace InputUtil {
      */
     // TODO: naming: improve name
     export function feedbackIsTrue(feedback: string | undefined): boolean {
-        return (feedback === $.Feedback.Affirm);
+        return feedback === $.Feedback.Affirm;
     }
 
     /**
@@ -104,16 +117,15 @@ export namespace InputUtil {
      */
     // TODO: naming: improve name
     export function feedbackIsFalse(feedback: string | undefined): boolean {
-        return (feedback === $.Feedback.Disaffirm);
+        return feedback === $.Feedback.Disaffirm;
     }
-
 
     /**
      * Test if the feedback is undefined
      * @param feedback - Feedback slot value ID
      */
     export function feedbackIsUndefined(feedback: string | undefined): boolean {
-        return (feedback === undefined);
+        return feedback === undefined;
     }
 
     /**
@@ -249,12 +261,12 @@ export namespace InputUtil {
     export function isBareYes(input: ControlInput) {
         if (input.request.type !== 'IntentRequest') {
             return false;
-        }
-        else if (input.request.intent.name === AmazonIntent.YesIntent) {
+        } else if (input.request.intent.name === AmazonIntent.YesIntent) {
             return true;
-        }
-        else if (input.request.intent.name === GeneralControlIntent.name) {
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+        } else if (input.request.intent.name === GeneralControlIntent.name) {
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             if (feedback === $.Feedback.Affirm && action === undefined && target === undefined) {
                 return true;
             }
@@ -275,12 +287,12 @@ export namespace InputUtil {
     export function isBareNo(input: ControlInput) {
         if (input.request.type !== 'IntentRequest') {
             return false;
-        }
-        else if (input.request.intent.name === AmazonIntent.NoIntent) {
+        } else if (input.request.intent.name === AmazonIntent.NoIntent) {
             return true;
-        }
-        else if (input.request.intent.name === GeneralControlIntent.name) {
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+        } else if (input.request.intent.name === GeneralControlIntent.name) {
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             if (feedback === $.Feedback.Disaffirm && action === undefined && target === undefined) {
                 return true;
             }
@@ -292,7 +304,7 @@ export namespace InputUtil {
      * Extracts the value and erMatch from a SingleValueControlIntent
      * @param input - Input
      */
-    export function getValueResolution(input: ControlInput): { valueStr: string, erMatch: boolean } {
+    export function getValueResolution(input: ControlInput): { valueStr: string; erMatch: boolean } {
         const { valueStr, erMatch } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         return { valueStr: valueStr!, erMatch: erMatch! };
     }

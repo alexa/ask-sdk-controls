@@ -11,12 +11,11 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from "ask-sdk-model";
+import { Intent } from 'ask-sdk-model';
 import { v1 } from 'ask-smapi-model';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
 import { getSlotResolutions, IntentBuilder } from '../utils/IntentUtils';
 import { BaseControlIntent } from './BaseControlIntent';
-
 
 /**
  * Slot values conveyed by a SingleValueControlIntent
@@ -63,12 +62,21 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
         const slotValue = slotObject !== undefined ? slotObject.slotValue : undefined;
 
         switch (name) {
-            case 'action': action = slotValue; break;
-            case 'feedback': feedback = slotValue; break;
-            case 'target': target = slotValue; break;
-            case 'head': break;
-            case 'tail': break;
-            case 'preposition': break;
+            case 'action':
+                action = slotValue;
+                break;
+            case 'feedback':
+                feedback = slotValue;
+                break;
+            case 'target':
+                target = slotValue;
+                break;
+            case 'head':
+                break;
+            case 'tail':
+                break;
+            case 'preposition':
+                break;
             default:
                 // did we already capture a value?
                 if (valueType !== undefined) {
@@ -81,8 +89,12 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
         }
     }
 
-    if (valueStr === undefined){
-        throw new Error(`SingleValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(intent)}`);
+    if (valueStr === undefined) {
+        throw new Error(
+            `SingleValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(
+                intent,
+            )}`,
+        );
     }
 
     return {
@@ -91,7 +103,7 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
         target,
         valueStr,
         valueType,
-        erMatch
+        erMatch,
     };
 }
 
@@ -115,9 +127,11 @@ export class SingleValueControlIntent extends BaseControlIntent {
     constructor(valueSlotType: string) {
         super();
 
-        if (valueSlotType === 'AMAZON.SearchQuery'){
-            throw new Error('AMAZON.SearchQuery cannot be used with SingleValueControlIntent due to the special rules regarding its use. '
-             + 'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references.');
+        if (valueSlotType === 'AMAZON.SearchQuery') {
+            throw new Error(
+                'AMAZON.SearchQuery cannot be used with SingleValueControlIntent due to the special rules regarding its use. ' +
+                    'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references.',
+            );
         }
 
         this.valueSlotType = valueSlotType;
@@ -133,7 +147,7 @@ export class SingleValueControlIntent extends BaseControlIntent {
      *
      * @param slotTypeId - Specific slot type id.
      */
-    static intentName(slotTypeId: string){
+    static intentName(slotTypeId: string) {
         return `${slotTypeId}_ValueControlIntent`.replace('.', '_');
     }
 
@@ -162,9 +176,7 @@ export class SingleValueControlIntent extends BaseControlIntent {
      * ```
      */
     static of(slotType: string, slots: SingleValueControlIntentSlots): Intent {
-        return IntentBuilder.of(
-            SingleValueControlIntent.intentName(slotType), slots
-        );
+        return IntentBuilder.of(SingleValueControlIntent.intentName(slotType), slots);
     }
 
     // tsDoc: see BaseControlIntent
@@ -176,37 +188,36 @@ export class SingleValueControlIntent extends BaseControlIntent {
         };
     }
 
-
     private generateSlots(): v1.skill.interactionModel.SlotDefinition[] {
         const slots: v1.skill.interactionModel.SlotDefinition[] = [
             {
                 name: 'feedback',
-                type: SharedSlotType.FEEDBACK
+                type: SharedSlotType.FEEDBACK,
             },
             {
                 name: 'action',
-                type: SharedSlotType.ACTION
+                type: SharedSlotType.ACTION,
             },
             {
                 name: 'target',
-                type: SharedSlotType.TARGET
+                type: SharedSlotType.TARGET,
             },
             {
                 name: 'preposition',
-                type: SharedSlotType.PREPOSITION
+                type: SharedSlotType.PREPOSITION,
             },
             {
                 name: 'head',
-                type: SharedSlotType.HEAD
+                type: SharedSlotType.HEAD,
             },
             {
                 name: 'tail',
-                type: SharedSlotType.TAIL
+                type: SharedSlotType.TAIL,
             },
             {
                 name: `${this.valueSlotType}`,
-                type: `${this.valueSlotType}`
-            }
+                type: `${this.valueSlotType}`,
+            },
         ];
 
         return slots;

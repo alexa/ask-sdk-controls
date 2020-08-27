@@ -11,10 +11,9 @@
  * permissions and limitations under the License.
  */
 
-
 /**
-  * Utilities for prompt generation in English
-  */
+ * Utilities for prompt generation in English
+ */
 export namespace EnglishGrammar {
     /**
      * Choose the article to use in English noun phrases  (a vs an)
@@ -25,11 +24,10 @@ export namespace EnglishGrammar {
      */
     export function article(antecedent: string) {
         const firstLetter = antecedent.trim()[0];
-        if (["a", "e", "i", "o", "u"].includes(firstLetter)) {
-            return "an";
-        }
-        else {
-            return "a";
+        if (['a', 'e', 'i', 'o', 'u'].includes(firstLetter)) {
+            return 'an';
+        } else {
+            return 'a';
         }
     }
 
@@ -47,6 +45,6 @@ export namespace EnglishGrammar {
      * @param plural - Plural form
      */
     export function renderNoun(count: number | string, singular: string, plural: string) {
-        return (count === 1 || count === '1') ? singular : plural;
+        return count === 1 || count === '1' ? singular : plural;
     }
 }

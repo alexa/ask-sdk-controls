@@ -34,14 +34,12 @@ const log = new Logger('AskSdkControls:InteractionModelGenerator');
  * - For skills that use Controls Framework, use `ControlInteractionModelGenerator`
  */
 export class InteractionModelGenerator {
-
     protected intents: Intent[] = [];
     protected slotTypes: SlotType[] = [];
     protected dialogIntents: DialogIntent[] = [];
     protected delegationStrategy: DelegationStrategyType;
     protected prompts: Prompt[] = [];
     protected invocationName: string;
-
 
     /**
      * Add intent to interaction model
@@ -53,7 +51,9 @@ export class InteractionModelGenerator {
         // If intent has the same name already exist in the array,
         // then check whether these two intents are deeply equal to each other
         // skip adding new intent if they are exactly same, otherwise throw error
-        const matchingIntent: Intent | undefined = this.intents.find(existIntent => existIntent.name === intent.name);
+        const matchingIntent: Intent | undefined = this.intents.find(
+            (existIntent) => existIntent.name === intent.name,
+        );
         if (matchingIntent === undefined) {
             this.intents.push(intent);
             return this;
@@ -61,7 +61,9 @@ export class InteractionModelGenerator {
         if (_.isEqual(matchingIntent, intent)) {
             return this;
         }
-        throw new Error(`Intent ${intent.name} is defined more than once and the definitions are not identical.`);
+        throw new Error(
+            `Intent ${intent.name} is defined more than once and the definitions are not identical.`,
+        );
     }
 
     /**
@@ -81,8 +83,7 @@ export class InteractionModelGenerator {
      * If the slot and/or slot-values already exist, the new data is added.
      */
     addOrMergeSlotType(slotType: SlotType): this {
-
-        const matchingSlotType = this.slotTypes.find(s => s.name === slotType.name);
+        const matchingSlotType = this.slotTypes.find((s) => s.name === slotType.name);
         if (matchingSlotType === undefined) {
             // slot not yet present so just push it
             this.slotTypes.push(slotType);
@@ -114,7 +115,7 @@ export class InteractionModelGenerator {
      * If the slot-value already exists, the new data is added.
      */
     addValuesToSlotType(slotName: string, ...values: TypeValue[]): this {
-        const slotType = this.slotTypes.find(s => s.name === slotName);
+        const slotType = this.slotTypes.find((s) => s.name === slotName);
         if (!slotType) {
             throw new Error(`SlotType ${slotName} is not defined.`);
         }
@@ -129,7 +130,9 @@ export class InteractionModelGenerator {
      * Add a DialogIntent to the dialog model.
      */
     addDialogIntent(dialogIntent: DialogIntent): this {
-        const matchingIntent: Intent | undefined = this.dialogIntents.find(existIntent => existIntent.name === dialogIntent.name);
+        const matchingIntent: Intent | undefined = this.dialogIntents.find(
+            (existIntent) => existIntent.name === dialogIntent.name,
+        );
         if (matchingIntent === undefined) {
             this.dialogIntents.push(dialogIntent);
             return this;
@@ -137,7 +140,9 @@ export class InteractionModelGenerator {
         if (_.isEqual(matchingIntent, dialogIntent)) {
             return this;
         }
-        throw new Error(`DialogIntent ${dialogIntent.name} is defined more than once and the definitions are not identical.`);
+        throw new Error(
+            `DialogIntent ${dialogIntent.name} is defined more than once and the definitions are not identical.`,
+        );
     }
 
     /**
@@ -164,7 +169,7 @@ export class InteractionModelGenerator {
      * Add a Prompt to the dialog model.
      */
     addPrompt(prompt: Prompt): this {
-        const matchingPrompt = this.prompts.find(existPrompt => existPrompt.id === prompt.id);
+        const matchingPrompt = this.prompts.find((existPrompt) => existPrompt.id === prompt.id);
         if (matchingPrompt === undefined) {
             this.prompts.push(prompt);
             return this;
@@ -172,7 +177,9 @@ export class InteractionModelGenerator {
         if (_.isEqual(matchingPrompt, prompt)) {
             return this;
         }
-        throw new Error(`Prompt with id ${prompt.id} is defined more than once and the definitions are not identical.`);
+        throw new Error(
+            `Prompt with id ${prompt.id} is defined more than once and the definitions are not identical.`,
+        );
     }
 
     /**
@@ -198,7 +205,6 @@ export class InteractionModelGenerator {
         return this;
     }
 
-
     /**
      * Load an interaction model file (JSON format).
      *
@@ -214,8 +220,12 @@ export class InteractionModelGenerator {
         // fetch all info from json
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const interactionModel: InteractionModelSchema = require(inputPath).interactionModel;
-        const intents: Intent[] = interactionModel.languageModel!.intents ? interactionModel.languageModel!.intents : [];
-        const slotTypes: SlotType[] = interactionModel.languageModel!.types ? interactionModel.languageModel!.types : [];
+        const intents: Intent[] = interactionModel.languageModel!.intents
+            ? interactionModel.languageModel!.intents
+            : [];
+        const slotTypes: SlotType[] = interactionModel.languageModel!.types
+            ? interactionModel.languageModel!.types
+            : [];
         const invocationName: string = interactionModel.languageModel!.invocationName!;
         const prompts: Prompt[] = interactionModel.prompts ? interactionModel.prompts : [];
         const dialog: Dialog = interactionModel.dialog ? interactionModel.dialog : {};
@@ -246,7 +256,7 @@ export class InteractionModelGenerator {
         }
         const interactionModel: InteractionModelSchema = {
             languageModel: {},
-            prompts: []
+            prompts: [],
         };
 
         interactionModel.languageModel!.types = this.slotTypes;
@@ -278,30 +288,42 @@ export class InteractionModelGenerator {
         const path: string = join(process.cwd(), filename);
         fs.writeFileSync(path, interactionModelJson);
     }
-
 }
 
-function mergeSlotTypeValues(slotTypeValues: TypeValue[] | undefined, newSlotValue: TypeValue, slotName: string): void {
+function mergeSlotTypeValues(
+    slotTypeValues: TypeValue[] | undefined,
+    newSlotValue: TypeValue,
+    slotName: string,
+): void {
     if (!slotTypeValues) {
         slotTypeValues = [newSlotValue];
         return;
     }
-    const matchingValue = slotTypeValues.find(v => v.name?.value === newSlotValue.name?.value || v.id === newSlotValue.id);
+    const matchingValue = slotTypeValues.find(
+        (v) => v.name?.value === newSlotValue.name?.value || v.id === newSlotValue.id,
+    );
     if (!matchingValue) {
         // value not yet present so just push it
         slotTypeValues.push(newSlotValue);
-    }
-    else {
+    } else {
         // value present, so add synonyms
         if (matchingValue.name?.value !== newSlotValue.name?.value) {
-            throw new Error(`Cannot merge slot type ${slotName}, as the value ${JSON.stringify(newSlotValue)} and ${JSON.stringify(matchingValue)} has the same id but different name.value.`);
+            throw new Error(
+                `Cannot merge slot type ${slotName}, as the value ${JSON.stringify(
+                    newSlotValue,
+                )} and ${JSON.stringify(matchingValue)} has the same id but different name.value.`,
+            );
         }
         if (matchingValue.id !== newSlotValue.id) {
-            throw new Error(`Cannot merge slot type ${slotName}, as the value ${JSON.stringify(newSlotValue)} and ${JSON.stringify(matchingValue)} has the same name.value but different id.`);
+            throw new Error(
+                `Cannot merge slot type ${slotName}, as the value ${JSON.stringify(
+                    newSlotValue,
+                )} and ${JSON.stringify(matchingValue)} has the same name.value but different id.`,
+            );
         }
 
         for (const synonym of newSlotValue.name?.synonyms ?? []) {
-            const matchingSynonym = matchingValue.name?.synonyms?.find(s => s === synonym);
+            const matchingSynonym = matchingValue.name?.synonyms?.find((s) => s === synonym);
             if (matchingSynonym === undefined) {
                 // synonym not yet preset so just push it
                 matchingValue.name?.synonyms?.push(synonym);

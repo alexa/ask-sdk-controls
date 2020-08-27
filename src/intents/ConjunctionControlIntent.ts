@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from "ask-sdk-model";
+import { Intent } from 'ask-sdk-model';
 import { v1 } from 'ask-smapi-model';
 
 import { getSlotResolutions, IntentBuilder } from '../utils/IntentUtils';
@@ -22,13 +22,13 @@ import { BaseControlIntent } from './BaseControlIntent';
  * Slot values conveyed by a ConjunctionControlIntent
  */
 export interface ConjunctionControlIntentSlots {
-    feedback?: string,
-    action?: string,
-    target?: string,
-    'action.a'?: string,
-    'target.a'?: string,
-    'action.b'?: string,
-    'target.b'?: string,
+    feedback?: string;
+    action?: string;
+    target?: string;
+    'action.a'?: string;
+    'target.a'?: string;
+    'action.b'?: string;
+    'target.b'?: string;
 }
 
 /**
@@ -57,19 +57,38 @@ export function unpackConjunctionControlIntent(intent: Intent): ConjunctionContr
         const slotObject = getSlotResolutions(slot);
         const slotValue = slotObject ? slotObject.slotValue : undefined;
         switch (name) {
-            case 'feedback': feedback = slotValue; break;
-            case 'action': action = slotValue; break;
-            case 'target': target = slotValue; break;
-            case 'action.a': actionA = slotValue; break;
-            case 'target.a': targetA = slotValue; break;
-            case 'action.b': actionB = slotValue; break;
-            case 'target.b': targetB = slotValue; break;
+            case 'feedback':
+                feedback = slotValue;
+                break;
+            case 'action':
+                action = slotValue;
+                break;
+            case 'target':
+                target = slotValue;
+                break;
+            case 'action.a':
+                actionA = slotValue;
+                break;
+            case 'target.a':
+                targetA = slotValue;
+                break;
+            case 'action.b':
+                actionB = slotValue;
+                break;
+            case 'target.b':
+                targetB = slotValue;
+                break;
 
-            case 'head': break;
-            case 'tail': break;
-            case 'preposition': break;
-            case 'conjunction': break;
-            default: throw new Error('not handled');
+            case 'head':
+                break;
+            case 'tail':
+                break;
+            case 'preposition':
+                break;
+            case 'conjunction':
+                break;
+            default:
+                throw new Error('not handled');
         }
     }
 
@@ -96,7 +115,6 @@ export function hasOneOrMoreTargets(input: ConjunctionControlIntentSlots | null)
     return false;
 }
 
-
 export function hasOneOrMoreActions(input: ConjunctionControlIntentSlots | null): boolean {
     if (!input) {
         return false;
@@ -113,7 +131,7 @@ export function areConjunctionIntentSlotsValid(input: ConjunctionControlIntentSl
     }
     // priorityRule, when action / target , no actionA, actionB, no targetA, targetB
     if (input.action !== undefined) {
-        if (input["action.a"] !== undefined || input["action.b"] !== undefined) {
+        if (input['action.a'] !== undefined || input['action.b'] !== undefined) {
             return false;
         }
     }
@@ -124,20 +142,26 @@ export function areConjunctionIntentSlotsValid(input: ConjunctionControlIntentSl
     }
 
     // pairRule, if .a exist, then .b must exist. Vice versa
-    if ((input['action.a'] !== undefined && input['action.b'] === undefined) || (input['action.b'] !== undefined && input['action.a'] === undefined)) {
+    if (
+        (input['action.a'] !== undefined && input['action.b'] === undefined) ||
+        (input['action.b'] !== undefined && input['action.a'] === undefined)
+    ) {
         return false;
     }
-    if ((input['target.a'] !== undefined && input['target.b'] === undefined) || (input['target.b'] !== undefined && input['target.a'] === undefined)) {
+    if (
+        (input['target.a'] !== undefined && input['target.b'] === undefined) ||
+        (input['target.b'] !== undefined && input['target.a'] === undefined)
+    ) {
         return false;
     }
 
     // when only one target, don't allow two action
-    if (input.target !== undefined && input["action.a"] !== undefined && input["action.b"] !== undefined) {
+    if (input.target !== undefined && input['action.a'] !== undefined && input['action.b'] !== undefined) {
         return false;
     }
 
     // only target is not allowed
-    if (input.action === undefined && input["action.a"] === undefined) {
+    if (input.action === undefined && input['action.a'] === undefined) {
         return false;
     }
 
@@ -145,8 +169,8 @@ export function areConjunctionIntentSlotsValid(input: ConjunctionControlIntentSl
 }
 
 export interface ActionAndTask {
-    action: string,
-    target: string,
+    action: string;
+    target: string;
 }
 
 export function generateActionTaskPairs(input: ConjunctionControlIntentSlots): ActionAndTask[] {
@@ -166,7 +190,8 @@ export function generateActionTaskPairs(input: ConjunctionControlIntentSlots): A
         if (input.action !== undefined) {
             inputA.action = input.action;
             inputB.action = input.action;
-        } else { // two action
+        } else {
+            // two action
             inputA.action = input['action.a']!;
             inputB.action = input['action.b']!;
         }
@@ -180,7 +205,6 @@ export function generateActionTaskPairs(input: ConjunctionControlIntentSlots): A
                 inputB.target = input['target.b']!;
             }
         }
-
     }
     // remove duplicate
     if (inputA.action === inputB.action && inputA.target === inputB.target) {
@@ -201,7 +225,6 @@ export function generateActionTaskPairs(input: ConjunctionControlIntentSlots): A
  * "Change both the start and end date"
  */
 export class ConjunctionControlIntent extends BaseControlIntent {
-
     /**
      * Create Intent from specification of the slots
      */
@@ -214,7 +237,7 @@ export class ConjunctionControlIntent extends BaseControlIntent {
         return {
             name: this.name,
             slots: this.generateSlots(),
-            samples: []
+            samples: [],
         };
     }
 
@@ -222,32 +245,32 @@ export class ConjunctionControlIntent extends BaseControlIntent {
         const slots: v1.skill.interactionModel.SlotDefinition[] = [
             {
                 name: 'feedback',
-                type: SharedSlotType.FEEDBACK
+                type: SharedSlotType.FEEDBACK,
             },
             {
                 name: 'action',
-                type: SharedSlotType.ACTION
+                type: SharedSlotType.ACTION,
             },
             {
                 name: 'conjunction',
-                type: SharedSlotType.CONJUNCTION
+                type: SharedSlotType.CONJUNCTION,
             },
             {
                 name: 'target.a',
-                type: SharedSlotType.TARGET
+                type: SharedSlotType.TARGET,
             },
             {
                 name: 'target.b',
-                type: SharedSlotType.TARGET
+                type: SharedSlotType.TARGET,
             },
             {
                 name: 'head',
-                type: SharedSlotType.HEAD
+                type: SharedSlotType.HEAD,
             },
             {
                 name: 'tail',
-                type: SharedSlotType.TAIL
-            }
+                type: SharedSlotType.TAIL,
+            },
         ];
 
         return slots;

@@ -28,8 +28,11 @@ const log = new Logger('AskSdkControls:SerializationValidator');
  * @param input - Input
  * @throws Error if round-trip fails.
  */
-export function validateSerializedState(serializedState: string, controlManager: IControlManager, input: IControlInput): void {
-
+export function validateSerializedState(
+    serializedState: string,
+    controlManager: IControlManager,
+    input: IControlInput,
+): void {
     // perform deserialization
     const deserializedState = JSON.parse(serializedState);
     const rebuiltTopControl: IControl = controlManager.createControlTree(deserializedState);
@@ -39,11 +42,13 @@ export function validateSerializedState(serializedState: string, controlManager:
     const roundTrippedUISerialized = JSON.stringify(extractStateFromControlTree(rebuiltTopControl), null, 2);
 
     if (serializedState !== roundTrippedUISerialized) {
-        log.info("serializedState did not survive the simulated round trip (deserialization into controlTree and re-serialization).");
-        const lines1 = serializedState.split("\n");
-        const lines2 = roundTrippedUISerialized.split("\n");
+        log.info(
+            'serializedState did not survive the simulated round trip (deserialization into controlTree and re-serialization).',
+        );
+        const lines1 = serializedState.split('\n');
+        const lines2 = roundTrippedUISerialized.split('\n');
         if (lines1.length === lines2.length) {
-            log.info("=================================================");
+            log.info('=================================================');
             for (const [i, line1] of lines1.entries()) {
                 const line2 = lines2[i];
                 if (line1 !== line2) {
@@ -51,18 +56,17 @@ export function validateSerializedState(serializedState: string, controlManager:
                     log.info(`${i}: Actual:   ${line2}`);
                 }
             }
-            log.info("=================================================");
-        }
-        else {
-            log.info("Diff is complicated.. use a text differ on the following");
-            log.info("=================================================");
+            log.info('=================================================');
+        } else {
+            log.info('Diff is complicated.. use a text differ on the following');
+            log.info('=================================================');
             log.info(serializedState);
-            log.info("=================================================");
-            log.info("=================================================");
+            log.info('=================================================');
+            log.info('=================================================');
             log.info(roundTrippedUISerialized);
-            log.info("=================================================");
+            log.info('=================================================');
 
-            log.info("First diff:");
+            log.info('First diff:');
             for (const [i, line1] of lines1.entries()) {
                 const line2 = lines2[i];
                 if (line1 !== line2) {
@@ -73,7 +77,8 @@ export function validateSerializedState(serializedState: string, controlManager:
             }
         }
 
-        throw new Error("Problem round-tripping JSON serialization (see logs above to obtain diff).  Do your custom controls have fromJson, new up correct type and pass all properties?");
+        throw new Error(
+            'Problem round-tripping JSON serialization (see logs above to obtain diff).  Do your custom controls have fromJson, new up correct type and pass all properties?',
+        );
     }
 }
-

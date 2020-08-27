@@ -26,7 +26,11 @@ import { isContainerControl } from '../controls/interfaces/IContainerControl';
  * @param turnNumber - Turn number
  * @param indent - Indent
  */
-export function generateControlTreeTextDiagram(control: IControl, turnNumber: number, indent?: number): string {
+export function generateControlTreeTextDiagram(
+    control: IControl,
+    turnNumber: number,
+    indent?: number,
+): string {
     indent = indent ?? 0;
     let text = control.id;
     let stateStr = control.constructor.name;
@@ -40,19 +44,25 @@ export function generateControlTreeTextDiagram(control: IControl, turnNumber: nu
 
     if (isContainerControl(control)) {
         for (const child of control.children) {
-            const childHandledThisTurn = (child.id === (control as any).state?.lastHandlingControl?.controlId && (control as any).state?.lastHandlingControl?.turnNumber === turnNumber);
-            const childTookInitiativeThisTurn = (child.id === (control as any).state?.lastInitiativeChild?.controlId && (control as any).state?.lastInitiativeChild?.turnNumber === turnNumber);
+            const childHandledThisTurn =
+                child.id === (control as any).state?.lastHandlingControl?.controlId &&
+                (control as any).state?.lastHandlingControl?.turnNumber === turnNumber;
+            const childTookInitiativeThisTurn =
+                child.id === (control as any).state?.lastInitiativeChild?.controlId &&
+                (control as any).state?.lastInitiativeChild?.turnNumber === turnNumber;
             // const text = `|${(childHandledThisTurn || childTookInitiativeThisTurn) ? "== " : "-- "}`;
 
-            const text = `|${ childHandledThisTurn && childTookInitiativeThisTurn
-                ? '= B = '
-                : childHandledThisTurn
+            const text = `|${
+                childHandledThisTurn && childTookInitiativeThisTurn
+                    ? '= B = '
+                    : childHandledThisTurn
                     ? '= H = '
                     : childTookInitiativeThisTurn
-                        ? '= I = '
-                        : '----- '}`;
+                    ? '= I = '
+                    : '----- '
+            }`;
 
-            str += "| ".repeat(indent) + text + generateControlTreeTextDiagram(child, turnNumber, indent + 1);
+            str += '| '.repeat(indent) + text + generateControlTreeTextDiagram(child, turnNumber, indent + 1);
         }
     }
 

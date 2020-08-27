@@ -12,10 +12,9 @@
  */
 
 /**
-  * Defines the behavior for the user's session when the Response is delivered.
-  */
+ * Defines the behavior for the user's session when the Response is delivered.
+ */
 export enum SessionBehavior {
-
     /**
      * Keep the session open.
      */
@@ -33,6 +32,5 @@ export enum SessionBehavior {
      * This only applies to devices with a screen. See
      * https://developer.amazon.com/en-US/docs/alexa/custom-skills/manage-skill-session-and-session-attributes.html#screen-session
      */
-    IDLE
+    IDLE,
 }
-

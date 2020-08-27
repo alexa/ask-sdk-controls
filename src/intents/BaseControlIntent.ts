@@ -17,7 +17,6 @@ import Intent = v1.skill.interactionModel.Intent;
  * Abstract base class for the "Control Intents"
  */
 export abstract class BaseControlIntent {
-
     /**
      * Name of the intent as it will appear in the interaction model.
      *
@@ -25,10 +24,8 @@ export abstract class BaseControlIntent {
      */
     name: string = this.constructor.name;
 
-
     /**
      * Generate a complete Intent object.
      */
     abstract generateIntent(): Intent;
 }
-

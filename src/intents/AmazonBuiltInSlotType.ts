@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 /**
  * Constants for Alexa's built-in slot types.
  *
@@ -25,5 +24,5 @@ export enum AmazonBuiltInSlotType {
     ORDINAL = 'AMAZON.Ordinal',
     PHONENUMBER = 'AMAZON.PhoneNumber',
     TIME = 'AMAZON.TIME',
-    SEARCH_QUERY = 'AMAZON.SearchQuery'
+    SEARCH_QUERY = 'AMAZON.SearchQuery',
 }

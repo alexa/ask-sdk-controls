@@ -11,11 +11,17 @@
  * permissions and limitations under the License.
  */
 
-
-import { AttributesManager, AttributesManagerFactory, RequestHandler, ResponseBuilder, ResponseFactory, Skill } from 'ask-sdk-core';
-import { Intent, IntentRequest, interfaces, LaunchRequest, Request, RequestEnvelope } from "ask-sdk-model";
-import { expect } from "chai";
-import _, { invoke } from "lodash";
+import {
+    AttributesManager,
+    AttributesManagerFactory,
+    RequestHandler,
+    ResponseBuilder,
+    ResponseFactory,
+    Skill,
+} from 'ask-sdk-core';
+import { Intent, IntentRequest, interfaces, LaunchRequest, Request, RequestEnvelope } from 'ask-sdk-model';
+import { expect } from 'chai';
+import _, { invoke } from 'lodash';
 import { ControlInput } from '../../controls/ControlInput';
 import { IControl } from '../../controls/interfaces/IControl';
 import { IControlInput } from '../../controls/interfaces/IControlInput';
@@ -73,7 +79,7 @@ export function findControlByProperty(rootControl: IControl, property: string, v
  * @param value - Value
  */
 function find(object: any, key: string, value: any): any {
-    if (typeof (object) !== "object") {
+    if (typeof object !== 'object') {
         return undefined;
     }
     if (object === null) {
@@ -85,10 +91,10 @@ function find(object: any, key: string, value: any): any {
     }
 
     // eslint-disable-next-line no-prototype-builtins
-    const kidKeys = Object.keys(object).filter(key => object.hasOwnProperty(key));
+    const kidKeys = Object.keys(object).filter((key) => object.hasOwnProperty(key));
     for (const kidKey of kidKeys) {
         const childObj = object[kidKey];
-        if (typeof (childObj) === "object") {
+        if (typeof childObj === 'object') {
             const result = find(childObj, key, value);
             if (result !== undefined) {
                 return result;
@@ -130,7 +136,10 @@ export async function simpleInvoke(rootControl: Control, input: ControlInput): P
  * The user utterance and expected prompt can start with 'U: ' and 'A: ' to aid readability.
  * @param turns - Array of 3 entries per logical turn.  [utterance, Intent]
  */
-export async function testE2E(handler: ControlHandler, turns: Array<string | string[] | IControlInput | TestResponseObject>): Promise<void> {
+export async function testE2E(
+    handler: ControlHandler,
+    turns: Array<string | string[] | IControlInput | TestResponseObject>,
+): Promise<void> {
     const invoker = new SkillInvoker(wrapRequestHandlerAsSkill(handler));
     for (let counter = 0; counter < turns.length; counter += 3) {
         const userUtterance = turns[counter];
@@ -144,7 +153,7 @@ export async function testE2E(handler: ControlHandler, turns: Array<string | str
             throw new Error('nlu object not found');
         }
         if (userUtterance.toLowerCase().startsWith('a:')) {
-            throw new Error(`user utterance starts with A: -->${ userUtterance}`);
+            throw new Error(`user utterance starts with A: -->${userUtterance}`);
         }
         await testTurn(invoker, userUtterance, input, expectedResponse);
     }
@@ -159,24 +168,36 @@ export async function testE2E(handler: ControlHandler, turns: Array<string | str
  * @param expectedResponse - The expected response: prompt, set of allowed
  *    prompts or TestResponse object.
  */
-export async function testTurn(invoker: SkillInvoker, utterance: string, input: IControlInput, expectedResponse: string | string[] | TestResponseObject): Promise<TestResponseObject> {
+export async function testTurn(
+    invoker: SkillInvoker,
+    utterance: string,
+    input: IControlInput,
+    expectedResponse: string | string[] | TestResponseObject,
+): Promise<TestResponseObject> {
     const testResponse = await invoker.invoke(input);
     if (Array.isArray(expectedResponse)) {
         expect(_.includes(expectedResponse, testResponse.prompt)).equals(true);
     } else {
-        const expectedPrompt: string = typeof expectedResponse === 'string' ? expectedResponse : expectedResponse.prompt;
+        const expectedPrompt: string =
+            typeof expectedResponse === 'string' ? expectedResponse : expectedResponse.prompt;
         if (!expectedPrompt.toLowerCase().startsWith('a:')) {
-            throw new Error(`test configuration error: Alexa prompt should start with A: -->${ expectedResponse}`);
+            throw new Error(
+                `test configuration error: Alexa prompt should start with A: -->${expectedResponse}`,
+            );
         }
 
-        if (testResponse.prompt !== expectedPrompt &&
-            testResponse.prompt !== expectedPrompt.substr(2).trimLeft()) {
+        if (
+            testResponse.prompt !== expectedPrompt &&
+            testResponse.prompt !== expectedPrompt.substr(2).trimLeft()
+        ) {
             expect(testResponse.prompt).equals(expectedPrompt);
         }
 
         if ((expectedResponse as TestResponseObject).directive) {
             if (!_.isEqual(testResponse.directive, (expectedResponse as any).directive)) {
-                expect(testResponse.directive).deep.equals((expectedResponse as TestResponseObject).directive);
+                expect(testResponse.directive).deep.equals(
+                    (expectedResponse as TestResponseObject).directive,
+                );
             }
         }
     }
@@ -224,7 +245,6 @@ export class TestInput {
      * Creates a ControlInput representing a LaunchRequest.
      */
     public static launchRequest(): ControlInput {
-
         const launchRequest: LaunchRequest = {
             type: 'LaunchRequest',
             requestId: 'amzn1.echo-api.request.69ba9cb0-bdac-476c-9e35-b7c4382ef039',
@@ -238,12 +258,10 @@ export class TestInput {
     /**
      * Creates a ControlInput for an APL User Event.
      */
-    public static userEvent(userEvent: UserEvent): ControlInput{
-
+    public static userEvent(userEvent: UserEvent): ControlInput {
         return dummyControlInput(userEvent);
     }
 }
-
 
 // TODO: API: unify with SkillInvoker
 /**
@@ -252,25 +270,31 @@ export class TestInput {
 export class SkillTester {
     invoker: SkillInvoker;
 
-    constructor(skillOrRequestHandler: Skill | RequestHandler){
+    constructor(skillOrRequestHandler: Skill | RequestHandler) {
         this.invoker = new SkillInvoker(skillOrRequestHandler);
     }
 
-    async testTurn(utterance: string, input: ControlInput, expectedPrompt: string): Promise<TestResponseObject> {
+    async testTurn(
+        utterance: string,
+        input: ControlInput,
+        expectedPrompt: string,
+    ): Promise<TestResponseObject> {
         return testTurn(this.invoker, utterance, input, expectedPrompt);
     }
 }
 
-function makeRequestId(){
+function makeRequestId() {
     // example from live skill:'amzn1.echo-api.request.69ba9cb0-bdac-476c-9e35-b7c4382ef039'
-    const id = `amzn1.echo-api.request.${ Math.round(Math.random() * 1000000000).toString()}`;
+    const id = `amzn1.echo-api.request.${Math.round(Math.random() * 1000000000).toString()}`;
     return id;
 }
 
-
-
-function wrapIntentAsIntentRequest(nameOrIntent: string | Intent, slotValues?: { [k: string]: any }): IntentRequest {
-    const intent = typeof nameOrIntent === 'string' ? IntentBuilder.of(nameOrIntent, slotValues) : nameOrIntent;
+function wrapIntentAsIntentRequest(
+    nameOrIntent: string | Intent,
+    slotValues?: { [k: string]: any },
+): IntentRequest {
+    const intent =
+        typeof nameOrIntent === 'string' ? IntentBuilder.of(nameOrIntent, slotValues) : nameOrIntent;
 
     const intentRequest: IntentRequest = {
         type: 'IntentRequest',
@@ -278,7 +302,7 @@ function wrapIntentAsIntentRequest(nameOrIntent: string | Intent, slotValues?: {
         timestamp: '2019-09-04T00:08:32Z',
         locale: 'en-US',
         dialogState: 'STARTED',
-        intent
+        intent,
     };
 
     return intentRequest;
@@ -293,8 +317,8 @@ function dummyRequestEnvelope(request?: Request): RequestEnvelope {
             dialogState: 'IN_PROGRESS',
             intent: {
                 name: '',
-                confirmationStatus: 'NONE'
-            }
+                confirmationStatus: 'NONE',
+            },
         };
     }
 
@@ -307,13 +331,13 @@ function dummyRequestEnvelope(request?: Request): RequestEnvelope {
             },
             sessionId: '',
             user: {
-                userId: ''
+                userId: '',
             },
         },
         context: {
             System: {
                 application: {
-                    applicationId: ''
+                    applicationId: '',
                 },
                 user: {
                     userId: '',
@@ -322,39 +346,40 @@ function dummyRequestEnvelope(request?: Request): RequestEnvelope {
                 device: {
                     deviceId: '',
                     supportedInterfaces: {
-                        'Display': {
-                            templateVersion: "1.0",
-                            markupVersion: "1.0"
+                        Display: {
+                            templateVersion: '1.0',
+                            markupVersion: '1.0',
                         },
-                        "Alexa.Presentation.APL": {
+                        'Alexa.Presentation.APL': {
                             runtime: {
-                                maxVersion: "1.3"
-                            }
-                        }
-                    }
-                }
+                                maxVersion: '1.3',
+                            },
+                        },
+                    },
+                },
             },
         },
-        request
+        request,
     };
 }
 
 function dummyControlInput(request?: Request): ControlInput {
-
     const handlerInput = {
         requestEnvelope: dummyRequestEnvelope(request),
         context: {},
         attributesManager: dummyAttributesManager,
         responseBuilder: dummyResponseBuilder,
-        serviceClientFactory: undefined
+        serviceClientFactory: undefined,
     };
 
     return {
         handlerInput,
         request: handlerInput.requestEnvelope.request,
         turnNumber: TestInput.turnNumber,
-        controls: {}
+        controls: {},
     };
 }
-const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({ requestEnvelope: dummyRequestEnvelope() });
+const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({
+    requestEnvelope: dummyRequestEnvelope(),
+});
 const dummyResponseBuilder: ResponseBuilder = ResponseFactory.init();

@@ -11,12 +11,12 @@
  * permissions and limitations under the License.
  */
 
-import { expect } from "chai";
-import { suite, test } from "mocha";
+import { expect } from 'chai';
+import { suite, test } from 'mocha';
 import { moveArrayItem, randomlyPick } from '../../src/utils/ArrayUtils';
 
-suite("== ArrayUtils.randomlyPick() ==", () => {
-    test("ensure distribution is reasonable", async () => {
+suite('== ArrayUtils.randomlyPick() ==', () => {
+    test('ensure distribution is reasonable', async () => {
         const array = [0, 1, 2];
         const histogram: number[] = [0, 0, 0, 0, 0, 0, 0];
 
@@ -25,14 +25,14 @@ suite("== ArrayUtils.randomlyPick() ==", () => {
         }
 
         for (let i = 0; i < array.length; i++) {
-            const relativeDiff = Math.abs((histogram[0] / histogram[i]) - 1.0);
+            const relativeDiff = Math.abs(histogram[0] / histogram[i] - 1.0);
             expect(relativeDiff).lessThan(0.1); // conservative comparison to reduce false negatives
         }
     });
 });
 
-suite("== ArrayUtils.reorder() ==", () => {
-    test("basics", async () => {
+suite('== ArrayUtils.reorder() ==', () => {
+    test('basics', async () => {
         const array = [0, 1, 2];
         expect(moveArrayItem([0, 1, 2, 3, 4], 1, 0)).deep.equal([1, 0, 2, 3, 4]);
         expect(moveArrayItem([0, 1, 2, 3, 4], 0, 2)).deep.equal([1, 2, 0, 3, 4]);

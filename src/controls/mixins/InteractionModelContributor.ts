@@ -18,7 +18,6 @@ import { ModelData } from '../../interactionModelGeneration/ModelTypes';
  * Optional interface for Controls that wish to customize Interaction Model.
  */
 export interface InteractionModelContributor {
-
     /**
      * A list of Slot Value IDs for the "Target" slot type.
      *

@@ -16,21 +16,34 @@
 // This function also translate action & target to actionCateGory & targetCategory
 // Thus no need to translate action & target in reset of the code
 
-import _ from "lodash";
-import { DateRangeControlIntentSlots, hasOneOrMoreActions, hasOneOrMoreTargets, hasOneOrMoreValues } from '../../intents/DateRangeControlIntent';
+import _ from 'lodash';
+import {
+    DateRangeControlIntentSlots,
+    hasOneOrMoreActions,
+    hasOneOrMoreTargets,
+    hasOneOrMoreValues,
+} from '../../intents/DateRangeControlIntent';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { alexaDateFormatToDate } from './DateHelper';
-import { DateRangeControlInteractionModelProps, DateRangeControlProps, DateRangeControlTargetProps, TargetCategory } from './DateRangeControl';
+import {
+    DateRangeControlInteractionModelProps,
+    DateRangeControlProps,
+    DateRangeControlTargetProps,
+    TargetCategory,
+} from './DateRangeControl';
 
 export interface DateRangeControlIntentInput {
-    action: string | undefined,
-    target: TargetCategory | undefined,
-    value: string
+    action: string | undefined;
+    target: TargetCategory | undefined;
+    value: string;
 }
 
 // Break down complicated utterance into two simple utterances
 // E.G. Set start date to 2017 and end date to 2018 --> ['set start date to 2017', 'set end date to 2018']
-export function generateDatesInputGroups(props: DeepRequired<DateRangeControlProps>, input: DateRangeControlIntentSlots): DateRangeControlIntentInput[] {
+export function generateDatesInputGroups(
+    props: DeepRequired<DateRangeControlProps>,
+    input: DateRangeControlIntentSlots,
+): DateRangeControlIntentInput[] {
     // translate all custom target slotTypes to targetCategory
     handleCustomSlots(props.interactionModel, input);
 
@@ -38,13 +51,13 @@ export function generateDatesInputGroups(props: DeepRequired<DateRangeControlPro
     const inputA: DateRangeControlIntentInput = {
         action: undefined,
         target: undefined,
-        value: ''
+        value: '',
     };
 
     const inputB: DateRangeControlIntentInput = {
         action: undefined,
         target: undefined,
-        value: ''
+        value: '',
     };
     // Action exist
     if (hasOneOrMoreActions(input)) {
@@ -66,11 +79,9 @@ export function generateDatesInputGroups(props: DeepRequired<DateRangeControlPro
             inputA.target = input['target.a']! as TargetCategory;
             inputB.target = input['target.b']! as TargetCategory;
         }
-
     }
     // value exist
     if (hasOneOrMoreValues(input)) {
-
         if (input['AMAZON.DATE'] !== undefined) {
             inputA.value = input['AMAZON.DATE'];
             inputB.value = input['AMAZON.DATE'];
@@ -96,8 +107,10 @@ export function generateDatesInputGroups(props: DeepRequired<DateRangeControlPro
 }
 
 // translate custom target to TargetCategory
-export function handleCustomSlots(nlu: Required<DateRangeControlInteractionModelProps>, input: DateRangeControlIntentSlots): void {
-
+export function handleCustomSlots(
+    nlu: Required<DateRangeControlInteractionModelProps>,
+    input: DateRangeControlIntentSlots,
+): void {
     // map target to right targetCategory
     input.target = findTargetCategory(nlu.targets, input.target) ?? undefined;
     input['target.a'] = findTargetCategory(nlu.targets, input['target.a']) ?? undefined;
@@ -105,7 +118,10 @@ export function handleCustomSlots(nlu: Required<DateRangeControlInteractionModel
 }
 
 // Translate slotValue id into target category
-export function findTargetCategory(targets: DateRangeControlTargetProps, input: string | undefined): TargetCategory | undefined {
+export function findTargetCategory(
+    targets: DateRangeControlTargetProps,
+    input: string | undefined,
+): TargetCategory | undefined {
     // E.G. 'date' is an ambiguity target, which may refer to start date or end date
     if (_.includes(targets.startDate, input) && _.includes(targets.endDate, input)) {
         return TargetCategory.Either;
@@ -124,7 +140,11 @@ function isNotClearTarget(input: TargetCategory | undefined): boolean {
     if (input === undefined) {
         return true;
     }
-    if (input === TargetCategory.Either || input === TargetCategory.Both || input === TargetCategory.Neither) {
+    if (
+        input === TargetCategory.Either ||
+        input === TargetCategory.Both ||
+        input === TargetCategory.Neither
+    ) {
         return true;
     }
     return false;
@@ -134,8 +154,12 @@ function isNotClearTarget(input: TargetCategory | undefined): boolean {
 // generate clear targets, the earlier date will be considered as start date
 // E.G. 2020 back to 2017 --> startDate: 2017, endDate: 2020
 function resolveAmbiguityTargets(inputs: DateRangeControlIntentInput[]): void {
-
-    if (inputs[0] !== undefined && inputs[1] !== undefined && isNotClearTarget(inputs[0].target) && isNotClearTarget(inputs[1].target)) {
+    if (
+        inputs[0] !== undefined &&
+        inputs[1] !== undefined &&
+        isNotClearTarget(inputs[0].target) &&
+        isNotClearTarget(inputs[1].target)
+    ) {
         const date1: Date = alexaDateFormatToDate(inputs[0].value);
         const date2: Date = alexaDateFormatToDate(inputs[0].value);
         if (date1 > date2) {

@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import _ from "lodash";
+import _ from 'lodash';
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
@@ -54,7 +54,7 @@ export abstract class SystemAct implements ISystemAct {
      * Usage:
      *  - New acts should generally extend `InitiativeAct` or `ContentAct` rather than this class, to improve readability.
      */
-    constructor(control: Control, props: {takesInitiative: boolean}) {
+    constructor(control: Control, props: { takesInitiative: boolean }) {
         this.control = control;
         this.takesInitiative = props.takesInitiative;
     }

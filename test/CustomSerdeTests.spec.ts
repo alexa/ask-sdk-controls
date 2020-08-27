@@ -11,8 +11,8 @@
  * permissions and limitations under the License.
  */
 
-import { expect } from "chai";
-import { suite, test } from "mocha";
+import { expect } from 'chai';
+import { suite, test } from 'mocha';
 import { Control, SystemAct, TestInput, testTurn, waitForDebugger } from '../src';
 import { ControlProps, ControlState } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
@@ -25,7 +25,6 @@ import { SkillInvoker } from '../src/utils/testSupport/SkillInvoker';
 
 waitForDebugger();
 
-
 /*
  * Tests a control that has state (Set<string>) that doesn't automatically serialize with JSON.stringify.
  *
@@ -35,37 +34,30 @@ waitForDebugger();
  *   - the name and signature for fromJSON() is defined by the Control framework and used as an alternative to Object.assign() when present.
 
  */
-suite("== Custom Serde ==", () => {
-
+suite('== Custom Serde ==', () => {
     test('explicit confirmation and disaffirm', async () => {
         // Note: this test demonstrates using testTurn to run a multi-turn scenario with assertions between turns.
         const requestHandler = new ControlHandler(new CustomSerdeControlManager());
         const invoker = new SkillInvoker(requestHandler);
-        await testTurn(
-            invoker,
-            'U: ', TestInput.of(GeneralControlIntent.of({})),
-            'A:');
+        await testTurn(invoker, 'U: ', TestInput.of(GeneralControlIntent.of({})), 'A:');
 
+        expect((requestHandler.getSerializableControlStates().customControl as string[])[0]).exist.and.equals(
+            'x',
+        );
 
-        expect((requestHandler.getSerializableControlStates().customControl as string[])[0]).exist.and.equals('x');
+        await testTurn(invoker, 'U: ', TestInput.of(GeneralControlIntent.of({})), 'A:');
 
-        await testTurn(
-            invoker,
-            'U: ', TestInput.of(GeneralControlIntent.of({})),
-            'A:');
-
-        expect((requestHandler.getSerializableControlStates().customControl as string[])[0]).exist.and.equals('y');
+        expect((requestHandler.getSerializableControlStates().customControl as string[])[0]).exist.and.equals(
+            'y',
+        );
     });
 });
 
 class CustomSerdeControlManager extends ControlManager {
-
     createControlTree(state: any): Control {
-        return new CustomSerdeControl(
-            {
-                id: 'customControl'
-            }
-        );
+        return new CustomSerdeControl({
+            id: 'customControl',
+        });
     }
 }
 
@@ -78,14 +70,12 @@ class CustomSerdeControlState implements ControlState {
 }
 
 class CustomSerdeControl extends Control {
-
     state: CustomSerdeControlState;
 
     constructor(props: ControlProps, state?: CustomSerdeControlState) {
         super(props.id);
         this.state = state ?? new CustomSerdeControlState(new Set<string>());
     }
-
 
     canHandle(input: ControlInput): boolean {
         return true;
@@ -94,8 +84,7 @@ class CustomSerdeControl extends Control {
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.state.value.size === 0) {
             this.state.value.add('x');
-        }
-        else if (this.state.value.size === 1 && this.state.value.has('x')) {
+        } else if (this.state.value.size === 1 && this.state.value.has('x')) {
             this.state.value.delete('x');
             this.state.value.add('y');
         }
@@ -107,12 +96,12 @@ class CustomSerdeControl extends Control {
         return false;
     }
     async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 
     getSerializableState(): string[] {
         // render the set as a simple list.
-        return [... this.state.value.keys()];
+        return [...this.state.value.keys()];
     }
 
     setSerializableState(obj: string[]) {
@@ -126,6 +115,6 @@ class CustomSerdeControl extends Control {
     }
 
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
-        throw new Error("Method not implemented.");
+        throw new Error('Method not implemented.');
     }
 }

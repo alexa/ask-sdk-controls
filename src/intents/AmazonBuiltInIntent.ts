@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 /**
  * Constants for Alexa's built-in intents.
  *
@@ -23,7 +22,7 @@ export enum AmazonIntent {
     HelpIntent = 'AMAZON.HelpIntent',
     MoreIntent = 'AMAZON.MoreIntent',
     NavigateHomeIntent = 'AMAZON.NavigateHomeIntent',
-    NavigateSettingsIntent= 'AMAZON.NavigateSettingsIntent',
+    NavigateSettingsIntent = 'AMAZON.NavigateSettingsIntent',
     NextIntent = 'AMAZON.NextIntent',
     NoIntent = 'AMAZON.NoIntent',
     PageUpIntent = 'AMAZON.PageUpIntent',

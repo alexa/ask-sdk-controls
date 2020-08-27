@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 /*
  * For information about the TextListTemplate, see following doc:
  * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
@@ -22,41 +21,37 @@ export interface APLListItem {
 
 export function generateTextListDocumentForListControl() {
     return {
-        type: "APL",
-        version: "1.3",
+        type: 'APL',
+        version: '1.3',
         import: [
             {
-                name: "alexa-layouts",
-                version: "1.1.0"
-            }
+                name: 'alexa-layouts',
+                version: '1.1.0',
+            },
         ],
         mainTemplate: {
-            parameters: [
-                "textListData"
-            ],
-            items: [{
-                type: "AlexaTextList",
-                theme: "${viewport.theme}",
-                headerTitle: "${textListData.headerTitle}",
-                headerDivider: true,
-                headerBackButton: false,
-                headerBackButtonAccessibilityLabel: "back",
-                headerBackgroundColor: "transparent",
-                backgroundColor: "transparent",
-                backgroundScale: "best-fill",
-                backgroundAlign: "center",
-                backgroundBlur: false,
-                hideOrdinal: false,
-                primaryAction: {
-                    type: "SendEvent",
-                    arguments: [
-                        "${textListData.controlId}",
-                        "${ordinal}"
-                    ]
+            parameters: ['textListData'],
+            items: [
+                {
+                    type: 'AlexaTextList',
+                    theme: '${viewport.theme}',
+                    headerTitle: '${textListData.headerTitle}',
+                    headerDivider: true,
+                    headerBackButton: false,
+                    headerBackButtonAccessibilityLabel: 'back',
+                    headerBackgroundColor: 'transparent',
+                    backgroundColor: 'transparent',
+                    backgroundScale: 'best-fill',
+                    backgroundAlign: 'center',
+                    backgroundBlur: false,
+                    hideOrdinal: false,
+                    primaryAction: {
+                        type: 'SendEvent',
+                        arguments: ['${textListData.controlId}', '${ordinal}'],
+                    },
+                    listItems: '${textListData.items}',
                 },
-                listItems: "${textListData.items}"
-            }]
-        }
+            ],
+        },
     };
 }
-

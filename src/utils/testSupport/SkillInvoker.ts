@@ -27,12 +27,14 @@ type TSessionAttributes = { [key: string]: any } | undefined;
  *
  */
 export class SkillInvoker {
-
     private sessionAttributes: TSessionAttributes;
     private skill: Skill;
 
     constructor(skillOrRequestHandler: Skill | RequestHandler) {
-        this.skill = (((skillOrRequestHandler as any).handle !== undefined) ? wrapRequestHandlerAsSkill(skillOrRequestHandler as RequestHandler) : skillOrRequestHandler as Skill);
+        this.skill =
+            (skillOrRequestHandler as any).handle !== undefined
+                ? wrapRequestHandlerAsSkill(skillOrRequestHandler as RequestHandler)
+                : (skillOrRequestHandler as Skill);
     }
 
     /**
@@ -54,7 +56,8 @@ export class SkillInvoker {
         const promptSSML = (responseEnvelope.response.outputSpeech as ui.SsmlOutputSpeech).ssml;
         const prompt = promptSSML.replace('<speak>', '').replace('</speak>', '');
 
-        const repromptSSML = ((responseEnvelope.response.reprompt as ui.Reprompt).outputSpeech as ui.SsmlOutputSpeech).ssml;
+        const repromptSSML = ((responseEnvelope.response.reprompt as ui.Reprompt)
+            .outputSpeech as ui.SsmlOutputSpeech).ssml;
         const reprompt = repromptSSML.replace('<speak>', '').replace('</speak>', '');
 
         const directive: Directive[] | undefined = responseEnvelope.response.directives;
@@ -64,16 +67,15 @@ export class SkillInvoker {
             response: responseEnvelope.response,
             prompt,
             reprompt,
-            directive
+            directive,
         };
     }
 }
 
-
 export interface TestResponseObject {
-    responseEnvelope: ResponseEnvelope,
-    response: Response,
-    prompt: string,
-    reprompt?: string,
-    directive?: Directive[]
+    responseEnvelope: ResponseEnvelope;
+    response: Response;
+    prompt: string;
+    reprompt?: string;
+    directive?: Directive[];
 }

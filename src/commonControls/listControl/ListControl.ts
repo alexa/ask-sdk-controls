@@ -12,10 +12,10 @@
  */
 
 import { getSupportedInterfaces } from 'ask-sdk-core';
-import { Intent, IntentRequest, interfaces } from "ask-sdk-model";
+import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
-import _ from "lodash";
-import { Strings as $ } from "../../constants/Strings";
+import _ from 'lodash';
+import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlProps, ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
@@ -23,19 +23,33 @@ import { InteractionModelContributor } from '../../controls/mixins/InteractionMo
 import { ValidationResult } from '../../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
-import { OrdinalControlIntent, unpackOrdinalControlIntent } from "../../intents/OrdinalControlIntent";
-import { SingleValueControlIntent, unpackSingleValueControlIntent } from '../../intents/SingleValueControlIntent';
+import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
+import {
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+} from '../../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
-import { Logger } from "../../logging/Logger";
+import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
-import { InvalidValueAct, UnusableInputValueAct, ValueChangedAct, ValueConfirmedAct, ValueDisconfirmedAct, ValueSetAct } from "../../systemActs/ContentActs";
-import { ConfirmValueAct, RequestChangedValueByListAct, RequestValueByListAct } from "../../systemActs/InitiativeActs";
+import {
+    InvalidValueAct,
+    UnusableInputValueAct,
+    ValueChangedAct,
+    ValueConfirmedAct,
+    ValueDisconfirmedAct,
+    ValueSetAct,
+} from '../../systemActs/ContentActs';
+import {
+    ConfirmValueAct,
+    RequestChangedValueByListAct,
+    RequestValueByListAct,
+} from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
 import { DeepRequired } from '../../utils/DeepRequired';
-import { InputUtil } from "../../utils/InputUtil";
+import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
 import { APLListItem, generateTextListDocumentForListControl } from './APL';
 
@@ -43,12 +57,10 @@ import { APLListItem, generateTextListDocumentForListControl } from './APL';
 // TODO: feature: voice pagination of choices.
 
 const log = new Logger('AskSdkControls:ListControl');
-
 /**
  * Props for a ListControl.
  */
 export interface ListControlProps extends ControlProps {
-
     /**
      * Unique identifier for control instance
      */
@@ -88,8 +100,6 @@ export interface ListControlProps extends ControlProps {
 
     /**
      * Determines if the Control must obtain a value.
-     *
-     * Default: `true`.
      *
      * If `true`:
      *  - the Control report isReady() = false if no value has been obtained.
@@ -134,7 +144,10 @@ export interface ListControlProps extends ControlProps {
 /**
  * ListControl validation function
  */
-export type SlotValidationFunction = (state: ListControlState, input: ControlInput) => true | ValidationResult;
+export type SlotValidationFunction = (
+    state: ListControlState,
+    input: ControlInput,
+) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -149,14 +162,14 @@ export interface ListControlActionProps {
      *
      * Default: ['builtin_set', 'builtin_select']
      */
-    set?: string[],
+    set?: string[];
 
     /**
      * Action slot value IDs that are associated with the "change value" capability.
      *
      * Default ['builtin_change']
      */
-    change?: string[]
+    change?: string[];
 }
 
 /**
@@ -229,12 +242,18 @@ export class ListControlPromptProps {
     valueSet?: StringOrList | ((act: ValueSetAct<any>, input: ControlInput) => StringOrList);
     valueChanged?: StringOrList | ((act: ValueChangedAct<any>, input: ControlInput) => StringOrList);
     invalidValue?: StringOrList | ((act: InvalidValueAct<any>, input: ControlInput) => StringOrList);
-    unusableInputValue?: StringOrList | ((act: UnusableInputValueAct<string>, input: ControlInput) => StringOrList);
+    unusableInputValue?:
+        | StringOrList
+        | ((act: UnusableInputValueAct<string>, input: ControlInput) => StringOrList);
     requestValue?: StringOrList | ((act: RequestValueByListAct, input: ControlInput) => StringOrList);
-    requestChangedValue?: StringOrList | ((act: RequestChangedValueByListAct, input: ControlInput) => StringOrList);
+    requestChangedValue?:
+        | StringOrList
+        | ((act: RequestChangedValueByListAct, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<any>, input: ControlInput) => StringOrList);
     valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<any>, input: ControlInput) => StringOrList);
-    valueDisconfirmed?: StringOrList | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
+    valueDisconfirmed?:
+        | StringOrList
+        | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
 }
 
 /**
@@ -255,16 +274,15 @@ export class ListControlAPLProps {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    requestAPLDocument?: { [key: string]: any; } | ((act: RequestValueByListAct, input: ControlInput) => { [key: string]: any; });
-
-
+    requestAPLDocument?:
+        | { [key: string]: any }
+        | ((act: RequestValueByListAct, input: ControlInput) => { [key: string]: any });
 }
 
 /**
  * State tracked by a ListControl.
  */
 export class ListControlState implements ControlState {
-
     /**
      * The value.
      *
@@ -334,7 +352,6 @@ export class ListControlState implements ControlState {
  * - This control is not compatible with the `AMAZON.SearchQuery` slot type.
  */
 export class ListControl extends Control implements InteractionModelContributor {
-
     state: ListControlState = new ListControlState();
 
     private rawProps: ListControlProps;
@@ -345,10 +362,12 @@ export class ListControl extends Control implements InteractionModelContributor 
     constructor(props: ListControlProps) {
         super(props.id);
 
-        if (props.slotType === AmazonBuiltInSlotType.SEARCH_QUERY){
-            throw new Error('AMAZON.SearchQuery cannot be used with ListControl due to the special rules regarding its use. '
-             + 'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references. '
-             + 'Use a custom intent to manage SearchQuery slots or create a regular slot for use with ListControl.');
+        if (props.slotType === AmazonBuiltInSlotType.SEARCH_QUERY) {
+            throw new Error(
+                'AMAZON.SearchQuery cannot be used with ListControl due to the special rules regarding its use. ' +
+                    'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references. ' +
+                    'Use a custom intent to manage SearchQuery slots or create a regular slot for use with ListControl.',
+            );
         }
 
         this.rawProps = props;
@@ -356,9 +375,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     static mergeWithDefaultProps(props: ListControlProps): DeepRequired<ListControlProps> {
-
-        const defaults: DeepRequired<ListControlProps> =
-        {
+        const defaults: DeepRequired<ListControlProps> = {
             id: 'dummy',
             slotType: 'dummy',
             required: true,
@@ -371,44 +388,68 @@ export class ListControl extends Control implements InteractionModelContributor 
                     set: [$.Action.Set, $.Action.Select],
                     change: [$.Action.Change],
                 },
-                targets: [$.Target.Choice, $.Target.It]
+                targets: [$.Target.Choice, $.Target.It],
             },
             prompts: {
-                confirmValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
                 valueConfirmed: i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
-                valueSet: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
-                valueChanged: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                valueSet: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { value: act.payload.value }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', { value: act.payload.value, reason: act.payload.renderedReason });
+                        return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
+                            value: act.payload.value,
+                            reason: act.payload.renderedReason,
+                        });
                     }
                     return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
                 unusableInputValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_UNUSABLE_INPUT_VALUE'),
-                requestValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE', { suggestions: ListFormatting.format(act.payload.choicesFromActivePage)}),
-                requestChangedValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE', { suggestions: ListFormatting.format(act.payload.choicesFromActivePage)}),
+                requestValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
+                    }),
+                requestChangedValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
+                    }),
             },
             reprompts: {
-                confirmValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                confirmValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
                 valueConfirmed: i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
-                valueSet: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
-                valueChanged: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                valueSet: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
+                valueChanged: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { value: act.payload.value }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
-                        return i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', { value: act.payload.value, reason: act.payload.renderedReason });
+                        return i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
+                            value: act.payload.value,
+                            reason: act.payload.renderedReason,
+                        });
                     }
                     return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
                 unusableInputValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_UNUSABLE_INPUT_VALUE'),
-                requestValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE', { suggestions: ListFormatting.format(act.payload.choicesFromActivePage)}),
-                requestChangedValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE', { suggestions: ListFormatting.format(act.payload.choicesFromActivePage)}),
+                requestValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
+                    }),
+                requestChangedValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
+                    }),
             },
             apl: {
                 enabled: true,
-                requestAPLDocument: generateTextListDocumentForListControl()
-            }
+                requestAPLDocument: generateTextListDocumentForListControl(),
+            },
         };
 
         return _.merge(defaults, props);
@@ -416,27 +457,29 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return this.isSetWithValue(input)
-            || this.isChangeWithValue(input)
-            || this.isSetWithoutValue(input)
-            || this.isChangeWithoutValue(input)
-            || this.isBareValue(input)
-            || this.isConfirmationAffirmed(input)
-            || this.isConfirmationDisAffirmed(input)
-            || this.isOrdinalScreenEvent(input)
-            || this.isOrdinalSelection(input);
+        return (
+            this.isSetWithValue(input) ||
+            this.isChangeWithValue(input) ||
+            this.isSetWithoutValue(input) ||
+            this.isChangeWithoutValue(input) ||
+            this.isBareValue(input) ||
+            this.isConfirmationAffirmed(input) ||
+            this.isConfirmationDisAffirmed(input) ||
+            this.isOrdinalScreenEvent(input) ||
+            this.isOrdinalSelection(input)
+        );
     }
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        if (this.handleFunc === undefined){
+        if (this.handleFunc === undefined) {
             log.error('ListControl: handle called but no clause matched.  are canHandle/handle out of sync?');
             const intent: Intent = (input.request as IntentRequest).intent;
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
         this.handleFunc(input, resultBuilder);
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true){
+        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
     }
@@ -444,7 +487,9 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isSetWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -452,8 +497,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
@@ -466,14 +512,17 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isSetWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleSetWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -484,7 +533,9 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isChangeWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -492,9 +543,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -507,14 +558,17 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isChangeWithoutValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithoutValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleChangeWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -525,7 +579,9 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isBareValue(input: ControlInput): any {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -533,10 +589,10 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             this.handleFunc = this.handleBareValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
-
 
     private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
@@ -551,8 +607,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -560,9 +615,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = undefined;
         this.state.isValueConfirmed = true;
-        resultBuilder.addAct(
-            new ValueConfirmedAct(this, { value: this.state.value })
-        );
+        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
     }
 
     private isConfirmationDisAffirmed(input: ControlInput): any {
@@ -571,8 +624,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
             this.handleFunc = this.handleConfirmationDisAffirmed;
             return true;
-        }
-        catch (e) {
+        } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
@@ -580,14 +632,14 @@ export class ListControl extends Control implements InteractionModelContributor 
     private handleConfirmationDisAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, {value: this.state.value}));
+        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
 
         const allChoices = this.getChoicesList(input);
         if (allChoices === null) {
             throw new Error('ListControl.listItemIDs is null');
         }
         const choicesFromActivePage = this.getChoicesFromActivePage(allChoices);
-        resultBuilder.addAct(new RequestValueByListAct(this, {choicesFromActivePage, allChoices}));
+        resultBuilder.addAct(new RequestValueByListAct(this, { choicesFromActivePage, allChoices }));
     }
 
     private isOrdinalScreenEvent(input: ControlInput) {
@@ -595,8 +647,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.isAPLUserEventWithMatchingControlId(input, this.id));
             this.handleFunc = this.handleOrdinalScreenEvent;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleOrdinalScreenEvent(input: ControlInput, resultBuilder: ControlResultBuilder): void {
@@ -607,7 +660,9 @@ export class ListControl extends Control implements InteractionModelContributor 
 
         const ordinal = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![1];
         if (ordinal < 0 || ordinal > onScreenChoices.length) {
-            throw new StateConsistencyError(`APL Ordinal out of range. ordinal=${ordinal} valueList=${onScreenChoices}`);
+            throw new StateConsistencyError(
+                `APL Ordinal out of range. ordinal=${ordinal} valueList=${onScreenChoices}`,
+            );
         }
         const value = onScreenChoices[ordinal - 1];
         this.setValue(value, true);
@@ -620,30 +675,39 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isOrdinalSelection(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, OrdinalControlIntent.name));
-            const { feedback, action, target, 'AMAZON.Ordinal': value} = unpackOrdinalControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, 'AMAZON.Ordinal': value } = unpackOrdinalControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatchOrUndefined(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(value));
             this.handleFunc = this.handleOrdinalSelection;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 
     private handleOrdinalSelection(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const allChoices = this.getChoicesList(input);
         const spokenChoices = this.getChoicesFromActivePage(allChoices);
-        const {'AMAZON.Ordinal': valueStr} = unpackOrdinalControlIntent((input.request as IntentRequest).intent);
+        const { 'AMAZON.Ordinal': valueStr } = unpackOrdinalControlIntent(
+            (input.request as IntentRequest).intent,
+        );
 
         const value = valueStr !== undefined ? Number.parseInt(valueStr!, 10) : undefined;
-        if (value !== undefined && value <= spokenChoices.length){
+        if (value !== undefined && value <= spokenChoices.length) {
             this.setValue(spokenChoices[value - 1], true);
             resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
             return;
         }
         resultBuilder.addAct(
-            new UnusableInputValueAct(this, {value, reasonCode: 'OrdinalOutOfRange', renderedReason: 'I don\'t know which you mean.' })
+            new UnusableInputValueAct(this, {
+                value,
+                reasonCode: 'OrdinalOutOfRange',
+                renderedReason: "I don't know which you mean.",
+            }),
         );
         return;
     }
@@ -671,15 +735,18 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     canTakeInitiative(input: ControlInput): boolean {
-        return this.wantsToConfirmValue(input)
-            || this.wantsToFixInvalidValue(input)
-            || this.wantsToElicitValue(input);
+        return (
+            this.wantsToConfirmValue(input) ||
+            this.wantsToFixInvalidValue(input) ||
+            this.wantsToElicitValue(input)
+        );
     }
 
     // tsDoc - see Control
     async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.initiativeFunc === undefined) {
-            const errorMsg = 'ListControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
+            const errorMsg =
+                'ListControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
@@ -688,7 +755,11 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToConfirmValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.state.isValueConfirmed === false && this.evaluateBooleanProp(this.props.confirmationRequired, input)){
+        if (
+            this.state.value !== undefined &&
+            this.state.isValueConfirmed === false &&
+            this.evaluateBooleanProp(this.props.confirmationRequired, input)
+        ) {
             this.initiativeFunc = this.confirmValue;
             return true;
         }
@@ -701,7 +772,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true){
+        if (this.state.value !== undefined && this.validate(input) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -713,7 +784,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private wantsToElicitValue(input: ControlInput): boolean {
-        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)){
+        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)) {
             this.initiativeFunc = this.elicitValue;
             return true;
         }
@@ -724,34 +795,39 @@ export class ListControl extends Control implements InteractionModelContributor 
         this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
     }
 
-    private validateAndAddActs(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string): void {
+    private validateAndAddActs(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ): void {
         this.state.elicitationAction = elicitationAction;
         const validationResult: true | ValidationResult = this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
-                if (this.state.previousValue !== undefined){
+                if (this.state.previousValue !== undefined) {
                     resultBuilder.addAct(
-                        new ValueChangedAct<string>(this, {previousValue: this.state.previousValue, value: this.state.value! })
+                        new ValueChangedAct<string>(this, {
+                            previousValue: this.state.previousValue,
+                            value: this.state.value!,
+                        }),
+                    );
+                } else {
+                    throw new Error(
+                        'ValueChangedAct should only be used if there is an actual previous value',
                     );
                 }
-                else {
-                    throw new Error('ValueChangedAct should only be used if there is an actual previous value');
-                }
-            }
-            else {
+            } else {
                 resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
             }
-        }
-        else {
+        } else {
             // feedback
-            resultBuilder.addAct(new InvalidValueAct<string>(
-                this,
-                {
+            resultBuilder.addAct(
+                new InvalidValueAct<string>(this, {
                     value: this.state.value!,
                     reasonCode: validationResult.reasonCode,
-                    renderedReason: validationResult.renderedReason
-                })
+                    renderedReason: validationResult.renderedReason,
+                }),
             );
             this.askElicitationQuestion(input, resultBuilder, elicitationAction);
         }
@@ -759,18 +835,29 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private validate(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: SlotValidationFunction[] = typeof(this.props.validation) === 'function' ? [this.props.validation] : this.props.validation;
+        const listOfValidationFunc: SlotValidationFunction[] =
+            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
             const validationResult: true | ValidationResult = validationFunction(this.state, input);
             if (validationResult !== true) {
-                log.debug(`ListControl.validate(): validation failed. Reason: ${JSON.stringify(validationResult, null, 2)}.`);
+                log.debug(
+                    `ListControl.validate(): validation failed. Reason: ${JSON.stringify(
+                        validationResult,
+                        null,
+                        2,
+                    )}.`,
+                );
                 return validationResult;
             }
         }
         return true;
     }
 
-    private askElicitationQuestion(input: ControlInput, resultBuilder: ControlResultBuilder, elicitationAction: string) {
+    private askElicitationQuestion(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ) {
         this.state.elicitationAction = elicitationAction;
         const allChoices = this.getChoicesList(input);
         if (allChoices === null) {
@@ -780,15 +867,19 @@ export class ListControl extends Control implements InteractionModelContributor 
         const choicesFromActivePage = this.getChoicesFromActivePage(allChoices);
         switch (elicitationAction) {
             case $.Action.Set:
-                resultBuilder.addAct(new RequestValueByListAct(this, {choicesFromActivePage, allChoices}));
+                resultBuilder.addAct(new RequestValueByListAct(this, { choicesFromActivePage, allChoices }));
                 return;
             case $.Action.Change:
                 resultBuilder.addAct(
-                    new RequestChangedValueByListAct(this, {currentValue: this.state.value!, choicesFromActivePage, allChoices})
+                    new RequestChangedValueByListAct(this, {
+                        currentValue: this.state.value!,
+                        choicesFromActivePage,
+                        allChoices,
+                    }),
                 );
                 return;
             default:
-                throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction }`);
+                throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
         }
     }
 
@@ -802,9 +893,10 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private getChoicesList(input: ControlInput): string[] {
-        const slotIds: string[] = (typeof this.props.listItemIDs === 'function')
-            ? this.props.listItemIDs.call(this, input)
-            : this.props.listItemIDs;
+        const slotIds: string[] =
+            typeof this.props.listItemIDs === 'function'
+                ? this.props.listItemIDs.call(this, input)
+                : this.props.listItemIDs;
         return slotIds;
     }
 
@@ -823,15 +915,15 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
-
         if (act instanceof RequestValueByListAct || act instanceof RequestChangedValueByListAct) {
-
-            const prompt = act instanceof RequestValueByListAct
-                ? this.evaluatePromptProp(act, this.props.prompts.requestValue, input)
-                : this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
-            const reprompt = act instanceof RequestValueByListAct
-                ? this.evaluatePromptProp(act, this.props.reprompts.requestValue, input)
-                : this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
+            const prompt =
+                act instanceof RequestValueByListAct
+                    ? this.evaluatePromptProp(act, this.props.prompts.requestValue, input)
+                    : this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
+            const reprompt =
+                act instanceof RequestValueByListAct
+                    ? this.evaluatePromptProp(act, this.props.reprompts.requestValue, input)
+                    : this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
@@ -840,7 +932,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 const itemsArray: APLListItem[] = [];
                 for (const choice of act.payload.allChoices) {
                     itemsArray.push({
-                        primaryText: choice
+                        primaryText: choice,
                     });
                 }
 
@@ -851,50 +943,54 @@ export class ListControl extends Control implements InteractionModelContributor 
                             controlId: this.id,
                             headerTitle: i18next.t('LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
                             items: itemsArray,
-                        }
+                        },
                     };
                     // TODO: apl merging / combination strategy
-                    builder.addAPLRenderDocumentDirective('Token', this.props.apl.requestAPLDocument, aplDataSource);
+                    builder.addAPLRenderDocumentDirective(
+                        'Token',
+                        this.props.apl.requestAPLDocument,
+                        aplDataSource,
+                    );
                 }
             }
-        }
-
-        else if (act instanceof UnusableInputValueAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input));
-        }
-
-        else if (act instanceof InvalidValueAct) {
+        } else if (act instanceof UnusableInputValueAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input),
+            );
+        } else if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input));
-        }
-
-        else if (act instanceof ValueSetAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
+            );
+        } else if (act instanceof ValueSetAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        }
-
-        else if (act instanceof ValueChangedAct) {
+        } else if (act instanceof ValueChangedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input));
-        }
-
-        else if (act instanceof ConfirmValueAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+            );
+        } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input));
-        }
-
-        else if (act instanceof ValueConfirmedAct) {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
+            );
+        } else if (act instanceof ValueConfirmedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input));
-        }
-
-        else if (act instanceof ValueDisconfirmedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input));
-        }
-
-        else {
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
+            );
+        } else if (act instanceof ValueDisconfirmedAct) {
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input),
+            );
+        } else {
             this.throwUnhandledActError(act);
         }
     }
@@ -907,11 +1003,17 @@ export class ListControl extends Control implements InteractionModelContributor 
         generator.addYesAndNoIntents();
 
         if (this.props.interactionModel.targets.includes($.Target.Choice)) {
-            generator.addValuesToSlotType(SharedSlotType.TARGET, i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_TARGET_CHOICE', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.TARGET,
+                i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_TARGET_CHOICE', { returnObjects: true }),
+            );
         }
 
         if (this.props.interactionModel.actions.set.includes($.Action.Select)) {
-            generator.addValuesToSlotType(SharedSlotType.ACTION, i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_ACTION_SELECT', { returnObjects: true }));
+            generator.addValuesToSlotType(
+                SharedSlotType.ACTION,
+                i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_ACTION_SELECT', { returnObjects: true }),
+            );
         }
     }
 

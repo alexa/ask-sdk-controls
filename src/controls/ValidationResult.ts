@@ -28,10 +28,10 @@ export type ValidationResult = {
     /**
      * A code representing what validation failed.
      */
-    reasonCode?: string,
+    reasonCode?: string;
 
     /**
      * A rendered prompt fragment that can be directly included in the `Response`.
      */
-    renderedReason? : string
+    renderedReason?: string;
 };

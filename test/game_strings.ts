@@ -12,39 +12,37 @@
  */
 
 export namespace GameStrings {
-
     export enum SlotType {
-        DomainValue = "DomainValue"
+        DomainValue = 'DomainValue',
     }
 
     export enum Target {
-        Name = "name",
-        AvatarName = "avatarName",
-        PetName = "petName",
-        Age = "age",
-        CharClass = "class",
-        Species = "species",
+        Name = 'name',
+        AvatarName = 'avatarName',
+        PetName = 'petName',
+        Age = 'age',
+        CharClass = 'class',
+        Species = 'species',
     }
 
     export enum ID {
+        GameContainer = 'gameContainer',
 
-        GameContainer = "gameContainer",
+        PlayerContainer = 'playerContainer',
+        PlayerName = 'playerName',
+        PlayerAge = 'playerAge',
+        PlayerClass = 'playerClass',
 
-        PlayerContainer = "playerContainer",
-        PlayerName = "playerName",
-        PlayerAge = "playerAge",
-        PlayerClass = "playerClass",
-
-        PetContainer = "petContainer",
-        PetName = "petName",
-        PetSpecies = "petSpecies",
+        PetContainer = 'petContainer',
+        PetName = 'petName',
+        PetSpecies = 'petSpecies',
     }
 
     export enum Value {
-        Elf = "elf",
-        Dwarf = "dwarf",
-        Human = "human",
-        Cat = "cat",
-        Dog = "dog",
+        Elf = 'elf',
+        Dwarf = 'dwarf',
+        Human = 'human',
+        Cat = 'cat',
+        Dog = 'dog',
     }
 }

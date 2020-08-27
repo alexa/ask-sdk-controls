@@ -11,18 +11,20 @@
  * permissions and limitations under the License.
  */
 
-import { Request } from "ask-sdk-model";
-import { SimplifiedIntent } from "./IntentUtils";
+import { Request } from 'ask-sdk-model';
+import { SimplifiedIntent } from './IntentUtils';
 
 /**
  * Utility to stringify a Request object.
  * @param request - Request
  */
 export function requestToString(request: Request) {
-
     switch (request.type) {
-        case 'IntentRequest': return SimplifiedIntent.fromIntent(request.intent).toString();
-        case 'Alexa.Presentation.APL.UserEvent': return `APL.UserEvent: ${JSON.stringify(request.arguments)}`;
-        default: return request.type;
+        case 'IntentRequest':
+            return SimplifiedIntent.fromIntent(request.intent).toString();
+        case 'Alexa.Presentation.APL.UserEvent':
+            return `APL.UserEvent: ${JSON.stringify(request.arguments)}`;
+        default:
+            return request.type;
     }
 }

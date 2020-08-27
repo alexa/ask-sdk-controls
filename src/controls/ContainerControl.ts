@@ -11,8 +11,7 @@
  * permissions and limitations under the License.
  */
 
-
-import _ from "lodash";
+import _ from 'lodash';
 import { InputUtil } from '..';
 import { Logger } from '../logging/Logger';
 import { Control, ControlProps, ControlState } from './Control';
@@ -22,8 +21,6 @@ import { IContainerControl } from './interfaces/IContainerControl';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
 const log = new Logger('AskSdkControls:ContainerControl');
-
-
 
 /**
  * Records the turn that a child control did something of interest.
@@ -38,8 +35,8 @@ interface ChildActivityRecord {
  */
 export class ContainerControlState implements ControlState {
     value?: any;
-    lastHandlingControl?: ChildActivityRecord;  // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
-    lastInitiativeChild?: ChildActivityRecord;  // ditto.
+    lastHandlingControl?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
+    lastInitiativeChild?: ChildActivityRecord; // ditto.
 }
 
 export class ContainerControlProps implements ControlProps {
@@ -49,7 +46,6 @@ export class ContainerControlProps implements ControlProps {
 export class ContainerControlCompleteProps implements ControlProps {
     id: string;
 }
-
 
 /**
  *  A control that uses and manages child controls.
@@ -92,8 +88,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     }
 
     static mergeWithDefaultProps(props: ContainerControlProps): any {
-        const defaults: ContainerControlCompleteProps =
-        {
+        const defaults: ContainerControlCompleteProps = {
             id: 'dummy',
         };
         return _.merge(defaults, props);
@@ -135,7 +130,6 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         return ''; // nothing special to report.
     }
 
-
     /**
      * Determines if a child control can handle the request.
      *
@@ -150,13 +144,14 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         const candidates = await this.gatherHandlingCandidates(input);
         this.selectedHandlingChild = await this.decideHandlingChild(candidates, input);
         if (this.selectedHandlingChild !== undefined) {
-            log.debug(`${this.id} canHandleByChild=true. selectedHandlingChild = ${this.selectedHandlingChild.id}`);
+            log.debug(
+                `${this.id} canHandleByChild=true. selectedHandlingChild = ${this.selectedHandlingChild.id}`,
+            );
             return true;
         }
 
         log.debug(`${this.id} canHandleByChild=false.`);
         return false;
-
     }
 
     /**
@@ -168,14 +163,22 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      */
     async handleByChild(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (!this.selectedHandlingChild) {
-            throw new Error('this.selectedHandlingChild is undefined. Did you call canHandle() first? Did it update this.selectedHandlingChild?');
+            throw new Error(
+                'this.selectedHandlingChild is undefined. Did you call canHandle() first? Did it update this.selectedHandlingChild?',
+            );
         }
 
         await this.selectedHandlingChild.handle(input, resultBuilder);
-        this.state.lastHandlingControl = { controlId: this.selectedHandlingChild.id, turnNumber: input.turnNumber };
+        this.state.lastHandlingControl = {
+            controlId: this.selectedHandlingChild.id,
+            turnNumber: input.turnNumber,
+        };
 
-        if (resultBuilder.hasInitiativeAct()){
-            this.state.lastInitiativeChild = { controlId: this.selectedHandlingChild.id, turnNumber: input.turnNumber };
+        if (resultBuilder.hasInitiativeAct()) {
+            this.state.lastInitiativeChild = {
+                controlId: this.selectedHandlingChild.id,
+                turnNumber: input.turnNumber,
+            };
         }
 
         return;
@@ -232,7 +235,6 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         return mruMatch ?? candidates[0];
     }
 
-
     /**
      * Determines if a child control can take the initiative.
      *
@@ -247,10 +249,11 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         const candidates = await this.gatherInitiativeCandidates(input);
         this.selectedInitiativeChild = await this.decideInitiativeChild(candidates, input);
         if (this.selectedInitiativeChild !== undefined) {
-            log.debug(`${this.id} canTakeInitiative=true. this.selectedInitiativeChild = ${this.selectedInitiativeChild.id}`);
+            log.debug(
+                `${this.id} canTakeInitiative=true. this.selectedInitiativeChild = ${this.selectedInitiativeChild.id}`,
+            );
             return true;
-        }
-        else {
+        } else {
             log.debug(`${this.id} canTakeInitiative=false. No child wants it`);
             return false;
         }
@@ -265,10 +268,15 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      */
     async takeInitiativeByChild(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (!this.selectedInitiativeChild) {
-            throw new Error('this.selectedInitiativeChild is undefined. Did you call canTakeInitiative() first? Did it update this.selectedInitiativeChild?');
+            throw new Error(
+                'this.selectedInitiativeChild is undefined. Did you call canTakeInitiative() first? Did it update this.selectedInitiativeChild?',
+            );
         }
         await this.selectedInitiativeChild.takeInitiative(input, resultBuilder);
-        this.state.lastInitiativeChild = { controlId: this.selectedInitiativeChild.id, turnNumber: input.turnNumber };
+        this.state.lastInitiativeChild = {
+            controlId: this.selectedInitiativeChild.id,
+            turnNumber: input.turnNumber,
+        };
 
         return;
     }
@@ -322,5 +330,5 @@ export function tryGetForId(controls: Control[], childId?: string) {
     if (childId === undefined) {
         return undefined;
     }
-    return controls.find(c => c.id === childId);
+    return controls.find((c) => c.id === childId);
 }

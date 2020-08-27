@@ -18,7 +18,7 @@
         "rebuild": "npm run clean && npm run build",
         "docs": "rm -rf ./dist/api_docs && typedoc --out dist/api_docs src",
         "pre-release": "standard-version",
-        "release": "npm run coverage && npm run lint && npm run format"
+        "release": "npm run coverage && npm run lint && npm run format-check"
     },
     "dependencies": {
         "ask-sdk-core": "^2.8.0",
@@ -60,7 +60,7 @@
     },
     "husky": {
         "hooks": {
-            "pre-commit": "npm run lint",
+            "pre-commit": "npm run lint && npm run format-check",
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
             "pre-push": "npm run test"
         }
