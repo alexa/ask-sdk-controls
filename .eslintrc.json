@@ -1,8 +1,9 @@
 {
     "extends": [
-        "eslint:recommended"
+        "eslint:recommended",
+        "prettier/@typescript-eslint"
         //"plugin:@typescript-eslint/recommended"
-        // "plugin:@typescript-eslint/recommended-requiring-type-checking"  // TODO: fix errors and turn on.
+        //"plugin:@typescript-eslint/recommended-requiring-type-checking"  // TODO: fix errors and turn on.
     ],
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint", "@typescript-eslint/eslint-plugin", "eslint-plugin-tsdoc"],
@@ -15,6 +16,7 @@
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
     },
+
     "parserOptions": {
         "ecmaVersion": 2019,
         "sourceType": "module",
@@ -56,7 +58,6 @@
         ],
         "id-match": "error",
         "import/no-extraneous-dependencies": ["off", { "devDependencies": false }],
-        "new-parens": "error",
         "no-caller": "error",
         "no-duplicate-imports": "error",
         "no-eval": "error",
