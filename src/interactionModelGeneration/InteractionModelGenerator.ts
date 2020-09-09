@@ -269,14 +269,19 @@ export class InteractionModelGenerator {
     }
 
     /**
-     * Build the interaction model and write to disk.
+     * Build the interaction model and write to disk or standard output.
      *
-     * @param filename - Filename
+     * @param filename - Filename (optional)
      */
-    buildAndWrite(filename: string) {
+    buildAndWrite(filename?: string) {
         const interactionModelJson: string = JSON.stringify(this.build(), null, 2);
-        const path: string = join(process.cwd(), filename);
-        fs.writeFileSync(path, interactionModelJson);
+        if (filename == null) {
+            process.stdout.write(interactionModelJson);
+        }
+        else {
+            const path: string = join(process.cwd(), filename);
+            fs.writeFileSync(path, interactionModelJson);
+        }
     }
 
 }
