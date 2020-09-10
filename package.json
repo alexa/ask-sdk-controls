@@ -65,6 +65,46 @@
             "pre-push": "npm run test"
         }
     },
+    "standard-version": {
+        "types": [
+            {
+                "type": "feat",
+                "section": "Features"
+            },
+            {
+                "type": "fix",
+                "section": "Bug Fixes"
+            },
+            {
+                "type": "chore",
+                "hidden": true
+            },
+            {
+                "type": "docs",
+                "section": "Docs"
+            },
+            {
+                "type": "style",
+                "hidden": true
+            },
+            {
+                "type": "refactor",
+                "hidden": true
+            },
+            {
+                "type": "perf",
+                "hidden": true
+            },
+            {
+                "type": "test",
+                "hidden": true
+            },
+            {
+                "type": "revert",
+                "hidden": true
+            }
+        ]
+    },
     "author": "Amazon Alexa Skills Kit SDK team",
     "repository": "github:alexa/ask-sdk-controls",
     "license": "Apache-2.0"
