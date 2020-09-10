@@ -162,21 +162,18 @@ guide](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-v1-to-v2-migr
 npm i -g ask-cli
 ```
 
-Create a new skill based on the `Hello, World! (with Controls)` demo skill.  When choosing
+Create a new skill based on the `Hello, World! (with Controls)` demo skill. When choosing
 a hosting method please note that with the new local debugging support you do not need to
 deploy your skill to test a skill end-to-end with a device - the code can simply run on
 your local machine and attached to the VScode debugger. If you are unsure which hosting
-method to choose, we recommend 'Alexa-hosted' which is free and easy to use. See [Creating
+method to choose, please see [Creating
 new skill with
-ASK-CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill)
-and [Building an Alexa-hosted
-skill](https://developer.amazon.com/en-US/docs/alexa/hosted-skills/build-a-skill-end-to-end-using-an-alexa-hosted-skill.html)
-for more information.
+ASK-CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill) for more information. Please note `Alexa-hosted skills` is not supported as an option at the moment, because custom template selection is available.
 
 ```bash
 ask new
 > select NodeJS
-> choose a skill hosting method, except "Alexa-hosted skills" as it doesn't support custom template selection
+> choose a skill hosting method (except "Alexa-hosted skills" option)
 > select "Hello world (Controls framework)"
 ```
 
