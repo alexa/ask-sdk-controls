@@ -168,12 +168,12 @@ deploy your skill to test a skill end-to-end with a device - the code can simply
 your local machine and attached to the VScode debugger. If you are unsure which hosting
 method to choose, please see [Creating
 new skill with
-ASK-CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill) for more information. Please note `Alexa-hosted skills` is not supported as an option, because custom template selection is not available at the moment.
+ASK-CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill) for more information. If you want `Alexa-hosted skills` it's necessary to create a skill through the [developer portal](https://developer.amazon.com/alexa/console/ask).
 
 ```bash
 ask new
 > select NodeJS
-> choose a skill hosting method (except "Alexa-hosted skills" option)
+> choose a skill hosting method (not "Alexa-hosted skills" option)
 > select "Hello world (Controls framework)"
 ```
 
