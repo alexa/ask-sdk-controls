@@ -175,9 +175,9 @@ for more information.
 
 ```bash
 ask new
-> choose a skill hosting method.
 > select NodeJS
-> select Hello World (with Controls)
+> choose a skill hosting method, except "Alexa-hosted skills" as it doesn't support custom template selection
+> select "Hello world (Controls framework)"
 ```
 
 Install the Node.js dependencies for the skill, which includes the Controls Framework for
