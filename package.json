@@ -62,6 +62,6 @@
         }
     },
     "author": "Amazon Alexa Skills Kit SDK team",
-    "repository": "github:alexa/alexa-skills-kit-sdk-for-nodejs",
+    "repository": "github:alexa/ask-sdk-controls",
     "license": "Apache-2.0"
 }
