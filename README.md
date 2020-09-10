@@ -12,7 +12,7 @@ The ASK SDK Controls framework builds on the [ASK SDK for Node.js](https://githu
 ## Documentation
 
 - [About the Controls Framework](https://alexa.design/controls)
-- [User Guide](https://github.com/alexa/alexa-skills-kit-sdk-for-nodejs/tree/2.0.x/ask-sdk-controls/doc/userGuide.md)
+- [User Guide](https://github.com/alexa/ask-sdk-controls/blob/develop/doc/userGuide.md)
 - [API Reference](http://ask-sdk-controls-typedoc.s3-website-us-east-1.amazonaws.com)
 
 ## Samples
@@ -27,7 +27,7 @@ Build a multi-modal grocery shopping skill using custom and library controls for
 
 ## Opening Issues
 
-For bug reports, feature requests and questions, we would like to hear about it. Search the [existing issues](https://github.com/alexa/alexa-skills-kit-sdk-for-nodejs/issues) and try to make sure your problem doesn’t already exist before opening a new issue. It’s helpful if you include the version of the SDK, Node.js or browser environment and OS you’re using. Please include a stack trace and reduced repro case when appropriate, too.
+For bug reports, feature requests and questions, we would like to hear about it. Search the [existing issues](https://github.com/alexa/ask-sdk-controls/issues) and try to make sure your problem doesn’t already exist before opening a new issue. It’s helpful if you include the version of the SDK, Node.js or browser environment and OS you’re using. Please include a stack trace and reduced repro case when appropriate, too.
 
 ## License
 
