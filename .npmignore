@@ -8,3 +8,7 @@ tsconfig.json
 ide/
 .nyc_output
 .eslintrc.json
+.github/
+.prettierrc
+.eslintignore
+.commitlintrc.json
