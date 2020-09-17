@@ -99,10 +99,10 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
         // used to record all present basic slotTypes
         const presentSlotTypesSet = new Set<string>();
 
-        const controlIntentUtterances = generateCompleteIntent(controlIntent, controlIMData);
-        this.addIntents(controlIntentUtterances);
+        const actualIntent = generateActualIntent(controlIntent, controlIMData);
+        this.addIntents(actualIntent);
 
-        controlIntentUtterances.slots?.map((slot) => {
+        actualIntent.slots?.map((slot) => {
             presentSlotTypesSet.add(slot.name!);
         });
 
@@ -139,7 +139,7 @@ function buildDialogIntent(intent: Intent): DialogIntent {
  * @param controlIntent - ControlIntent
  * @param controlIMData - Localization data
  */
-function generateCompleteIntent(controlIntent: BaseControlIntent, controlIMData: ModelData): Intent {
+function generateActualIntent(controlIntent: BaseControlIntent, controlIMData: ModelData): Intent {
     // Special logic for SingleValueControlIntent
     if (controlIntent.name.includes('ValueControlIntent')) {
         return handleValueControlIntent(controlIntent as SingleValueControlIntent, controlIMData);
@@ -169,10 +169,16 @@ function handleValueControlIntent(controlIntent: SingleValueControlIntent, contr
         throw new Error('Can not find SingleValueControlIntent samples in ModelData');
     }
     const slotType: string = controlIntent.valueSlotType;
-    const replacement: string = `{${slotType}}`;
+    const filteredSlotType: string = controlIntent.filteredValueSlotType;
+    const slotTypeReplacement: string = `{${slotType}}`;
+    const filteredSlotTypeReplacement: string = `{${filteredSlotType}}`;
     intent.samples = intent.samples || [];
     samples.map((sample) => {
-        intent.samples!.push(sample.replace('[[valueSlotType]]', replacement));
+        intent.samples!.push(
+            sample
+                .replace('[[valueSlotType]]', slotTypeReplacement)
+                .replace('[[filteredValueSlotType]]', filteredSlotTypeReplacement),
+        );
     });
     return intent;
 }
@@ -252,6 +258,7 @@ function validateTargetSlots(interactionModel: InteractionModelData, targetSlotI
 export function generateModelData(): ModelData {
     const slotTypes: SlotType[] = [];
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_FEEDBACK', { returnObjects: true }));
+    slotTypes.push(i18next.t('SHARED_SLOT_TYPES_FILTERED_FEEDBACK', { returnObjects: true }));
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_HEAD', { returnObjects: true }));
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_TAIL', { returnObjects: true }));
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_CONJUNCTION', { returnObjects: true }));

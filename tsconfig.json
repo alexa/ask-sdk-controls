@@ -23,7 +23,9 @@
     },
     "include": [
         "src",
-        "test"
+        "test",
+        "demo",
+        "launchDemo.ts"
     ],
     "exclude": [
         "doc",

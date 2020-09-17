@@ -65,7 +65,7 @@ export class ControlHandler implements RequestHandler {
     private additionalSessionContext: AdditionalSessionContext;
     private controlInput: IControlInput;
 
-    private preparedRequestId: string;
+    private preparedRequestId: string | undefined;
 
     /**
      * Determines if the controls state will be correctly reestablished on the
@@ -173,6 +173,7 @@ export class ControlHandler implements RequestHandler {
             await ControlHandler.handleCore(
                 this.rootControl!,
                 this.controlInput,
+                this.preparedRequestId,
                 resultBuilder,
                 processInput,
             );
@@ -247,6 +248,7 @@ export class ControlHandler implements RequestHandler {
     public static async handleCore(
         rootControl: IControl,
         input: IControlInput,
+        preparedRequestId: string | undefined,
         resultBuilder: IControlResultBuilder,
         handleInput = true,
     ): Promise<void> {
@@ -258,14 +260,19 @@ export class ControlHandler implements RequestHandler {
         log.info(`UI at start: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
 
         if (handleInput) {
-            const canHandleResponse = await rootControl.canHandle(input);
-
-            if (!canHandleResponse) {
-                log.warn(' *WARN* rootControl returned canHandle=false.  Closing session');
-                log.info(
-                    `UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`,
-                );
-                return;
+            // call canHandle only if we didn't go through top-level canHandle/prepare.
+            if (preparedRequestId !== input.handlerInput.requestEnvelope.request.requestId) {
+                const canHandleResponse = await rootControl.canHandle(input);
+                if (!canHandleResponse) {
+                    log.warn(' *WARN* rootControl returned canHandle=false.  Closing session');
+                    log.info(
+                        `UI at end of turn: \n${generateControlTreeTextDiagram(
+                            rootControl,
+                            input.turnNumber,
+                        )}`,
+                    );
+                    return;
+                }
             }
 
             // HANDLE

@@ -1,10 +1,11 @@
 import { Resource } from 'i18next';
-
-import { Logger } from '../logging/Logger';
-import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
 import { Strings as $ } from '../constants/Strings';
+import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
+import { Logger } from '../logging/Logger';
 
 const log = new Logger('AskSdkControls:i18n');
+
+//todo: move this somewhere more appropriate. consider splitting prompts/intents
 
 /**
  * Localized data for built-ins.
@@ -388,7 +389,7 @@ export const systemResource: Resource = {
                 // "{feedback}",                         // {Yes}  // For bare feedback utterances, use specific simple intents, eg AMAZON.YesIntent.
                 '{feedback} {action}', // {No}, {delete}
                 '{feedback} {action} {target}', // {Yes}, {change} {the delivery date}
-                '{feedback} {tail}', // {Yes}, {thanks}
+                '{filteredFeedback} {tail}', // {Yes}, {thanks}
                 '{feedback} {action} {tail}', // {Yes} {review} {would be great}
                 '{feedback} {action} {target} {tail}', // {Yes} {review} {the delivery date} {please}
                 // "{action}",                           // For bare action utterances, use specific simple intents to be compatible with existing ecosystem.
@@ -499,41 +500,41 @@ export const systemResource: Resource = {
             ],
 
             SINGLE_VALUE_CONTROL_INTENT_SAMPLES: [
-                '[[valueSlotType]]', // {Apples}, assuming 'apples' matches a value of the slotType.
+                '[[filteredValueSlotType]]', // {Apples}, assuming 'apples' matches a value of the slotType.
 
                 '{action} [[valueSlotType]]', // {select} {apples}
                 '{action} {preposition} [[valueSlotType]]', // {change} {to} {apples}
                 '{action} {target} {preposition} [[valueSlotType]]', // {change} {my choice} {to} {apples}
                 '{target} {preposition} [[valueSlotType]]', // {my favorite fruit} {is} {apples}
 
-                '{feedback} [[valueSlotType]]', // {yes} {apples}
+                '{feedback} [[filteredValueSlotType]]', // {yes} {apples}
                 '{feedback} {action} [[valueSlotType]]', // {yes} {add} {apples}
-                '{feedback} {preposition} [[valueSlotType]]', // {yes} {to} {apples}
+                '{feedback} {preposition} [[filteredValueSlotType]]', // {yes} {to} {apples}
                 '{feedback} {action} {preposition} [[valueSlotType]]', // {yes} {change} {to} {apples}
                 '{feedback} {action} {target} {preposition} [[valueSlotType]]', // {yes} {set} {my choice} {to} {apples}
                 '{feedback} {target} {preposition} [[valueSlotType]]', // {yes} {my choice} {is} {three}
 
-                '{head} [[valueSlotType]]', // {I want} {apples}
+                '{head} [[filteredValueSlotType]]', // {I want} {apples}
                 '{head} {action} [[valueSlotType]]', // {just} {add} {apples}
                 '{head} {action} {preposition} [[valueSlotType]]', // {just} {set} {to} {apples}
                 '{head} {action} {target} {preposition} [[valueSlotType]]', // {You can} {change} {my choice} {to be} {apples}
                 '{head} {target} {preposition} [[valueSlotType]]', // {I want} {it} {to be} {apples}
 
-                '[[valueSlotType]] {tail}', // {apples} {please}
-                '{preposition} [[valueSlotType]] {tail}', // {to} {apples} {please}
+                '[[filteredValueSlotType]] {tail}', // {apples} {please}
+                '{preposition} [[filteredValueSlotType]] {tail}', // {to} {apples} {please}
                 '{action} {preposition} [[valueSlotType]] {tail}', // {set} {to} {apples} {please}
                 '{action} {target} {preposition} [[valueSlotType]] {tail}', // {set} {it} {to} {apples} {thanks}
                 '{target} {preposition} [[valueSlotType]] {tail}', // {it} {should be} {apples} {thanks}
 
-                '{feedback} [[valueSlotType]] {tail}', // {yes} {apples} {will be great}
-                '{feedback} {preposition} [[valueSlotType]] {tail}', // {yes} {to} {apples} {please}
+                '{feedback} [[filteredValueSlotType]] {tail}', // {yes} {apples} {will be great}
+                '{feedback} {preposition} [[filteredValueSlotType]] {tail}', // {yes} {to} {apples} {please}
                 '{feedback} {action} [[valueSlotType]] {tail}', // {yes} {add} {apples} {please}
                 '{feedback} {action} {preposition} [[valueSlotType]] {tail}', // {yes} {set} {to} {apples} {please}
                 '{feedback} {action} {target} {preposition} [[valueSlotType]] {tail}', // {yes} {change} {my choice} {to} {apples} {thanks}
                 '{feedback} {target} {preposition} [[valueSlotType]] {tail}', // {yes} {my choice} {is} {apples} {thanks}
 
-                '{head} [[valueSlotType]] {tail}', // {Just} {apples} {please}
-                '{head} {preposition} [[valueSlotType]] {tail}', // {Just} {to} {apples} {thanks}
+                '{head} [[filteredValueSlotType]] {tail}', // {Just} {apples} {please}
+                '{head} {preposition} [[filteredValueSlotType]] {tail}', // {Just} {to} {apples} {thanks}
                 '{head} {action} [[valueSlotType]] {tail}', // {I want to} {add} {apples} {thanks}
                 '{head} {action} {preposition} [[valueSlotType]] {tail}', // {I want to} {change} {to} {apples} {thanks}
                 '{head} {target} {preposition} [[valueSlotType]] {tail}', // {I need} {it} {to be} {apples} {thanks}
@@ -631,6 +632,19 @@ export const systemResource: Resource = {
                                 'that is totally wrong',
                                 'that is wrong',
                             ],
+                        },
+                    },
+                ],
+            },
+
+            SHARED_SLOT_TYPES_FILTERED_FEEDBACK: {
+                name: SharedSlotType.FILTERED_FEEDBACK,
+                values: [
+                    {
+                        id: 'placeholder',
+                        name: {
+                            value: 'placeholder_awaiting_real_values',
+                            synonyms: ['placeholder_awaiting_real_values_synonym'],
                         },
                     },
                 ],

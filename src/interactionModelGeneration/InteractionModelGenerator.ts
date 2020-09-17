@@ -287,6 +287,7 @@ export class InteractionModelGenerator {
         const interactionModelJson: string = JSON.stringify(this.build(), null, 2);
         const path: string = join(process.cwd(), filename);
         fs.writeFileSync(path, interactionModelJson);
+        log.info(`Wrote interactionModel: ${path}`);
     }
 }
 

@@ -12,7 +12,6 @@
  */
 
 import { v1 } from 'ask-smapi-model';
-import { Strings as $ } from '../../src/constants/Strings';
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 
 export const jsonProvider = {
@@ -48,7 +47,7 @@ export const jsonProvider = {
                             name: 'feedback',
                             values: [
                                 {
-                                    id: $.Feedback.Affirm,
+                                    id: 'builtin_affirm',
                                     name: {
                                         value: 'affirm',
                                         synonyms: [
@@ -92,7 +91,7 @@ export const jsonProvider = {
                                     },
                                 },
                                 {
-                                    id: $.Feedback.Disaffirm,
+                                    id: 'builtin_disaffirm',
                                     name: {
                                         value: 'disaffirm',
                                         synonyms: [
@@ -139,10 +138,22 @@ export const jsonProvider = {
                             ],
                         },
                         {
+                            name: 'filteredFeedback',
+                            values: [
+                                {
+                                    id: 'placeholder',
+                                    name: {
+                                        value: 'placeholder_awaiting_real_values',
+                                        synonyms: ['placeholder_awaiting_real_values_synonym'],
+                                    },
+                                },
+                            ],
+                        },
+                        {
                             name: 'head',
                             values: [
                                 {
-                                    id: $.Head,
+                                    id: 'builtin_head',
                                     name: {
                                         value: 'head',
                                         synonyms: [
@@ -190,7 +201,7 @@ export const jsonProvider = {
                             name: 'tail',
                             values: [
                                 {
-                                    id: $.Tail,
+                                    id: 'builtin_tail',
                                     name: {
                                         value: 'tail',
                                         synonyms: [
@@ -227,7 +238,7 @@ export const jsonProvider = {
                             name: 'action',
                             values: [
                                 {
-                                    id: $.Action.Set,
+                                    id: 'builtin_set',
                                     name: {
                                         value: 'set',
                                         synonyms: [
@@ -248,7 +259,7 @@ export const jsonProvider = {
                                     },
                                 },
                                 {
-                                    id: $.Action.Change,
+                                    id: 'builtin_change',
                                     name: {
                                         value: 'change',
                                         synonyms: [
@@ -278,20 +289,14 @@ export const jsonProvider = {
                         {
                             name: 'target',
                             values: [
-                                {
-                                    id: $.Target.It,
-                                    name: {
-                                        value: 'it',
-                                        synonyms: ['it', 'this', 'that'],
-                                    },
-                                },
+                                { id: 'builtin_it', name: { value: 'it', synonyms: ['it', 'this', 'that'] } },
                             ],
                         },
                         {
                             name: 'preposition',
                             values: [
                                 {
-                                    id: $.Preposition,
+                                    id: 'builtin_preposition',
                                     name: {
                                         value: 'preposition',
                                         synonyms: [
@@ -321,34 +326,14 @@ export const jsonProvider = {
                         {
                             name: 'TEST_ValueControlIntent',
                             slots: [
-                                {
-                                    name: 'feedback',
-                                    type: 'feedback',
-                                },
-                                {
-                                    name: 'action',
-                                    type: 'action',
-                                },
-                                {
-                                    name: 'target',
-                                    type: 'target',
-                                },
-                                {
-                                    name: 'preposition',
-                                    type: 'preposition',
-                                },
-                                {
-                                    name: 'head',
-                                    type: 'head',
-                                },
-                                {
-                                    name: 'tail',
-                                    type: 'tail',
-                                },
-                                {
-                                    name: 'TEST',
-                                    type: 'TEST',
-                                },
+                                { name: 'feedback', type: 'feedback' },
+                                { name: 'filteredFeedback', type: 'filteredFeedback' },
+                                { name: 'action', type: 'action' },
+                                { name: 'target', type: 'target' },
+                                { name: 'preposition', type: 'preposition' },
+                                { name: 'head', type: 'head' },
+                                { name: 'tail', type: 'tail' },
+                                { name: 'TEST', type: 'TEST' },
                             ],
                             samples: [
                                 '{TEST}',
@@ -389,31 +374,17 @@ export const jsonProvider = {
                         {
                             name: 'GeneralControlIntent',
                             slots: [
-                                {
-                                    name: 'feedback',
-                                    type: 'feedback',
-                                },
-                                {
-                                    name: 'action',
-                                    type: 'action',
-                                },
-                                {
-                                    name: 'target',
-                                    type: 'target',
-                                },
-                                {
-                                    name: 'head',
-                                    type: 'head',
-                                },
-                                {
-                                    name: 'tail',
-                                    type: 'tail',
-                                },
+                                { name: 'feedback', type: 'feedback' },
+                                { name: 'filteredFeedback', type: 'filteredFeedback' },
+                                { name: 'action', type: 'action' },
+                                { name: 'target', type: 'target' },
+                                { name: 'head', type: 'head' },
+                                { name: 'tail', type: 'tail' },
                             ],
                             samples: [
                                 '{feedback} {action}',
                                 '{feedback} {action} {target}',
-                                '{feedback} {tail}',
+                                '{filteredFeedback} {tail}',
                                 '{feedback} {action} {tail}',
                                 '{feedback} {action} {target} {tail}',
                                 '{action} {target}',
@@ -445,14 +416,9 @@ export const jsonProvider = {
                         {
                             name: 'GeneralControlIntent',
                             slots: [
-                                {
-                                    name: 'feedback',
-                                    type: 'feedback',
-                                },
-                                {
-                                    name: 'action',
-                                    type: 'action',
-                                },
+                                { name: 'feedback', type: 'feedback' },
+                                { name: 'filteredFeedback', type: 'filteredFeedback' },
+                                { name: 'action', type: 'action' },
                                 {
                                     name: 'target',
                                     type: 'target',
@@ -468,14 +434,8 @@ export const jsonProvider = {
                                         },
                                     ],
                                 },
-                                {
-                                    name: 'head',
-                                    type: 'head',
-                                },
-                                {
-                                    name: 'tail',
-                                    type: 'tail',
-                                },
+                                { name: 'head', type: 'head' },
+                                { name: 'tail', type: 'tail' },
                             ],
                             delegationStrategy: 'SKILL_RESPONSE',
                         },

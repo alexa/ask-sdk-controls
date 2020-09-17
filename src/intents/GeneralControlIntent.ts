@@ -52,6 +52,9 @@ export function unpackGeneralControlIntent(intent: Intent): GeneralControlIntent
             case 'feedback':
                 feedback = slotValue;
                 break;
+            case 'filteredFeedback':
+                feedback = slotValue;
+                break;
             case 'action':
                 action = slotValue;
                 break;
@@ -106,6 +109,10 @@ export class GeneralControlIntent extends BaseControlIntent {
             {
                 name: 'feedback',
                 type: SharedSlotType.FEEDBACK,
+            },
+            {
+                name: 'filteredFeedback',
+                type: SharedSlotType.FILTERED_FEEDBACK,
             },
             {
                 name: 'action',
