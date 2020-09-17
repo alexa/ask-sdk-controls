@@ -43,6 +43,7 @@ import {
 } from '../../systemActs/ContentActs';
 import {
     ConfirmValueAct,
+    InitiativeAct,
     RequestChangedValueByListAct,
     RequestValueByListAct,
 } from '../../systemActs/InitiativeActs';
@@ -184,7 +185,7 @@ export class ListControlInteractionModelProps {
      * values `action = change` and `target = time`.  Only controls that are
      * registered with the `time` target should offer to handle this intent.
      *
-     * Default: ['builtin_it']
+     * Default: `['builtin_it']`
      *
      * Usage:
      * - If this prop is defined, it replaces the default; it is not additive
@@ -214,6 +215,14 @@ export class ListControlInteractionModelProps {
     /**
      * Action slot-values associated to the control's capabilities.
      *
+     * Default:
+     * ```
+     * {
+     *    set: ['builtin_set', 'builtin_select'],
+     *    change: ['builtin_set']
+     * }
+     * ```
+     *
      * Action slot-values associate utterances to a control. For example, if the
      * user says "change the time", it is parsed as a `GeneralControlIntent`
      * with slot values `action = change` and `target = time`.  Only controls
@@ -232,6 +241,57 @@ export class ListControlInteractionModelProps {
      *    definition of the allowed synonyms in the interaction model.
      */
     actions?: ListControlActionProps;
+
+    /***
+     * Additional properties to resolve utterance conflicts caused by the
+     * configured slot type.
+     *
+     * Purpose:
+     *  - use these props in situations where the configured slotType has
+     *    values/synonyms that cause utterance conflicts.  Most commonly, this
+     *    arises when the list control is managing a slotType with values such
+     *    as 'yes' and 'no' that conflict with Amazon.YesIntent & Amazon.NoIntent.
+     */
+    slotValueConflictExtensions?: {
+        /**
+         * Slot type that is a copy of the main slot type, with problematic values
+         * removed.
+         *
+         * Purpose:
+         * - During interaction-model-generation, the `filteredSlotType` is used
+         *   in sample-utterances that would cause conflicts if the regular
+         *   slotType was used.
+         *
+         * Example:
+         * - if the list is managing a SlotType `ExtendedBoolean` with values
+         *   `yes | no | maybe`, create and register a filtered SlotType
+         *   `ExtendedBooleanFiltered` that has only the `maybe` value.
+         * - during interaction model generation, the risky utterance shapes
+         *   will used `ExtendedBooleanFiltered` whereas non-risky utterance shapes
+         *   will use `ExtendedBoolean`.
+         */
+        filteredSlotType: string;
+
+        /**
+         * Function that maps an intent to a valueId for props.slotValue.
+         *
+         * Purpose:
+         * * Some simple utterances intended for this control will be
+         *   interpreted as intents that are unknown to this control.  This
+         *   function allows mapping of them.
+         *
+         * Example:
+         * * if the list is managing a SlotType `ExtendedBoolean` with values
+         *   `yes | no | maybe` and filteredSlotType has been configured
+         *   correctly then a user-utterance of 'U: yes' will be interpreted as
+         *   an `AMAZON.YesIntent`.  To ensure that intent is correctly
+         *   processed, declare an intentToValueMapper that maps
+         *   `AMAZON.YesIntent -> 'yes'`.  The built-in logic of the ListControl
+         *   will thus treat AMAZON.YesIntent as the value 'yes', assuming that the
+         *   control is not actively asking a yes/no question.
+         */
+        intentToValueMapper: (intent: Intent) => string | undefined;
+    };
 }
 
 /**
@@ -297,7 +357,11 @@ export class ListControlState implements ControlState {
     erMatch?: boolean;
 
     /**
-     * Tracks if the control is actively asking the user to set or change the value.
+     * Tracks the most recent elicitation action.
+     *
+     * Note: this isn't cleared immediate after user provides a value as the
+     * value maybe be invalid and has to be re-elicited.  Use
+     * state.activeInitiate to test if the most recent turn was a direct elicitation.
      */
     elicitationAction?: string;
 
@@ -320,7 +384,7 @@ export class ListControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    activeInitiativeAct?: string; // TODO: Store actual act
+    activeInitiativeActName?: string;
 }
 
 /**
@@ -389,6 +453,10 @@ export class ListControl extends Control implements InteractionModelContributor 
                     change: [$.Action.Change],
                 },
                 targets: [$.Target.Choice, $.Target.It],
+                slotValueConflictExtensions: {
+                    filteredSlotType: props.slotType,
+                    intentToValueMapper: () => undefined,
+                },
             },
             prompts: {
                 confirmValue: (act) =>
@@ -463,8 +531,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             this.isSetWithoutValue(input) ||
             this.isChangeWithoutValue(input) ||
             this.isBareValue(input) ||
+            this.isMappedBareValueDuringElicitation(input) ||
             this.isConfirmationAffirmed(input) ||
-            this.isConfirmationDisAffirmed(input) ||
+            this.isConfirmationDisaffirmed(input) ||
             this.isOrdinalScreenEvent(input) ||
             this.isOrdinalSelection(input)
         );
@@ -478,7 +547,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
-        this.handleFunc(input, resultBuilder);
+        await this.handleFunc(input, resultBuilder);
         if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
@@ -586,7 +655,12 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(
+                InputUtil.valueTypeMatch(
+                    valueType,
+                    this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
+                ),
+            );
             this.handleFunc = this.handleBareValue;
             return true;
         } catch (e) {
@@ -601,10 +675,37 @@ export class ListControl extends Control implements InteractionModelContributor 
         return;
     }
 
+    private isMappedBareValueDuringElicitation(input: ControlInput): any {
+        try {
+            okIf(InputUtil.isIntent(input));
+            okIf(this.state.activeInitiativeActName !== undefined);
+            okIf(this.state.activeInitiativeActName === RequestValueByListAct.name);
+            const intent = (input.request as IntentRequest).intent;
+            const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
+                intent,
+            );
+            okIf(mappedValue !== undefined);
+            this.handleFunc = this.handleMappedBareValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleMappedBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const intent = (input.request as IntentRequest).intent;
+        const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
+            intent,
+        );
+        this.setValue(mappedValue!, true);
+        this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set); // default to set if user just provided value un-elicited.
+        return;
+    }
+
     private isConfirmationAffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.activeInitiativeActName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
         } catch (e) {
@@ -613,25 +714,25 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.activeInitiativeAct = undefined;
         this.state.isValueConfirmed = true;
+        this.state.activeInitiativeActName = undefined;
         resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
     }
 
-    private isConfirmationDisAffirmed(input: ControlInput): any {
+    private isConfirmationDisaffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
-            this.handleFunc = this.handleConfirmationDisAffirmed;
+            okIf(this.state.activeInitiativeActName === ConfirmValueAct.name);
+            this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
 
-    private handleConfirmationDisAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
-        this.state.activeInitiativeAct = undefined;
+        this.state.activeInitiativeActName = undefined;
         resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
 
         const allChoices = this.getChoicesList(input);
@@ -639,7 +740,10 @@ export class ListControl extends Control implements InteractionModelContributor 
             throw new Error('ListControl.listItemIDs is null');
         }
         const choicesFromActivePage = this.getChoicesFromActivePage(allChoices);
-        resultBuilder.addAct(new RequestValueByListAct(this, { choicesFromActivePage, allChoices }));
+        this.addInitiativeAct(
+            new RequestValueByListAct(this, { choicesFromActivePage, allChoices }),
+            resultBuilder,
+        );
     }
 
     private isOrdinalScreenEvent(input: ControlInput) {
@@ -767,8 +871,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.activeInitiativeAct = 'ConfirmValueAct';
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+        this.addInitiativeAct(new ConfirmValueAct(this, { value: this.state.value }), resultBuilder);
     }
 
     private wantsToFixInvalidValue(input: ControlInput): boolean {
@@ -800,7 +903,6 @@ export class ListControl extends Control implements InteractionModelContributor 
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
     ): void {
-        this.state.elicitationAction = elicitationAction;
         const validationResult: true | ValidationResult = this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
@@ -867,20 +969,29 @@ export class ListControl extends Control implements InteractionModelContributor 
         const choicesFromActivePage = this.getChoicesFromActivePage(allChoices);
         switch (elicitationAction) {
             case $.Action.Set:
-                resultBuilder.addAct(new RequestValueByListAct(this, { choicesFromActivePage, allChoices }));
+                this.addInitiativeAct(
+                    new RequestValueByListAct(this, { choicesFromActivePage, allChoices }),
+                    resultBuilder,
+                );
                 return;
             case $.Action.Change:
-                resultBuilder.addAct(
+                this.addInitiativeAct(
                     new RequestChangedValueByListAct(this, {
                         currentValue: this.state.value!,
                         choicesFromActivePage,
                         allChoices,
                     }),
+                    resultBuilder,
                 );
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
         }
+    }
+
+    addInitiativeAct(initiativeAct: InitiativeAct, resultBuilder: ControlResultBuilder) {
+        this.state.activeInitiativeActName = initiativeAct.constructor.name;
+        resultBuilder.addAct(initiativeAct);
     }
 
     // tsDoc - see ControlStateDiagramming
@@ -998,7 +1109,13 @@ export class ListControl extends Control implements InteractionModelContributor 
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
-        generator.addControlIntent(new SingleValueControlIntent(this.props.slotType), imData);
+        generator.addControlIntent(
+            new SingleValueControlIntent(
+                this.props.slotType,
+                this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
+            ),
+            imData,
+        );
         generator.addControlIntent(new OrdinalControlIntent(), imData);
         generator.addYesAndNoIntents();
 

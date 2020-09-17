@@ -78,14 +78,16 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
             case 'preposition':
                 break;
             default:
-                // did we already capture a value?
-                if (valueType !== undefined) {
-                    throw new Error('a SingleValueControlIntent should only have one value slot');
+                if (slotValue !== undefined) {
+                    // did we already capture a value?
+                    if (valueType !== undefined) {
+                        throw new Error('a SingleValueControlIntent should only have one value slot');
+                    }
+                    // treat it as a slot whose name is an NLU slot type.
+                    valueStr = slotValue;
+                    valueType = name;
+                    erMatch = slotObject !== undefined ? slotObject.isEntityResolutionMatch : undefined;
                 }
-                // treat it as a slot whose name is an NLU slot type.
-                valueStr = slotValue;
-                valueType = name;
-                erMatch = slotObject !== undefined ? slotObject.isEntityResolutionMatch : undefined;
         }
     }
 
@@ -123,8 +125,16 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
  */
 export class SingleValueControlIntent extends BaseControlIntent {
     valueSlotType: string;
+    filteredValueSlotType: string;
 
-    constructor(valueSlotType: string) {
+    /**
+     * Constructor.
+     *
+     * @param valueSlotType - SlotType that defines all legal values.
+     * @param filteredValueSlotType - SlotType that defines legal values except those
+     * that conflict with other intents. Defaults to `valueSlotType`.
+     */
+    constructor(valueSlotType: string, filteredValueSlotType?: string) {
         super();
 
         if (valueSlotType === 'AMAZON.SearchQuery') {
@@ -135,6 +145,7 @@ export class SingleValueControlIntent extends BaseControlIntent {
         }
 
         this.valueSlotType = valueSlotType;
+        this.filteredValueSlotType = filteredValueSlotType ?? valueSlotType;
         this.name = SingleValueControlIntent.intentName(valueSlotType);
     }
 
@@ -219,6 +230,13 @@ export class SingleValueControlIntent extends BaseControlIntent {
                 type: `${this.valueSlotType}`,
             },
         ];
+
+        if (this.filteredValueSlotType !== this.valueSlotType) {
+            slots.push({
+                name: `${this.filteredValueSlotType}`,
+                type: `${this.filteredValueSlotType}`,
+            });
+        }
 
         return slots;
     }

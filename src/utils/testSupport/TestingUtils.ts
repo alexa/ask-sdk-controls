@@ -115,7 +115,7 @@ function find(object: any, key: string, value: any): any {
  */
 export async function simpleInvoke(rootControl: Control, input: ControlInput): Promise<IControlResult> {
     const resultBuilder = new ControlResultBuilder();
-    await ControlHandler.handleCore(rootControl, input, resultBuilder);
+    await ControlHandler.handleCore(rootControl, input, undefined, resultBuilder);
     return resultBuilder.build();
 }
 
@@ -220,7 +220,7 @@ export class TestInput {
     /**
      * Creates a ControlInput for a given Intent-name or complete Intent object.
      */
-    public static of(nameOrIntent: Intent): ControlInput {
+    public static of(nameOrIntent: Intent | string): ControlInput {
         const input = TestInput.intent(nameOrIntent);
         this.turnNumber++;
         return input;

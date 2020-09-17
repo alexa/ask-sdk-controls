@@ -13,14 +13,24 @@
                 "--timeout",
                 "999999",
                 "--colors",
+                
+                // TODO.
+
+                // Slow startup
                 "-r",
                 "ts-node/register",
-                "${workspaceFolder}/test/**/*.spec.ts" // (macOS) wrapping the content with \" may be necessary.
+                "${workspaceFolder}/test/**/*.spec.ts", // (macOS) wrapping the content with \" may be necessary.
+                
+                    
+                // Fast startup.
+                "--require",
+                "source-map-support/register",
+                "${workspaceFolder}/dist/test/**/*.spec.js"
             ],
             "env": {
                 //"DEBUG": "error:*, warn:*, info:*"  // uncomment for logs
             },
-            "smartStep": true,
+            //"smartStep": true,
             "skipFiles": [
                 "node_modules/**",
                 "<node_internals>/**"

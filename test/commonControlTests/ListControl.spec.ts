@@ -12,15 +12,17 @@
  */
 
 import { suite, test } from 'mocha';
-import { Strings as $ } from '../../src/constants/Strings';
+import { GeneralControlIntent } from '../../src';
+import { ListControl } from '../../src/commonControls/listControl/ListControl';
+import { Strings as $, Strings } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
+import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
-import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
-import { ListControl } from '../../src/commonControls/listControl/ListControl';
-import { IntentBuilder } from '../../src/utils/IntentUtils';
-import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
+import { IntentBuilder, IntentNameToValueMapper } from '../../src/utils/IntentUtils';
+import { SkillInvoker } from '../../src/utils/testSupport/SkillInvoker';
+import { testE2E, TestInput, testTurn, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
 waitForDebugger();
 
@@ -89,30 +91,98 @@ suite('ListControl e2e tests', () => {
 
     test('product value set and changing it to invalid requires confirmation and checks for validations', async () => {
         const requestHandler = new ControlHandler(new ListControlManager());
-        await testE2E(requestHandler, [
+        const invoker = new SkillInvoker(requestHandler);
+        await testTurn(
+            invoker,
             'U: iPhone',
             TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
+        );
+
+        await testTurn(
+            invoker,
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
+        );
+
+        await testTurn(
+            invoker,
             'U: Change to Airpods.',
             TestInput.of(
                 SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'Airpods', action: $.Action.Change }),
             ),
             'A: Sorry, Airpods is not a valid choice because Apple Suite category validation failed. What should I change it to? Some suggestions are iPhone, iPad or MacBook.',
+        );
+
+        await testTurn(
+            invoker,
             'U: iPad',
             TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
+        );
+
+        await testTurn(
+            invoker,
             'U: No.',
             TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
             'A: My mistake. What is your selection? Some suggestions are iPhone, iPad or MacBook.',
+        );
+
+        await testTurn(
+            invoker,
             'U: iPad',
             TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
+        );
+
+        await testTurn(
+            invoker,
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
-        ]);
+        );
+    });
+
+    //--
+
+    class YesNoMaybeControlManager extends ControlManager {
+        createControlTree(state: any): Control {
+            return new ListControl({
+                id: 'question',
+                listItemIDs: ['yes', 'no', 'maybe'],
+                slotType: 'YesNoMaybe',
+                confirmationRequired: true,
+                interactionModel: {
+                    slotValueConflictExtensions: {
+                        filteredSlotType: 'Maybe',
+                        intentToValueMapper: (intent) => IntentNameToValueMapper(intent, ['yes', 'no']),
+                    },
+                },
+                prompts: {
+                    valueSet: '',
+                },
+            });
+        }
+    }
+
+    test('ListControl for yes|no|maybe ', async () => {
+        const requestHandler = new ControlHandler(new YesNoMaybeControlManager());
+        const invoker = new SkillInvoker(requestHandler);
+        await testTurn(
+            invoker,
+            'U: __',
+            TestInput.of(GeneralControlIntent.of({ action: Strings.Action.Set })),
+            'A: What is your selection? Some suggestions are yes, no or maybe.',
+        );
+
+        await testTurn(
+            invoker,
+            'U: yes',
+            TestInput.of(IntentBuilder.of('AMAZON.YesIntent')),
+            'A: Was that yes?',
+        );
+
+        await testTurn(invoker, 'U: yes', TestInput.of(IntentBuilder.of('AMAZON.YesIntent')), 'A: Great.');
     });
 });

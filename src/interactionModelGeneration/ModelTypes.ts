@@ -18,6 +18,7 @@ import SlotType = v1.skill.interactionModel.SlotType;
  */
 export enum SharedSlotType {
     FEEDBACK = 'feedback',
+    FILTERED_FEEDBACK = 'filteredFeedback',
     HEAD = 'head',
     TAIL = 'tail',
     ACTION = 'action',

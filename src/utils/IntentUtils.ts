@@ -251,3 +251,35 @@ export function getMVSSlotResolutions(
     }
     return { slotValue: slot.value!, isEntityResolutionMatch: false };
 }
+
+/**
+ * Utility to extract a 'valueId' from common intent name shapes.
+ *
+ * The name is processed with the following rules:
+ * - the maximal prefix ending in a period is removed.
+ * - a suffix of 'Intent' is removed.
+ * - the first character of the result is converted to lowerCase
+ *
+ * Supported shapes:
+ * ```
+ *   ThingIntent -> 'thing',
+ *   SomeThingIntent -> 'someThing',
+ *   AMAZON.YesIntent -> 'yes'
+ *   AMAZON.ShuffleOffIntent -> 'shuffleOFf'
+ * ```
+ */
+export function IntentNameToValueMapper(intent: Intent, slotValueIDs: string[]): string | undefined {
+    let result = intent.name;
+    const indexOfLastDot = result.lastIndexOf('.');
+    if (indexOfLastDot >= 0) {
+        result = result.substring(indexOfLastDot + 1);
+    }
+    if (result.endsWith('Intent')) {
+        result = result.substr(0, result.length - 'Intent'.length);
+    }
+
+    const newFirstChar = result.charAt(0).toLocaleLowerCase();
+    result = `${newFirstChar}${result.substr(1)}`;
+
+    return slotValueIDs.includes(result) ? result : undefined;
+}

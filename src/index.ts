@@ -127,6 +127,7 @@ export {
     getMVSSlotResolutions,
     getSlotResolutions,
     IntentBuilder,
+    IntentNameToValueMapper,
     SimplifiedIntent,
     SimplifiedMVSIntent,
     SlotResolutionValue,

@@ -50,11 +50,16 @@ export namespace InputUtil {
     }
 
     /**
-     * Test if the input is an IntentRequest.
+     * Test if the input is an IntentRequest (and optionally a specific Intent).
+     *
      * @param input - Input
+     * @param expectedIntentName - a specific intent name
      */
-    export function isIntent(input: ControlInput, intentName: string): boolean {
-        return input.request.type === 'IntentRequest' && input.request.intent.name === intentName;
+    export function isIntent(input: ControlInput, expectedIntentName?: string): boolean {
+        return (
+            input.request.type === 'IntentRequest' &&
+            (expectedIntentName === undefined || input.request.intent.name === expectedIntentName)
+        );
     }
 
     /**
