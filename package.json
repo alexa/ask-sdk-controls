@@ -23,6 +23,7 @@
     "dependencies": {
         "ask-sdk-core": "^2.8.0",
         "ask-sdk-model": "^1.28.0",
+        "ask-sdk-local-debug": "^1.0.0",
         "ask-smapi-model": "^1.5.0",
         "i18next": "^19.5.4",
         "debug": "^4.1.1",

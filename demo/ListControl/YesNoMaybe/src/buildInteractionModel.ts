@@ -34,6 +34,7 @@ export namespace ListDemo1IM {
         .addIntent({ name: 'AMAZON.YesIntent' })
         .addIntent({ name: 'AMAZON.NoIntent' })
         .addIntent({ name: 'AMAZON.FallbackIntent' })
+        .setModelConfiguration({ fallbackIntentSensitivity: { level: 'HIGH' } })
 
         // Add a custom intent
         .addIntent({
@@ -51,3 +52,4 @@ if (require.main === module) {
     ListDemo1IM.imGen.buildAndWrite('en-US-generated.json');
     console.log('Wrote ./en-US-generated.json');
 }
+

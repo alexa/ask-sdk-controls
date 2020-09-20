@@ -84,6 +84,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [TEST_INTENT],
                         types: [],
@@ -104,6 +105,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [TEST_INTENT],
                         types: [],
@@ -145,6 +147,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [TEST_SLOT_TYPE],
@@ -165,6 +168,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [TEST_SLOT_TYPE],
@@ -233,6 +237,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [
@@ -288,6 +293,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [
@@ -315,6 +321,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [],
@@ -338,6 +345,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [],
@@ -382,6 +390,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [],
@@ -402,6 +411,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         invocationName: TEST_INVOCATION_NAME,
                         intents: [],
                         types: [],
@@ -465,6 +475,7 @@ suite('InteractionModel Generator tests', () => {
             const expectedInteractionModel: InteractionModelData = {
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         intents: [TEST_INTENT],
                         types: [TEST_SLOT_TYPE],
                         invocationName: TEST_INVOCATION_NAME,

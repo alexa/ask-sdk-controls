@@ -21,6 +21,7 @@ import InteractionModelSchema = v1.skill.interactionModel.InteractionModelSchema
 import SlotType = v1.skill.interactionModel.SlotType;
 import TypeValue = v1.skill.interactionModel.TypeValue;
 import Intent = v1.skill.interactionModel.Intent;
+import ModelConfiguration = v1.skill.interactionModel.ModelConfiguration;
 import DialogIntent = v1.skill.interactionModel.DialogIntents;
 import Dialog = v1.skill.interactionModel.Dialog;
 import DelegationStrategyType = v1.skill.interactionModel.DelegationStrategyType;
@@ -36,10 +37,16 @@ const log = new Logger('AskSdkControls:InteractionModelGenerator');
 export class InteractionModelGenerator {
     protected intents: Intent[] = [];
     protected slotTypes: SlotType[] = [];
+    protected modelConfiguration: ModelConfiguration | undefined;
     protected dialogIntents: DialogIntent[] = [];
     protected delegationStrategy: DelegationStrategyType;
     protected prompts: Prompt[] = [];
     protected invocationName: string;
+
+    setModelConfiguration(modelConfiguration: ModelConfiguration): InteractionModelGenerator {
+        this.modelConfiguration = modelConfiguration;
+        return this;
+    }
 
     /**
      * Add intent to interaction model
@@ -226,6 +233,9 @@ export class InteractionModelGenerator {
         const slotTypes: SlotType[] = interactionModel.languageModel!.types
             ? interactionModel.languageModel!.types
             : [];
+
+        const modelConfig = interactionModel.languageModel?.modelConfiguration;
+
         const invocationName: string = interactionModel.languageModel!.invocationName!;
         const prompts: Prompt[] = interactionModel.prompts ? interactionModel.prompts : [];
         const dialog: Dialog = interactionModel.dialog ? interactionModel.dialog : {};
@@ -235,6 +245,9 @@ export class InteractionModelGenerator {
 
         this.addIntents(...intents);
         this.addOrMergeSlotTypes(...slotTypes);
+        if (modelConfig !== undefined) {
+            this.setModelConfiguration(modelConfig);
+        }
         this.addDialogIntents(...dialogIntents);
         if (delegationStrategy !== undefined) {
             this.addDelegationStrategy(delegationStrategy);
@@ -261,6 +274,7 @@ export class InteractionModelGenerator {
 
         interactionModel.languageModel!.types = this.slotTypes;
         interactionModel.languageModel!.intents = this.intents;
+        interactionModel.languageModel!.modelConfiguration = this.modelConfiguration;
         if (this.dialogIntents.length > 0 || this.delegationStrategy) {
             interactionModel.dialog = {};
         }

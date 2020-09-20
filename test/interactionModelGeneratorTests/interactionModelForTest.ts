@@ -19,6 +19,7 @@ export const jsonProvider = {
         return {
             interactionModel: {
                 languageModel: {
+                    modelConfiguration: { fallbackIntentSensitivity: { level: 'HIGH' } },
                     invocationName: 'mock skill',
                     intents: [
                         {
@@ -42,6 +43,7 @@ export const jsonProvider = {
         return {
             interactionModel: {
                 languageModel: {
+                    modelConfiguration: undefined,
                     types: [
                         {
                             name: 'feedback',
@@ -133,18 +135,6 @@ export const jsonProvider = {
                                             'that is totally wrong',
                                             'that is wrong',
                                         ],
-                                    },
-                                },
-                            ],
-                        },
-                        {
-                            name: 'filteredFeedback',
-                            values: [
-                                {
-                                    id: 'placeholder',
-                                    name: {
-                                        value: 'placeholder_awaiting_real_values',
-                                        synonyms: ['placeholder_awaiting_real_values_synonym'],
                                     },
                                 },
                             ],
@@ -321,13 +311,24 @@ export const jsonProvider = {
                                 },
                             ],
                         },
+                        {
+                            name: 'filteredFeedback',
+                            values: [
+                                {
+                                    id: 'placeholder',
+                                    name: {
+                                        value: 'placeholder_awaiting_real_values',
+                                        synonyms: ['placeholder_awaiting_real_values_synonym'],
+                                    },
+                                },
+                            ],
+                        },
                     ],
                     intents: [
                         {
                             name: 'TEST_ValueControlIntent',
                             slots: [
                                 { name: 'feedback', type: 'feedback' },
-                                { name: 'filteredFeedback', type: 'filteredFeedback' },
                                 { name: 'action', type: 'action' },
                                 { name: 'target', type: 'target' },
                                 { name: 'preposition', type: 'preposition' },
