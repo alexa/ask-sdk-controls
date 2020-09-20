@@ -11,22 +11,21 @@
  * permissions and limitations under the License.
  */
 
-import { suite, test } from 'mocha';
-import * as _ from 'lodash';
 import { v1 } from 'ask-smapi-model';
 import { expect } from 'chai';
+import { Resource } from 'i18next';
+import { suite, test } from 'mocha';
 import sinon from 'sinon';
-import { ContainerControl, ControlManager, ModelData, Control } from '../../src';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
-import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
-import { ControlInteractionModelGenerator } from '../../src/interactionModelGeneration/ControlInteractionModelGenerator';
-import { jsonProvider } from './interactionModelForTest';
+import { ContainerControl, Control, ControlManager, ModelData } from '../../src';
 import { InteractionModelContributor } from '../../src/controls/mixins/InteractionModelContributor';
+import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
+import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
+import { ControlInteractionModelGenerator } from '../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { SharedSlotType } from '../../src/interactionModelGeneration/ModelTypes';
 import { Logger } from '../../src/logging/Logger';
+import { jsonProvider } from './interactionModelForTest';
 
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
-import { Resource } from 'i18next';
 
 class SingleValueTestControl extends Control implements InteractionModelContributor {
     // dummy canHandle, handle, canTakeInitiative and takeInitiative cause
@@ -195,6 +194,7 @@ suite('ControlInteractionModel Generator tests', () => {
             expect(interactionModel).deep.equal({
                 interactionModel: {
                     languageModel: {
+                        modelConfiguration: undefined,
                         intents: [
                             {
                                 name: 'testIntent',
