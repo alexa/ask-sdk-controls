@@ -11,10 +11,11 @@
  * permissions and limitations under the License.
  */
 
-import { IControlResult } from './IControlResult';
+import { HandlerInput } from 'ask-sdk-core/dist/dispatcher/request/handler/HandlerInput';
+import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import { IControl } from './IControl';
 import { IControlInput } from './IControlInput';
-import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
+import { IControlResult } from './IControlResult';
 
 /**
  * Manages a skill built with Controls.
@@ -32,19 +33,25 @@ export interface IControlManager {
      *   skills a tree of controls structured using @see ContainerControl will
      *   help manage skill complexity.
      *
-     * - In advanced scenarios with dynamic control tree shapes, this method is
+     * - In advanced scenarios with dynamic control tree shapes, this method
+     *   should produce only the static section of the tree.  The dynamic
+     *   portion is
      *   expected to produce a tree that is identical to the tree at the end of
      *   the previous turn.  The serializable control state can be inspected as
      *   necessary.
      *
-     * @param serializableState - Map of control state objects keyed by
-     *                          `controlId` This is provided for advanced cases
-     *                          in which the tree has a dynamic shape based on
-     *                          the application state.
+     * - If state objects are re-established during this method, the subsequent
+     *
+     * @param controlStateMap - Map of control state objects keyed by
+     *                       `controlId` This is provided for advanced cases
+     *                       in which the tree has a dynamic shape based on
+     *                       the application state.
      * @returns A Control that is either a single @see Control or a @see
      * ContainerControl that is the root of a tree.
      */
-    createControlTree(serializableState: { [key: string]: any }): IControl;
+    createControlTree(): IControl;
+
+    reestablishControlStates(rootControl: IControl, handlerInput: HandlerInput): void;
 
     /**
      * Builds the response.
@@ -64,4 +71,14 @@ export interface IControlManager {
      * user session.
      */
     handleInternalError?(input: IControlInput, error: any, responseBuilder: ControlResponseBuilder): void;
+
+    /**
+     *
+     */
+    loadControlStateMap(handlerInput: HandlerInput): { [key: string]: any };
+
+    /**
+     *
+     */
+    saveControlStateMap(state: any, handlerInput: HandlerInput): void;
 }

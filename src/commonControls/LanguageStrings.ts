@@ -12,7 +12,7 @@ const log = new Logger('AskSdkControls:i18n');
  *
  * Contains prompts, reprompts, APL strings, and interaction model data.
  */
-export const systemResource: Resource = {
+export const defaultI18nResources: Resource = {
     en: {
         translation: {
             // DateControl Runtime

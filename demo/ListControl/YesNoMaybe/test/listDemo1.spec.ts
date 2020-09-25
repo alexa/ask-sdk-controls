@@ -26,7 +26,7 @@ import { ListDemo1IM } from '../src/buildInteractionModel';
 
 waitForDebugger();
 
-suite('all', async () => {
+suite('all', () => {
     test('YesNoMaybe List Demo - IMGen', async () => {
         const imData = ListDemo1IM.imGen.build();
         expect(imData.interactionModel?.languageModel?.intents?.find((x) => x.name === 'HelloIntent')).not

@@ -10,22 +10,21 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import i18next from 'i18next';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
 import {
+    AmazonBuiltInSlotType,
+    ContainerControl,
     ControlHandler,
     ControlResponseBuilder,
+    DateControl,
+    DateControlValidations,
     InvalidValueAct,
     RequestValueAct,
+    SingleValueControlIntent,
     SkillInvoker,
     SystemAct,
     UnusableInputValueAct,
-    ContainerControl,
-    DateControl,
-    DateControlValidations,
-    SingleValueControlIntent,
-    AmazonBuiltInSlotType,
 } from '../src';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
@@ -123,7 +122,7 @@ suite('== Result rendering (renderingResult.spec.ts) ==', () => {
 
 suite('== i18n overrides scenarios ==', () => {
     class MyControlManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             const topControl = new ContainerControl({ id: 'root' });
             topControl.addChild(
                 new DateControl({

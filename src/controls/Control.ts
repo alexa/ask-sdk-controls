@@ -20,18 +20,14 @@ import { ControlResultBuilder } from './ControlResult';
 import { IControl } from './interfaces/IControl';
 
 /**
- * Base type for the props of a Control.
+ * Defines the mandatory props of a Control.
  */
 export interface ControlProps {
     id: string;
-
-    /* TODO: refactor. hoist up more common prop shapes. e.g
-     * InteractionModelProps, PromptProps. if only to centralize the tsDocs.
-     */
 }
 
 /**
- * Base type for the state of a Control.
+ * Defines the mandatory state of a Control.
  */
 export interface ControlState {
     /**
@@ -42,11 +38,20 @@ export interface ControlState {
      *   use. Consumers can call `control.isReady()` to determine if the value
      *   is ready for use.
      */
-    value?: any;
+    value?: any; //TODO: make mandatory to tighten the convention.
 }
 
 /**
  * Abstract base class for Controls.
+ *
+ * Purpose:
+ *  - this class provides a simpler way to define a control than direct implementation
+ *    of IControl.  Various default implementations are provided.
+ *
+ * Usage:
+ *  - Define new control types by sub-classing this abstract class and providing
+ *    implementations for the abstract methods.
+ *  - If the custom control will have children, sub-class `ContainerControl` instead.
  */
 export abstract class Control implements IControl {
     readonly id: string;
@@ -54,6 +59,7 @@ export abstract class Control implements IControl {
 
     constructor(id: string) {
         this.id = id;
+        this.state = { value: undefined };
     }
 
     /**
@@ -141,6 +147,21 @@ export abstract class Control implements IControl {
      */
     async isReady(input: ControlInput): Promise<boolean> {
         return !(await this.canTakeInitiative(input));
+    }
+
+    /**
+     * Reestablishes the state of the control.
+     *
+     * Default: simply reattaches the serialized state.
+     *
+     * Usage:
+     *  - If a custom control has dynamically-created children, rebuild them
+     *    here and reestablish their state.
+     */
+    reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
+        if (state) {
+            this.setSerializableState(state);
+        }
     }
 
     /**

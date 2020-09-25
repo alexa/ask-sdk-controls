@@ -56,7 +56,6 @@ export interface IControlResponse extends Response {
  *
  */
 export class ControlHandler implements RequestHandler {
-    static attributeNameState = '__controlState';
     static attributeNameContext = '__controlContext';
 
     controlManager: IControlManager;
@@ -96,12 +95,10 @@ export class ControlHandler implements RequestHandler {
             retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
         this.additionalSessionContext.turnNumber += 1;
 
-        // retrieve the control state
-        const stateMap = this.getStateMapFromSessionAttributes(handlerInput);
-
-        // build the control tree and attach state
-        this.rootControl = this.controlManager.createControlTree(stateMap);
-        attachStateToControlTree(this.rootControl, stateMap);
+        // build the control tree  (note this will be only the static part of
+        // the tree in dynamic-tree scenarios)
+        this.rootControl = this.controlManager.createControlTree();
+        this.controlManager.reestablishControlStates(this.rootControl, handlerInput);
 
         // create the input object for use in the main processing.
         const controls = ControlHandler.createControlMap(this.rootControl, {});
@@ -110,14 +107,6 @@ export class ControlHandler implements RequestHandler {
             this.additionalSessionContext.turnNumber,
             controls,
         );
-    }
-
-    private getStateMapFromSessionAttributes(handlerInput: HandlerInput) {
-        const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[
-            ControlHandler.attributeNameState
-        ];
-        const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
-        return stateMap;
     }
 
     private static createControlMap(
@@ -190,7 +179,7 @@ export class ControlHandler implements RequestHandler {
             /* Note: we merge onto the prevailing state for the edge-case of multiple ControlHandlers in the skill that are active on different turns.
              *       merging avoid one controlHandler stomping on the state of the other.  Context is currently OK/good to be stomped on.
              */
-            const priorStateMap = this.getStateMapFromSessionAttributes(handlerInput);
+            const priorStateMap = this.controlManager.loadControlStateMap(handlerInput);
             const currentStateMap = this.getSerializableControlStates();
             const mergedStateMap = { ...priorStateMap, ...currentStateMap };
 
@@ -200,9 +189,8 @@ export class ControlHandler implements RequestHandler {
             const contextToSaveJson = JSON.stringify(this.additionalSessionContext, null, 2);
             log.info(`Saving context...\n${contextToSaveJson}`);
 
-            this.controlInput.handlerInput.attributesManager.getSessionAttributes()[
-                ControlHandler.attributeNameState
-            ] = stateToSaveJson;
+            this.controlManager.saveControlStateMap(stateToSaveJson, handlerInput);
+
             this.controlInput.handlerInput.attributesManager.getSessionAttributes()[
                 ControlHandler.attributeNameContext
             ] = contextToSaveJson;
@@ -232,7 +220,7 @@ export class ControlHandler implements RequestHandler {
      * This will help the dev team to understand usage - thank you!
      */
     userAgentInfo(): string {
-        const rootControl = this.rootControl ?? this.controlManager.createControlTree({});
+        const rootControl = this.rootControl ?? this.controlManager.createControlTree();
         let nControls = 0;
         visitControls(rootControl, () => {
             nControls++;
@@ -423,28 +411,6 @@ export class ControlHandler implements RequestHandler {
     // public for testing
     public getSerializableControlStates(): { [key: string]: any } {
         return extractStateFromControlTree(this.rootControl!);
-    }
-}
-
-/**
- * Visits each control in the tree and attaches the corresponding state object.
- *
- * @param control - Control
- * @param state - Map of state data to attach to the controls
- */
-export function attachStateToControlTree(control: IControl, state: { [key: string]: any }) {
-    if (state === undefined) {
-        return;
-    }
-    const myState = state[control.id];
-    if (myState !== undefined) {
-        control.setSerializableState(myState);
-    }
-
-    if (isContainerControl(control)) {
-        for (const child of control.children) {
-            attachStateToControlTree(child, state);
-        }
     }
 }
 

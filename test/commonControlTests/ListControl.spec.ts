@@ -28,7 +28,7 @@ waitForDebugger();
 
 suite('ListControl e2e tests', () => {
     class ListControlManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             return new ListControl({
                 id: 'apple',
                 validation: (state, input) =>
@@ -147,7 +147,7 @@ suite('ListControl e2e tests', () => {
     //--
 
     class YesNoMaybeControlManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             return new ListControl({
                 id: 'question',
                 listItemIDs: ['yes', 'no', 'maybe'],

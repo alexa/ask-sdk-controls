@@ -12,11 +12,11 @@
  */
 
 import { expect } from 'chai';
-import { suite, test, Test } from 'mocha';
+import { suite, test } from 'mocha';
 import sinon from 'sinon';
-import * as ArrayUtil from '../../src/utils/ArrayUtils';
 import {
     AmazonBuiltInSlotType,
+    AmazonIntent,
     Control,
     ControlHandler,
     ControlManager,
@@ -28,10 +28,10 @@ import {
     SingleValueControlIntent,
     testE2E,
     TestInput,
-    AmazonIntent,
 } from '../../src';
 import { Strings as $ } from '../../src/constants/Strings';
 import { ConjunctionControlIntent } from '../../src/intents/ConjunctionControlIntent';
+import * as ArrayUtil from '../../src/utils/ArrayUtils';
 
 function dateRangeControlUnderTest(confirmationRequired: boolean = false): DateRangeControl {
     return new DateRangeControl({
@@ -55,13 +55,13 @@ function dateRangeControlUnderTest(confirmationRequired: boolean = false): DateR
     });
 }
 class StrictDateRangeControlManager extends ControlManager {
-    createControlTree(state: any): Control {
+    createControlTree(): Control {
         return dateRangeControlUnderTest();
     }
 }
 
 class ConfirmationDateRangeControlManager extends ControlManager {
-    createControlTree(state: any): Control {
+    createControlTree(): Control {
         return dateRangeControlUnderTest(true);
     }
 }
@@ -74,7 +74,7 @@ const askForBothPrompts = [
     'Please give me the start date and the end date.',
 ];
 class VariableResponseTwoDatesControlManager extends ControlManager {
-    createControlTree(state: any): Control {
+    createControlTree(): Control {
         return new DateRangeControl({
             id: 'DateRangeControl',
             interactionModel: {

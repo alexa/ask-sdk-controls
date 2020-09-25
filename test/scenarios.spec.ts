@@ -40,7 +40,7 @@ waitForDebugger();
 
 suite('== Single value selector scenarios ==', () => {
     class SingleSelectorManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             const topControl = new ContainerControl({ id: 'root' });
             topControl.addChild(
                 new ValueControl({
@@ -57,7 +57,7 @@ suite('== Single value selector scenarios ==', () => {
     test('simple set-value input should be processed.', async () => {
         // Note: this test demonstrates calling handle() on a single control (yielding a ControlResult)
 
-        const rootControl = new SingleSelectorManager().createControlTree({});
+        const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
             SingleValueControlIntent.of('CUSTOM.name', {
                 action: $.Action.Set,
@@ -75,7 +75,7 @@ suite('== Single value selector scenarios ==', () => {
     });
 
     test('valueType mismatch should cause processing to throw', async () => {
-        const rootControl = new SingleSelectorManager().createControlTree({});
+        const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
             SingleValueControlIntent.of('AMAZON.Number', {
                 action: $.Action.Set,
@@ -89,7 +89,7 @@ suite('== Single value selector scenarios ==', () => {
     });
 
     test('session ending due to lack of initiative', async () => {
-        const rootControl = new SingleSelectorManager().createControlTree({});
+        const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
             SingleValueControlIntent.of('CUSTOM.name', {
                 action: $.Action.Set,

@@ -14,29 +14,28 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
+import {
+    AmazonBuiltInSlotType,
+    AmazonIntent,
+    ContentAct,
+    ControlInput,
+    IntentBuilder,
+    InvalidValueAct,
+    RequestChangedValueAct,
+    RequestValueAct,
+    SingleValueControlIntent,
+    ValueSetAct,
+} from '../../src';
 import { DateControl, DateControlValidations } from '../../src/commonControls/DateControl';
 import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { ControlResultBuilder } from '../../src/controls/ControlResult';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
+import { OrdinalControlIntent } from '../../src/intents/OrdinalControlIntent';
 import { ControlResponseBuilder } from '../../src/responseGeneration/ControlResponseBuilder';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
-import { OrdinalControlIntent } from '../../src/intents/OrdinalControlIntent';
-import {
-    ContentAct,
-    ControlInput,
-    SingleValueControlIntent,
-    AmazonBuiltInSlotType,
-    ValueSetAct,
-    InvalidValueAct,
-    RequestValueAct,
-    RequestChangedValueAct,
-    IntentBuilder,
-    AmazonIntent,
-    ValueChangedAct,
-} from '../../src';
 
 function dateControlUnderTest(): DateControl {
     return new DateControl({

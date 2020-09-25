@@ -1,3 +1,4 @@
+import { HandlerInput } from 'ask-sdk-core/dist/dispatcher/request/handler/HandlerInput';
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -10,10 +11,9 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 import i18next, { Resource } from 'i18next';
 import _ from 'lodash';
-import { systemResource } from '../commonControls/LanguageStrings';
+import { defaultI18nResources } from '../commonControls/LanguageStrings';
 import { Control } from '../controls/Control';
 import { implementsInteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import {
@@ -85,8 +85,37 @@ export interface ControlManagerProps {
  *    render() function, or scattered around the various Controls and Acts.
  */
 export abstract class ControlManager implements IControlManager {
-    props: Required<ControlManagerProps>;
+    /**
+     * Default key name used to store control state data between turns.
+     */
+    static DEFAULT_CONTROL_STATE_ATTRIBUTE_KEY = '__controlState';
 
+    /**
+     * The custom props provided during construction
+     */
+    rawProps?: ControlManagerProps;
+
+    /**
+     * The complete props used during construction.
+     */
+    props: Readonly<Required<ControlManagerProps>>;
+
+    /**
+     * Creates an instance of a Control Manager.
+     * @param props - props
+     */
+    constructor(props?: ControlManagerProps) {
+        this.rawProps = props;
+        this.props = ControlManager.mergeWithDefaultProps(props);
+        const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
+        i18nInit(this.props.locale, resource);
+    }
+
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: ControlManagerProps | undefined): Required<ControlManagerProps> {
         const defaults: Required<ControlManagerProps> = {
             locale: 'en-US',
@@ -97,38 +126,42 @@ export abstract class ControlManager implements IControlManager {
     }
 
     /**
-     * Creates an instance of a Control Manager.
-     * @param props - props
-     */
-    constructor(props?: ControlManagerProps) {
-        this.props = ControlManager.mergeWithDefaultProps(props);
-        const resource: Resource = _.merge(systemResource, this.props.i18nResources);
-        i18nInit(this.props.locale, resource);
-    }
-    /**
      * Creates a tree of controls to handle state management and dialog
      * decisions for the skill.
      *
      * Usage:
      * - Each control in the tree can and should be created with empty state.
-     *   The ControlHandler will distribute the saved states to the controls
-     *   automatically.
-     *
-     * - A single control is legal and will suffice for small skills. For larger
-     *   skills a tree of controls structured using @see ContainerControl will
-     *   help manage skill complexity.
      *
      * - In advanced scenarios the tree shape may change as the skill session
-     *   progresses. The serializable state can be directly interrogated to
-     *   determine what tree to build.
+     *   progresses. Dynamic controls should be rebuilt during
+     *   `ControlManager.reestablishControlStates()`.
      *
-     * @param serializableState - Map of control state objects keyed by
-     *                          `controlId`. This is intended to be read-only on
-     *                          and only used in advanced cases in which the
-     *                          tree has a dynamic shape.
-     * @returns A `Control` or `ContainerControl` that is the root of a tree.
+     * @returns A `Control`, typically a `ContainerControl`, that is the root of a tree.
      */
-    abstract createControlTree(serializableState: { [key: string]: any }): Control;
+    abstract createControlTree(): Control;
+
+    /**
+     * Reestablish the state of all controls.
+     *
+     * Purpose:
+     * - On the second and subsequent turns this method reestablishes the state
+     *   of controls from saved/serialized information.
+     * - This method should also reestablish any dynamic controls (controls that
+     *   are added at runtime, rather than being statically created by `createControlTree`)
+     *
+     * Notes:
+     * - To keep serialized state to a minimum, and due to the lack of
+     *   object-aware serialization in  Javascript, re-creation of the complete
+     *   control tree occurs in two phases:
+     *     1. Build the static control tree as in the very first turn.
+     *     2. Reattach state and rebuild the dynamic portions of the control tree.
+     * - This approach keeps the props and state of controls separate and keeps
+     *   the common cases as simple as possible.
+     */
+    reestablishControlStates(rootControl: IControl, handlerInput: HandlerInput): void {
+        const controlStateMap = this.loadControlStateMap(handlerInput);
+        rootControl.reestablishState(controlStateMap[rootControl.id], controlStateMap);
+    }
 
     /**
      * Transforms the information in ControlResult into user-facing content
@@ -200,9 +233,44 @@ export abstract class ControlManager implements IControlManager {
      * @param generator - Interaction Model Generator
      */
     buildInteractionModel(generator: ControlInteractionModelGenerator): void {
-        const rootControl = this.createControlTree({});
+        const rootControl = this.createControlTree();
         const imData: ModelData = generateModelData();
-        updateIMForControlTree(generator, rootControl, imData);
+        updateIMForControlTree(rootControl, generator, imData);
+    }
+
+    /**
+     * Load the control state map from durable storage.
+     *
+     * Default: loads from Session Attributes.
+     */
+    loadControlStateMap(handlerInput: HandlerInput): { [key: string]: any } {
+        return ControlManager.loadControlStateMapFromSessionAttributes(
+            handlerInput,
+            ControlManager.DEFAULT_CONTROL_STATE_ATTRIBUTE_KEY,
+        );
+    }
+
+    /**
+     * Saves the control state map for use in subsequent turns of this session.
+     *
+     * Default: saves to the Session Attributes.
+     */
+    saveControlStateMap(state: any, handlerInput: HandlerInput): void {
+        ControlManager.saveControlStateToSessionAttributes(
+            state,
+            handlerInput,
+            ControlManager.DEFAULT_CONTROL_STATE_ATTRIBUTE_KEY,
+        );
+    }
+
+    static saveControlStateToSessionAttributes(state: any, handlerInput: HandlerInput, attributeKey: string) {
+        handlerInput.attributesManager.getSessionAttributes()[attributeKey] = state;
+    }
+
+    static loadControlStateMapFromSessionAttributes(handlerInput: HandlerInput, attributeKey: string) {
+        const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[attributeKey];
+        const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
+        return stateMap;
     }
 }
 
@@ -231,10 +299,9 @@ export function renderActsInSequence(
  * @param control - Root control
  * @param imData - Localized data for use in interaction model
  */
-// TODO: param-ordering
-export function updateIMForControlTree(
-    generator: ControlInteractionModelGenerator,
+function updateIMForControlTree(
     control: IControl,
+    generator: ControlInteractionModelGenerator,
     imData: ModelData,
 ): void {
     if (control instanceof Control && implementsInteractionModelContributor(control)) {
@@ -250,7 +317,7 @@ export function updateIMForControlTree(
     // If container control, do same thing recursively
     if (isContainerControl(control)) {
         for (const child of control.children) {
-            updateIMForControlTree(generator, child, imData);
+            updateIMForControlTree(child, generator, imData);
         }
     }
 }
