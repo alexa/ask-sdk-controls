@@ -280,7 +280,7 @@ suite('== game_e2e.ts ==', () => {
 });
 
 export class GameManager extends ControlManager {
-    public createControlTree(state?: any, input?: ControlInput): Control {
+    public createControlTree(): Control {
         const topControl = new ContainerControl({ id: $$.ID.GameContainer });
 
         // --- Player

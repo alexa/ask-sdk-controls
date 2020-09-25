@@ -17,13 +17,13 @@ import { NumberControl, NumberControlState } from '../../src/commonControls/Numb
 import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
+import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { AmazonBuiltInSlotType } from '../../src/intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
-import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
-import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
+import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
 waitForDebugger();
 
@@ -32,7 +32,7 @@ suite('NumberControl e2e tests', () => {
         const TEST_CONTROL_ID = 'NumberSelectorWithoutValidationExpectation';
 
         class NumberControlManager extends ControlManager {
-            createControlTree(state: any): Control {
+            createControlTree(): Control {
                 return new NumberControl({
                     id: TEST_CONTROL_ID,
                     confirmationRequired: true,
@@ -67,7 +67,7 @@ suite('NumberControl e2e tests', () => {
             const TEST_CONTROL_ID = 'NumberSelectorWithoutValidationExpectation';
 
             class NumberControlManager extends ControlManager {
-                createControlTree(state: any): Control {
+                createControlTree(): Control {
                     return new NumberControl({
                         id: TEST_CONTROL_ID,
                         prompts: {},
@@ -110,7 +110,7 @@ suite('NumberControl e2e tests', () => {
         const TEST_CONTROL_ID = 'NumberSelectorWithValidationExpectation';
 
         class NumberControlManager extends ControlManager {
-            createControlTree(state: any): Control {
+            createControlTree(): Control {
                 return new NumberControl({
                     id: TEST_CONTROL_ID,
                     prompts: {

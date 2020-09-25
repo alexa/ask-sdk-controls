@@ -54,7 +54,7 @@ suite('== Custom Serde ==', () => {
 });
 
 class CustomSerdeControlManager extends ControlManager {
-    createControlTree(state: any): Control {
+    createControlTree(): Control {
         return new CustomSerdeControl({
             id: 'customControl',
         });

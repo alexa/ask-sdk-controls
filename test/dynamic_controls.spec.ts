@@ -1,3 +1,4 @@
+import { IntentRequest } from 'ask-sdk-model';
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -12,24 +13,14 @@
  */
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import {
-    LiteralContentAct,
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-    ValueControl,
-    ValueControlProps,
-    ValueControlState,
-    ValueSetAct,
-} from '../src';
-import { Strings as $ } from '../src/constants/Strings';
+import { SingleValueControlIntent, Strings, unpackSingleValueControlIntent, ValueControl } from '../src';
 import { ContainerControl, ContainerControlState } from '../src/controls/ContainerControl';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
-import { GeneralControlIntent, unpackGeneralControlIntent } from '../src/intents/GeneralControlIntent';
+import { unpackGeneralControlIntent } from '../src/intents/GeneralControlIntent';
 import { ControlHandler } from '../src/runtime/ControlHandler';
-import { moveArrayItem } from '../src/utils/ArrayUtils';
 import { SkillInvoker } from '../src/utils/testSupport/SkillInvoker';
 import { wrapRequestHandlerAsSkill } from '../src/utils/testSupport/SkillWrapper';
 import { TestInput, waitForDebugger } from '../src/utils/testSupport/TestingUtils';
@@ -37,7 +28,11 @@ import { TestInput, waitForDebugger } from '../src/utils/testSupport/TestingUtil
 waitForDebugger();
 
 /**
- * An example of a container than manages a variable number of child controls.
+ * An example of a container control that dynamically adds child controls.
+ *
+ * The container tracks the children it has created in its state.
+ * On each turn, it re-establishes its child controls and reattaches their
+ * state.
  */
 suite('== dynamic controls ==', () => {
     test('e2e', async () => {
@@ -46,44 +41,83 @@ suite('== dynamic controls ==', () => {
         const requestHandler = new ControlHandler(new VariableControlsManager());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
 
-        // Note: this test demonstrates SkillInvoker.invoke() directly to observe all the surface form details of the response.
-
-        response = await skill.invoke(TestInput.of(GeneralControlIntent.of({ action: $.Action.Set }))); // TODO: Update tests to better demonstrate dynamic trees support.
-        expect(response.prompt).equals('I have 1 child control. What value for number 1?');
-
-        response = await skill.invoke(TestInput.of(GeneralControlIntent.of({ action: 'addAnother' })));
-        expect(response.prompt).equals('I have 2 child controls. What value for number 1?');
+        response = await skill.invoke(TestInput.launchRequest());
+        expect(response.prompt).equals('What is your first name?');
 
         response = await skill.invoke(
-            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'bob' })),
+            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'Bob' })),
         );
-        expect(response.prompt).equals('OK. I have 2 child controls. What value for number 2?');
-
-        response = await skill.invoke(
-            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'frank' })),
-        );
-        expect(response.prompt).equals('OK. I have 2 child controls.');
-        expect(response.reprompt).equals('OK. I have 2 child controls.');
+        expect(response.prompt).equals('OK, Bob. And what is your last name, please?');
     });
 });
 
-export class MyMultiControlState extends ContainerControlState {
-    count: number;
+export class VariableControlsManager extends ControlManager {
+    public createControlTree(): Control {
+        const root = new ContainerControl({ id: 'root' });
+        root.addChild(new MyMultiControl({ id: 'multiValueContainer' }));
+        return root;
+    }
 }
 
+export class MyMultiControlState extends ContainerControlState {
+    childrenTypes: string[] = [];
+
+    constructor(childrenTypes: string[] = []) {
+        super();
+        this.childrenTypes = childrenTypes;
+    }
+}
+
+/**
+ * A custom container control that initially has no children. As the skill
+ * session progresses it adds one and then another child.
+ *
+ * See reestablishState which does the custom logic to rebuild the tree on
+ * subsequent turns so that the structure is correct and the state is
+ * reestablished.
+ *
+ * Note that only the variable state for the child controls is saved.. the props,
+ * which are static and which may include arbitrary functions, are not saved but
+ * rather they are rebuilt. E.g. see this.makeFirstNameControl() which recreates
+ * the control.  after this re-creation, its state is reattached.
+ */
 export class MyMultiControl extends ContainerControl {
     state: MyMultiControlState;
 
-    constructor(props: { id: string }, initialState?: MyMultiControlState) {
+    // a flag to help with prompt specialization.
+    wasTheFirstNameCapturedThisTurn: boolean;
+
+    constructor(props: { id: string }) {
         super(props);
-        this.state = initialState ?? new MyMultiControlState();
+        this.state = new MyMultiControlState();
+    }
+
+    reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
+        if (state) {
+            this.setSerializableState(state);
+        }
+
+        // refresh child controls by inspecting this.state.childrenTypes
+        // Note that the child control IDs must be recreated without change.
+        for (const [idx, childType] of this.state.childrenTypes.entries()) {
+            if (childType === 'firstName') {
+                this.addChild(this.makeFirstNameControl());
+            }
+            if (childType === 'lastName') {
+                this.addChild(this.makeLastNameControl());
+            }
+        }
+
+        super.reestablishState(state, controlStateMap);
     }
 
     async canHandle(input: ControlInput): Promise<boolean> {
-        const request = input.request;
-        if (request.type !== 'IntentRequest') {
-            return false;
+        let request = input.request;
+        if (request.type === 'LaunchRequest') {
+            return true;
         }
+
+        request = request as IntentRequest; // assume IntentRequest.
         const intent = request.intent;
 
         const unpacked =
@@ -99,105 +133,50 @@ export class MyMultiControl extends ContainerControl {
     }
 
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        const request = input.request;
-        if (request.type !== 'IntentRequest') {
-            throw new Error();
-        }
-        const intent = request.intent;
-        const unpacked =
-            intent.name === 'GeneralControlIntent'
-                ? unpackGeneralControlIntent(intent)
-                : unpackSingleValueControlIntent(intent);
-
-        /*
-         * Special behavior #1: Always include the content act to state how many controls we currently have.
-         * Special behavior #2: If the action is addAnother, then handle it directly
-         * Default behavior: do the usual containerControl handling. and merge with Special behavior #1.
-         */
-
-        if (unpacked.action === 'addAnother') {
-            this.state.count = this.state.count + 1;
-            resultBuilder.addAct(this.createContentAct(this.state.count));
-            this.children.push(MyMultiControl.makeValueControl(this.state.count));
+        let request = input.request;
+        if (request.type === 'LaunchRequest') {
+            // Dynamically add the first child
+            this.addChild(this.makeFirstNameControl());
+            this.state.childrenTypes.push('firstName');
             return;
         }
-
-        resultBuilder.addAct(this.createContentAct(this.state.count));
+        request = request as IntentRequest; // assume IntentRequest.
         await this.handleByChild(input, resultBuilder);
 
-        /*
-         * [1] Because handleByChild can produce multiple acts, after the merge we may end up with a strange ordering
-         * .. so we detect it and fix it.
-         *     [ contentAct, valueSetAct, <initiativeAct> ]
-         *        ^-- reorder these --^
-         */
-        if (
-            resultBuilder.acts[0] instanceof LiteralContentAct &&
-            resultBuilder.acts[1] instanceof ValueSetAct
-        ) {
-            moveArrayItem(resultBuilder.acts, 1, 0);
-        }
+        if (this.children[0].isReady(input) && this.children.length === 1) {
+            // Dynamically add the second child
+            this.addChild(this.makeLastNameControl());
+            this.state.childrenTypes.push('lastName');
 
+            // And set a flag to tweak the next prompt a little
+            // Note, this type of this is not tracked in state
+            this.wasTheFirstNameCapturedThisTurn = true;
+        }
         return;
     }
 
-    createContentAct(count: number): LiteralContentAct {
-        return new LiteralContentAct(this, {
-            promptFragment: `I have ${count} child control${count === 1 ? '' : 's'}.`,
-        });
-    }
-
-    public static makeValueControl(index: number): Control {
-        return new MyValueControl({
-            id: `value${index.toString()}`,
+    makeFirstNameControl(): Control {
+        return new ValueControl({
+            id: `firstName`,
             slotType: 'CUSTOM.name',
             prompts: {
-                requestValue: (act) => `What value for number ${(act.control as MyValueControl).index}?`,
-                valueSet: 'OK.',
+                requestValue: 'What is your first name?',
             },
-            reprompts: {
-                requestValue: (act) => `What value for number ${(act.control as MyValueControl).index}?`,
-                valueSet: 'OK.',
-            },
-            interactionModel: { targets: ['name'] },
-            index,
+            interactionModel: { targets: [Strings.Target.It, 'name', 'firstName'] },
         });
     }
-}
 
-export class VariableControlsManager extends ControlManager {
-    public createControlTree(state: any): Control {
-        const controlCount =
-            state.multiValueContainer !== undefined
-                ? state.multiValueContainer.count !== undefined
-                    ? state.multiValueContainer.count
-                    : 1
-                : 1;
-        const topControl = new MyMultiControl({ id: 'multiValueContainer' }, { count: 1 });
-
-        for (let i = 1; i <= controlCount; i++) {
-            topControl.addChild(MyMultiControl.makeValueControl(i));
-        }
-
-        return topControl;
-    }
-}
-
-interface MyValueControlProps extends ValueControlProps {
-    index: number;
-}
-
-class MyValueControlState extends ValueControlState {
-    count: number;
-}
-
-class MyValueControl extends ValueControl {
-    index: number;
-
-    state: MyValueControlState;
-
-    constructor(props: MyValueControlProps) {
-        super(props);
-        this.index = props.index;
+    makeLastNameControl(): Control {
+        return new ValueControl({
+            id: `lastName`,
+            slotType: 'CUSTOM.name',
+            prompts: {
+                requestValue: (input) =>
+                    this.wasTheFirstNameCapturedThisTurn
+                        ? 'And what is your last name, please?'
+                        : 'What is your last name?',
+            },
+            interactionModel: { targets: [Strings.Target.It, 'name', 'lastName'] },
+        });
     }
 }

@@ -12,21 +12,21 @@
  */
 
 import { suite, test } from 'mocha';
+import { ValueControl } from '../../src/commonControls/ValueControl';
 import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
+import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
-import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
-import { ValueControl } from '../../src/commonControls/ValueControl';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
+import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
 waitForDebugger();
 
 suite('ValueControl e2e tests', () => {
     class ValueControlManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             return new ValueControl({
                 id: 'userName',
                 slotType: 'LOGIN.name',

@@ -43,6 +43,9 @@ export interface IControl {
      */
     takeInitiative(input: IControlInput, resultBuilder: IControlResultBuilder): void | Promise<void>;
 
+    /** TODO */
+    reestablishState(state: any, controlStateMap: { [index: string]: any }): void;
+
     /**
      * Gets the Control's state as an object that is serializable.
      *
