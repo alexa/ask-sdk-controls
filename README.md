@@ -35,4 +35,5 @@ This SDK is distributed under the Apache License, Version 2.0, see LICENSE for m
 
 ## Got Feedback?
 
-Request and vote for Alexa features [here](https://alexa.uservoice.com/forums/906892-alexa-skills-developer-voice-and-vote/filters/top?category_id=322783)!
+* [Connect with us on Slack](https://amazonalexa.slack.com/archives/C018QMP3K33)!
+* Request and vote for Alexa features [here](https://alexa.uservoice.com/forums/906892-alexa-skills-developer-voice-and-vote/filters/top?category_id=322783)!
