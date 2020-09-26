@@ -27,18 +27,16 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
 <!-- TOC -->
 
 - [1. Overview](#1-overview)
-  - [1.1. Purpose of the Controls Framework](#11-purpose-of-the-controls-framework)
-  - [1.2. How does it work?](#12-how-does-it-work)
+  - [1.1. Purpose of this user guide](#11-purpose-of-this-user-guide)
+  - [1.2. Purpose of the Controls Framework](#12-purpose-of-the-controls-framework)
 - [2. Getting started](#2-getting-started)
-  - [2.1. Tool chain for developing a skill with Controls](#21-tool-chain-for-developing-a-skill-with-controls)
+  - [2.1. Prerequisites for developing a skill with Controls](#21-prerequisites-for-developing-a-skill-with-controls)
   - [2.2. Javascript or Typescript?](#22-javascript-or-typescript)
-  - [2.3. Getting diagnostics and tracking the runtime call flow](#23-getting-diagnostics-and-tracking-the-runtime-call-flow)
-  - [2.4. Creating a launch configuration for vscode launch.json](#24-creating-a-launch-configuration-for-vscode-launchjson)
-  - [2.5. Run the regression tests](#25-run-the-regression-tests)
-  - [2.6. Build the interaction model for the skill](#26-build-the-interaction-model-for-the-skill)
-  - [2.7. Get the source code](#27-get-the-source-code)
-  - [2.8. Run the Controls Framework regression tests](#28-run-the-controls-framework-regression-tests)
-  - [2.9. Your first skill using controls](#29-your-first-skill-using-controls)
+  - [2.3. Creating “Hello, World” in Controls](#23-creating-hello-world-in-controls)
+  - [2.4. Getting diagnostics and tracking the runtime call flow](#24-getting-diagnostics-and-tracking-the-runtime-call-flow)
+  - [2.5. Creating a launch configuration for vscode launch.json](#25-creating-a-launch-configuration-for-vscode-launchjson)
+  - [2.6. Run the regression tests](#26-run-the-regression-tests)
+  - [2.7. Build the interaction model for the skill](#27-build-the-interaction-model-for-the-skill)
 - [3. Exploring the HelloWorld Controls skill](#3-exploring-the-helloworld-controls-skill)
   - [3.1. Code overview](#31-code-overview)
   - [3.2. Interaction model](#32-interaction-model)
@@ -92,18 +90,26 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
     - [5.7.6. What utterance shapes are covered by Control Intents](#576-what-utterance-shapes-are-covered-by-control-intents)
     - [5.7.7. When to introduce new Intents](#577-when-to-introduce-new-intents)
 - [6. Additional topics](#6-additional-topics)
-  - [6.1. Migrating from the Custom Skills Dialog Interface](#61-migrating-from-the-custom-skills-dialog-interface)
-  - [6.2. Internationalization and Localization](#62-internationalization-and-localization)
-    - [6.2.1. Creating a localized interaction model](#621-creating-a-localized-interaction-model)
-    - [6.2.2. Using localized data at runtime.](#622-using-localized-data-at-runtime)
-- [7. Reference](#7-reference)
+  - [6.1. Adding Controls to an existing skill](#61-adding-controls-to-an-existing-skill)
+  - [6.2. Migrating from the Custom Skills Dialog Interface](#62-migrating-from-the-custom-skills-dialog-interface)
+  - [6.3. Internationalization and Localization](#63-internationalization-and-localization)
+    - [6.3.1. Creating a localized interaction model](#631-creating-a-localized-interaction-model)
+    - [6.3.2. Using localized data at runtime.](#632-using-localized-data-at-runtime)
+- [7. Contributing](#7-contributing)
+  - [7.1. Get the source code](#71-get-the-source-code)
+  - [7.2. Run the Controls Framework regression tests](#72-run-the-controls-framework-regression-tests)
+- [8. Reference](#8-reference)
 
 <!-- /TOC -->
 <!-- spellchecker: enable -->
 
 # 1. Overview
 
-## 1.1. Purpose of the Controls Framework
+## 1.1. Purpose of this user guide
+
+In this user guide, we’ll show you the fundamental concepts of Controls framework by taking you through a practical, step-by-step tutorial on how to create a simple skill using Controls from the existing templates (Hello World and Fruit Shop). In the first half of this guide (sections 1-4) we’ll detail the code in each template, so you have a solid understanding of a Control's skill architecture and components. In the second half of this user guide (sections 5-6), you will find in-depth explanations of how to build skills using Controls framework from the ground up.
+
+## 1.2. Purpose of the Controls Framework
 
 The Controls Framework allows developers to implement Custom Skills that offer rich
 mixed-initiative and multi-modal experiences.
@@ -120,43 +126,45 @@ and to provide a natural way to implement that concepts of [situational design](
 Finally, the Controls framework is designed to integrate seamlessly with existing skills
 written using the ASK-SDK v2 for Node.js.
 
-## 1.2. How does it work?
-
-The Controls Framework is a Node.js package that is used in conjunction with the ASK-SDK
-v2 for Node.js and the ASK suite of tools (ASK CLI v2, ASK-SDK extension for Visual Studio
-Code, Alexa Developer Portal).
-
-The central concept is that a skill can be built from *Controls* that encapsulate portions of
-the skill's state and dialog logic such that controls can be developed independently and
-then composed together to build an entire skill. The framework provides patterns for
-building and grouping controls and it defines the rules regarding how controls should
-interact.
-
-The framework provides a runtime (`ControlHandler`) that can be used as a standalone
-`RequestHandler` or incorporated into an existing one.  The `ControlHandler` drives the
-processing of each turn as a sequence of phases:
-
-1. ***Initialization phase***: Constructs a tree of controls and deserializes their state.
-2. ***'Can Handle' phase***: Determines a specific chain of controls in the tree that will
-   handle the input.
-3. ***Handle phase***: Walks the handling chain to make state updates, call business
-   functions, and produce results for the user.
-4. ***Initiative phase (if needed)***. Determines a chain of control to *take the
-   initiative* and continue the dialog. This phase runs if the handle phase did not
-   take or continue the initiative.
-5. ***Render phase*** Transforms the results into a complete user-facing response that
-   includes speech, APL or both.
-6. ***Shutdown phase*** Collects and serializes the state of each control and returns
-   the complete response.
-
 ---
 
 # 2. Getting started
 
+## 2.1. Prerequisites for developing a skill with Controls
+
+The workflow when using the Controls Framework will be largely the same as for any skill that uses ASK-SDK v2 for Node.js. Below are required and highly recommended tools to leverage:
+
+Required
+
+* Node.js v10.16 or higher
+* [ASK SDK for Node.js v2](https://www.npmjs.com/package/ask-sdk)
+* [ASK CLI v2](https://www.npmjs.com/package/ask-cli)
+
+Highly Recommended
+
+* Visual Studio Code
+* Typescript v3.9 or higher
+* [ASK Toolkit for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ask-toolkit.alexa-skills-kit-toolkit) (enables local debugging and skill simulation including APL rendering)
+* ESLint (which supersedes TSLint)
+* A regression test framework such as mocha + chai.
+
+Additionally, this guide assumes you have previous experience with building skills using the ASK SDK. To learn more about the basics of skill development, including interaction models and intent handlers, please start with our guide on [Building an Engaging Alexa Skill.](https://developer.amazon.com/en-US/alexa/alexa-skills-kit/get-deeper/tutorials-code-samples/build-an-engaging-alexa-skill).
+
+## 2.2. JavaScript or TypeScript?
+
+Skills that use the Controls framework can be written in JavaScript or Typescript, and there is no functional or performance difference from the choice. In the documentation and sample code we provide, we have chosen to use JavaScript as it is currently used by the majority of the Alexa skill developer community. 
+
+For those who prefer TypeScript or want to try it out, we encourage you to use it with the Controls Framework. The ASK SDK dev team uses TypeScript to build the SDK and the Controls Framework as we find it improves our personal productivity through superior auto-completion support in IDEs, stronger linting rules, and the ability to find bugs at edit & build time rather than at runtime.
+
+JavaScript users may be interested to know that some of TypeScript’s benefits can be brought to a pure JavaScript codebase. See [Migrating from JavaScript](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html) and [Type Checking JavaScript Files](https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html) at [www.typescriptlang.org](http://www.typescriptlang.org/) for more information.
+
+Regardless of which language you choose, we would love to hear about your experience! You can always find us here on GitHub or on our [Slack channel](https://amazonalexa.slack.com/archives/C018QMP3K33). 
+
+## 2.3. Creating “Hello, World” in Controls
+
 Install the ASK CLI v2. If you already have the ASK CLI v1, please see [the CLI
 migration
 guide](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-v1-to-v2-migration-guide.html)
-
 
 ```bash
 npm i -g ask-cli
@@ -201,40 +209,7 @@ Once you have taken a look around the Hello World, we recommend repeating the pr
 the Fruit Shop demonstration skill to start exploring a more interesting skill. Section
 'Exploring the Fruit shop skill' provides a discussion.
 
-## 2.1. Tool chain for developing a skill with Controls
-
-The workflow when using the Controls Framework will be largely the same as for any
-Node.js skill that uses ASK-SDK v2 for Node.js.  We recommend using the following in your
-tool-chain:
-
-- Visual Studio Code
-- Node.js v10.16 or higher
-- Typescript v3.9 or higher
-- ASK-SDK v2 for Node.js
-- Alexa Skills Kit (ASK) Toolkit extension v2 for Visual Studio Code
-- ASK local-debugging
-- ASK-CLI v2
-- Alexa developer portal (for testing your skill, including APL)
-- ESLint (which supersedes TSLint)
-- A regression test framework such as mocha + chai.
-
-## 2.2. Javascript or Typescript?
-
-Skills that use the Controls framework can be written in JavaScript or Typescript and
-there is no functional or performance difference from the choice. The ASK-SDK dev team
-uses TypeScript as we find that our personal productivity is greatly increased (roughly
-2x-4x).  The benefits arise from superior intellisense, stronger linting rules, and from
-finding bugs at edit & build time rather than at runtime.  If you haven't tried TypeScript
-for skill building, we recommend you give it a try! Seriously :)
-
-If you prefer JavaScript you may be interested to know that some of the benefits of
-TypeScript can be brought to a pure JavaScript codebase. See [Migrating from
-JavaScript](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html)
-and [Type Checking JavaScript
-Files](https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html)
-at www.typescriptlang.org for more information.
-
-## 2.3. Getting diagnostics and tracking the runtime call flow
+## 2.4. Getting diagnostics and tracking the runtime call flow
 
 The Controls Framework produces diagnostic information via the [Debug
 package (npm)](https://www.npmjs.com/package/debug). To get maximum detail, set the following
@@ -244,13 +219,13 @@ environment variable.
 export DEBUG="error:*, warn:*, info:*, debug:*"
 ```
 
-## 2.4. Creating a launch configuration for vscode (launch.json)
+## 2.5. Creating a launch configuration for vscode (launch.json)
 
 When running in Visual Studio Code, it is necessary to create a `launch.json` to provide targets for running the skill, running regression
 tests and running the interaction-model builder.  See the `ide/` folder in the sample
 skills for example launch commands.
 
-## 2.5. Run the regression tests
+## 2.6. Run the regression tests
 
 You can run the regression tests for the sample skills at the command line:
 
@@ -263,7 +238,7 @@ Alternatively, run the unit tests in vscode via the `Launch Tests` launch target
 above. In either case, set the `DEBUG` environment variable if you wish to see detailed
 diagnostic output.
 
-## 2.6. Build the interaction model for the skill
+## 2.7. Build the interaction model for the skill
 
 The Controls Framework provides APIs to create _interaction-model builder_ scripts that
 extract data from Controls and merge with existing `model.json` files along with custom
@@ -282,92 +257,6 @@ node src/build_interaction_model.js
 
 If you wish to launch the builder script in vscode, see the `ide/` folder for an example
 launch.json file with suitable targets.
-
-## 2.7. Get the source code
-
-To get the Controls Framework source code for perusal or for development, clone the
-ASK-SDK Controls Github repo.
-
-```bash
-git clone https://github.com/alexa/ask-sdk-controls
-```
-
-## 2.8. Run the Controls Framework regression tests
-
-The regression tests included in the Controls Framework are a good resource for learning.
-One way to use them is to step through individual tests inside Visual Studio Code:
-
-1. Clone the framework code.
-2. Copy the launch.json from `./ide/vscode/launch.json` to `./vscode`.
-3. Find an interesting test, mark it as `test.only()` then step into it with `F5` (Debug:
-   Start Debugging)
-
-
-## 2.9. Your first skill using controls
-
-This section is a quick walk-through of the steps to create a skill using Controls. The
-following sections will go in to the details.
-
-The Controls framework provides a library of pre-made controls that offer solutions for
-common interactions scenarios such as presenting a list of options to a user. These
-controls include their own interaction models which can be merged with your existing
-skill's interaction model.
-
-As an example, we'll add a [ListControl](https://ask-sdk-controls-typedoc.s3.amazonaws.com/modules/_commoncontrols_listcontrol_listcontrol_.html) that asks users to select their favorite color to an existing skill:
-
-1. Instantiate the ListControl within a custom
-   [ControlManager](http://ask-sdk-controls-typedoc.s3-website-us-east-1.amazonaws.com/modules/_controls_controlmanager_.html).
-
-    ```js
-    // index.js
-
-    const { ListControl, ControlManager, ControlHandler } = require('ask-sdk-controls');
-    ...
-
-    class SkillControlManager extends ControlManager {
-      createControlTree() {
-        const colorsListControl = new ListControl({
-            prompts: {
-                requestValue: "What is your favorite color?",
-                valueSet: (act) => {
-                    return `I'll remember your favorite color is ${act.state.value}`;
-                }
-            },
-            listItemIDs: () => ["red", "green", "blue", "yellow", "purple"]
-        });
-
-        return colorsListControl;
-      }
-    }
-
-    exports.handler = Alexa.SkillBuilders.custom()
-      .addRequestHandlers(new ControlHandler(new SkillControlManager()))
-      .lambda();
-    ```
-
-2. Create a `build_interaction_models.js` script to generate and merge the ListControl's interaction model with your skill's own interaction model:
-
-    ```js
-    const { ControlInteractionModelGenerator } = require('ask-sdk-controls');
-
-    new ControlInteractionModelGenerator()
-        .loadFromFile('./my-en-US.json') // load hand-written model, if needed
-        .buildCoreModelForControls(new SkillControlManager())
-        .buildAndWrite("./en-US-generated.json");
-    ```
-
-3. Run `build_interaction_models.js` script to build a new interaction model with one that includes the library control interaction models included:
-
-    ```bash
-    node ./build_interaction_model.js
-    ```
-
-4. Replace your skill package's interaction model with the generated version.
-
-    ```bash
-    mv ./en-US-generated.json ./skill-package/interactionModels/custom/en-US.json
-    ```
-
 
 # 3. Exploring the HelloWorld (Controls) skill
 
@@ -645,7 +534,7 @@ Before digging further into the details lets review the purpose of each control:
 
 - **FruitShopControl**: The root control takes care of application-wide events, such as
   `LaunchRequest`. It delegates most inputs to its children.
-- **FruitShopControl**: The workhorse of this skill.  It manages a shopping cart of items
+- **ShoppingCartControl**: The workhorse of this skill.  It manages a shopping cart of items
   and orchestrates its child controls to produce a coherent experience.  It delegates
   simple inputs to its children.
 - **CategoryControl**: An instance of the reusable `ListControl` which "obtains from the
@@ -1086,6 +975,12 @@ good place to start.
 
 # 5. Developing with Controls
 
+The central concept of Controls is that a skill can be built from *controls* that encapsulate portions of
+the skill's state and dialog logic such that controls can be developed independently and
+then composed together to build an entire skill. The framework provides patterns for
+building and grouping controls and it defines the rules regarding how controls should
+interact.
+
 Building a skill using Controls can take a bit of a mental adjustment for developers who
 are used to implementing skills with a list of `RequestHandlers`.  The payoff for this
 leap is that dialog-rich skills can be built using structured and extensible patterns. A
@@ -1218,17 +1113,27 @@ its children as though they are leaf controls.
 
 ## 5.3. Runtime flow
 
+An ASK SDK `RequestHandler` receives the incoming `Request`. The framework provides a runtime (`ControlHandler`) that can be used as a standalone
+`RequestHandler` or incorporated into an existing one.  The `ControlHandler` drives the
+processing of each turn as a sequence of phases:
+
+1. ***Initialization phase***: Constructs a tree of controls and deserializes their state.
+2. ***'Can Handle' phase***: Determines a specific chain of controls in the tree that will
+   handle the input.
+3. ***Handle phase***: Walks the handling chain to make state updates, call business
+   functions, and produce results for the user.
+4. ***Initiative phase (if needed)***. Determines a chain of control to *take the
+   initiative* and continue the dialog. This phase runs if the handle phase did not
+   take or continue the initiative.
+5. ***Render phase*** Transforms the results into a complete user-facing response that
+   includes speech, APL or both.
+6. ***Shutdown phase*** Collects and serializes the state of each control and returns
+   the complete response.
+
 The following diagram shows the high-level runtime flow as a `Request` is consumed and a
 `Response` generated.
 
 ![Fruit Shop](img/requestHandling.png "High-level runtime flow")
-
-An ASK-SDK `RequestHandler` receives the incoming Request.  The `ControlHandler` class is
-provided by the framework and it implements the `RequestHandler` interface so it can be
-used either directly or called from within an existing request handler.  The
-`ControlHandler` runs the six phases of processing: initialization, canHandle,
-handle, initiative, render, and shutdown.
-
 
 ### 5.3.1. Initialization phase
 
@@ -2295,7 +2200,71 @@ orchestrate all the behaviors needed.
 
 # 6. Additional topics
 
-## 6.1. Migrating from the Custom Skills Dialog Interface
+## 6.1. Adding Controls to an existing skill
+
+This section is a quick walk-through of the steps to add Controls to an existing skill.
+
+The Controls framework provides a library of pre-made controls that offer solutions for
+common interactions scenarios such as presenting a list of options to a user. These
+controls include their own interaction models which can be merged with your existing
+skill's interaction model.
+
+As an example, we'll add a [ListControl](https://ask-sdk-controls-typedoc.s3.amazonaws.com/modules/_commoncontrols_listcontrol_listcontrol_.html) that asks users to select their favorite color to an existing skill:
+
+1. Instantiate the ListControl within a custom
+   [ControlManager](http://ask-sdk-controls-typedoc.s3-website-us-east-1.amazonaws.com/modules/_controls_controlmanager_.html).
+
+    ```js
+    // index.js
+
+    const { ListControl, ControlManager, ControlHandler } = require('ask-sdk-controls');
+    ...
+
+    class SkillControlManager extends ControlManager {
+      createControlTree() {
+        const colorsListControl = new ListControl({
+            prompts: {
+                requestValue: "What is your favorite color?",
+                valueSet: (act) => {
+                    return `I'll remember your favorite color is ${act.state.value}`;
+                }
+            },
+            listItemIDs: () => ["red", "green", "blue", "yellow", "purple"]
+        });
+
+        return colorsListControl;
+      }
+    }
+
+    exports.handler = Alexa.SkillBuilders.custom()
+      .addRequestHandlers(new ControlHandler(new SkillControlManager()))
+      .lambda();
+    ```
+
+2. Create a `build_interaction_models.js` script to generate and merge the ListControl's interaction model with your skill's own interaction model:
+
+    ```js
+    const { ControlInteractionModelGenerator } = require('ask-sdk-controls');
+
+    new ControlInteractionModelGenerator()
+        .loadFromFile('./my-en-US.json') // load hand-written model, if needed
+        .buildCoreModelForControls(new SkillControlManager())
+        .buildAndWrite("./en-US-generated.json");
+    ```
+
+3. Run `build_interaction_models.js` script to build a new interaction model with one that includes the library control interaction models included:
+
+    ```bash
+    node ./build_interaction_model.js
+    ```
+
+4. Replace your skill package's interaction model with the generated version.
+
+    ```bash
+    mv ./en-US-generated.json ./skill-package/interactionModels/custom/en-US.json
+    ```
+
+## 6.2. Migrating from the Custom Skills Dialog Interface
 
 Many developers use the [Dialog
 Management](https://developer.amazon.com/en-US/alexa/alexa-skills-kit/dialog-management)
@@ -2343,7 +2312,7 @@ user's response. Dialog directives can set a `updatedIntent` to sequence statefu
 together. See the library controls for examples of using `Dialog.ElicitSlot`.
 
 
-## 6.2. Internationalization and Localization
+## 6.3. Internationalization and Localization
 
 The Controls Framework is built to be used internationally.  The framework codebase
 currently contains localization data (strings, etc) for 'en-US' and new locales can be
@@ -2374,7 +2343,7 @@ export const myResources: Resource = {
 }
 ```
 
-### 6.2.1. Creating a localized interaction model
+### 6.3.1. Creating a localized interaction model
 
 Use new translations at build time by updating the interaction model generator script:
 
@@ -2390,7 +2359,7 @@ Use new translations at build time by updating the interaction model generator s
 - **Line 3**:  The locale of the interaction model to generate is specified, as is the bag
   of additional localization data.
 
-### 6.2.2. Using localized data at runtime.
+### 6.3.2. Using localized data at runtime.
 
 At runtime there are two i18n instances: one is used by the framework and is configured
 during construction of the `ControlManager`.  The other is for the custom skill and can be
@@ -2442,7 +2411,25 @@ this.categoryControl = new ListControl(
        ...
 ```
 
-# 7. Reference
+# 7. Contributing
+
+## 7.1. Get the source code
+
+To get the Controls Framework source code for perusal or for development, clone the ASK-SDK Controls Github repo.
+
+```
+git clone https://github.com/alexa/ask-sdk-controls
+```
+
+## 7.2. Run the Controls Framework regression tests
+
+The regression tests included in the Controls Framework are a good resource for learning. One way to use them is to step through individual tests inside Visual Studio Code:
+
+1. Clone the framework code.
+2. Copy the launch.json from `./ide/vscode/launch.json` to `./vscode`.
+3. Find an interesting test, mark it as `test.only()` then step into it with `F5` (Debug: Start Debugging)
+
+# 8. Reference
 
 For per-class and per-method documentation, please see the [Technical
 documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
