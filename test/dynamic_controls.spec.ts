@@ -93,7 +93,7 @@ export class MyMultiControl extends ContainerControl {
     }
 
     reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
-        if (state) {
+        if (state !== undefined) {
             this.setSerializableState(state);
         }
 
@@ -143,7 +143,7 @@ export class MyMultiControl extends ContainerControl {
         request = request as IntentRequest; // assume IntentRequest.
         await this.handleByChild(input, resultBuilder);
 
-        if (this.children[0].isReady(input) && this.children.length === 1) {
+        if ((await this.children[0].isReady(input)) && this.children.length === 1) {
             // Dynamically add the second child
             this.addChild(this.makeLastNameControl());
             this.state.childrenTypes.push('lastName');

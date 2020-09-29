@@ -159,7 +159,7 @@ export abstract class Control implements IControl {
      *    here and reestablish their state.
      */
     reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
-        if (state) {
+        if (state !== undefined) {
             this.setSerializableState(state);
         }
     }

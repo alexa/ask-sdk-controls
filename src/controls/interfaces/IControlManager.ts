@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { HandlerInput } from 'ask-sdk-core/dist/dispatcher/request/handler/HandlerInput';
+import { HandlerInput } from 'ask-sdk-core';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import { IControl } from './IControl';
 import { IControlInput } from './IControlInput';

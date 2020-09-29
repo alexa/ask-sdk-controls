@@ -1,4 +1,4 @@
-import { HandlerInput } from 'ask-sdk-core/dist/dispatcher/request/handler/HandlerInput';
+
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -11,6 +11,8 @@ import { HandlerInput } from 'ask-sdk-core/dist/dispatcher/request/handler/Handl
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
+import { HandlerInput } from 'ask-sdk-core';
 import i18next, { Resource } from 'i18next';
 import _ from 'lodash';
 import { defaultI18nResources } from '../commonControls/LanguageStrings';
@@ -18,7 +20,7 @@ import { Control } from '../controls/Control';
 import { implementsInteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import {
     ControlInteractionModelGenerator,
-    generateModelData,
+    generateModelData
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -263,11 +265,11 @@ export abstract class ControlManager implements IControlManager {
         );
     }
 
-    static saveControlStateToSessionAttributes(state: any, handlerInput: HandlerInput, attributeKey: string) {
+    static saveControlStateToSessionAttributes(state: any, handlerInput: HandlerInput, attributeKey: string): void {
         handlerInput.attributesManager.getSessionAttributes()[attributeKey] = state;
     }
 
-    static loadControlStateMapFromSessionAttributes(handlerInput: HandlerInput, attributeKey: string) {
+    static loadControlStateMapFromSessionAttributes(handlerInput: HandlerInput, attributeKey: string): {[key: string]: any} {
         const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[attributeKey];
         const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
         return stateMap;

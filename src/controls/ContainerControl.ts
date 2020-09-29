@@ -81,7 +81,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
 
     // jsDoc: see `Control`
     constructor(props: ContainerControlProps) {
-        //TODO: add this to the other standard controls.
+        //TODO: add this to the other standard controls.  // STALE COMMENT?
         super(props.id);
         this.rawProps = props;
         this.props = ContainerControl.mergeWithDefaultProps(props);
@@ -91,10 +91,14 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         if (state !== undefined) {
             this.setSerializableState(state);
         }
-
+        this.recreateDynamicChildren(state, controlStateMap);
         for (const child of this.children) {
             child.reestablishState(controlStateMap[child.id], controlStateMap);
         }
+    }
+
+    recreateDynamicChildren(state: any, controlStateMap: { [index: string]: any }): void {
+       
     }
 
     static mergeWithDefaultProps(props: ContainerControlProps): any {
