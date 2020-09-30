@@ -5,7 +5,7 @@
     "main": "dist/src/index.js",
     "types": "dist/src/index.d.ts",
     "scripts": {
-        "build": "tsc && npm run copyTestSupportFiles && npm run lint",
+        "build": "tsc && npm run copyTestSupportFiles",
         "copyTestSupportFiles": "[ -d dist/test/mock ] || mkdir dist/test/mock && cp test/mock/* dist/test/mock/",
         "watch": "tsc-watch --onSuccess 'npm run copyTestSupportFiles'",
         "lint": "eslint \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",

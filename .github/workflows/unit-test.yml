@@ -4,6 +4,9 @@ on:
   push:
     paths-ignore:
       - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
 
 jobs:
   build:
@@ -20,5 +23,5 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
-    - run: npm run lint
-    - run: npm run test
+    - run: npm run release
+    - run: npm run build
