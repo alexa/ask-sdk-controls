@@ -303,6 +303,11 @@ export class ValueControl extends Control implements InteractionModelContributor
         this.props = ValueControl.mergeWithDefaultProps(props);
     }
 
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: ValueControlProps): DeepRequired<ValueControlProps> {
         const defaults: DeepRequired<ValueControlProps> = {
             id: 'dummy',

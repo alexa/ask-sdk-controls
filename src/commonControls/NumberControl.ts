@@ -291,6 +291,11 @@ export class NumberControl extends Control implements InteractionModelContributo
         this.props = NumberControl.mergeWithDefaultProps(props);
     }
 
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: NumberControlProps): DeepRequired<NumberControlProps> {
         const defaults: DeepRequired<NumberControlProps> = {
             id: 'placeholder',

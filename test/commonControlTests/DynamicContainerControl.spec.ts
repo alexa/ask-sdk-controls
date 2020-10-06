@@ -13,17 +13,27 @@ import { IntentRequest } from 'ask-sdk-model';
  */
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { SingleValueControlIntent, Strings, unpackSingleValueControlIntent, ValueControl } from '../src';
-import { ContainerControl, ContainerControlState } from '../src/controls/ContainerControl';
-import { Control } from '../src/controls/Control';
-import { ControlInput } from '../src/controls/ControlInput';
-import { ControlManager } from '../src/controls/ControlManager';
-import { ControlResultBuilder } from '../src/controls/ControlResult';
-import { unpackGeneralControlIntent } from '../src/intents/GeneralControlIntent';
-import { ControlHandler } from '../src/runtime/ControlHandler';
-import { SkillInvoker } from '../src/utils/testSupport/SkillInvoker';
-import { wrapRequestHandlerAsSkill } from '../src/utils/testSupport/SkillWrapper';
-import { TestInput, waitForDebugger } from '../src/utils/testSupport/TestingUtils';
+import {
+    NumberControl,
+    SingleValueControlIntent,
+    Strings,
+    unpackSingleValueControlIntent,
+    ValueControl,
+} from '../../src';
+import { ContainerControl } from '../../src/controls/ContainerControl';
+import { Control } from '../../src/controls/Control';
+import { ControlInput } from '../../src/controls/ControlInput';
+import { ControlManager } from '../../src/controls/ControlManager';
+import { ControlResultBuilder } from '../../src/controls/ControlResult';
+import {
+    DynamicContainerControl,
+    DynamicControlSpecification,
+} from '../../src/controls/DynamicContainerControl';
+import { unpackGeneralControlIntent } from '../../src/intents/GeneralControlIntent';
+import { ControlHandler } from '../../src/runtime/ControlHandler';
+import { SkillInvoker } from '../../src/utils/testSupport/SkillInvoker';
+import { wrapRequestHandlerAsSkill } from '../../src/utils/testSupport/SkillWrapper';
+import { TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
 waitForDebugger();
 
@@ -35,6 +45,24 @@ waitForDebugger();
  * state.
  */
 suite('== dynamic controls ==', () => {
+    test('static and dynamic controls can coexist. adding and removing dynamic child controls works as expected', async () => {
+        const control = new DynamicNumbersControl({ id: 'root' });
+
+        control.addChild(new NumberControl({ id: 'staticChild_1' }));
+
+        control.addDynamicChild({ id: 'dynamicChild_1' });
+        control.addDynamicChild({ id: 'dynamicChild_2' });
+        control.addDynamicChild({ id: 'dynamicChild_3' });
+
+        expect(control.children.length).equal(4);
+        expect(control.state.dynamicChildSpecifications.length).equal(3);
+
+        control.removeDynamicControl('dynamicChild_2');
+        expect(control.children.length).equal(3);
+        expect(control.state.dynamicChildSpecifications.length).equal(2);
+        expect(control.children.find((x) => x.id === 'dynamicChild_2')).undefined;
+    });
+
     test('e2e', async () => {
         let response;
 
@@ -51,6 +79,18 @@ suite('== dynamic controls ==', () => {
     });
 });
 
+// -------------
+// Support classes for simple tests
+
+class DynamicNumbersControl extends DynamicContainerControl {
+    createDynamicChild(specification: DynamicControlSpecification): Control {
+        return new NumberControl({ id: specification.id });
+    }
+}
+
+// -------------
+// Support classes for e2e tests
+
 export class VariableControlsManager extends ControlManager {
     public createControlTree(): Control {
         const root = new ContainerControl({ id: 'root' });
@@ -59,57 +99,21 @@ export class VariableControlsManager extends ControlManager {
     }
 }
 
-export class MyMultiControlState extends ContainerControlState {
-    childrenTypes: string[] = [];
-
-    constructor(childrenTypes: string[] = []) {
-        super();
-        this.childrenTypes = childrenTypes;
-    }
-}
-
 /**
  * A custom container control that initially has no children. As the skill
  * session progresses it adds one and then another child.
  *
- * See reestablishState which does the custom logic to rebuild the tree on
- * subsequent turns so that the structure is correct and the state is
- * reestablished.
+ * The only information that needs to be tracked to recreate the controls is
+ * their id, hence the call to `addDynamicChild(specification = { id: 'firstName' })`.
  *
- * Note that only the variable state for the child controls is saved.. the props,
- * which are static and which may include arbitrary functions, are not saved but
- * rather they are rebuilt. E.g. see this.makeFirstNameControl() which recreates
- * the control.  after this re-creation, its state is reattached.
+ * It is in createDynamicChild that the dynamic controls are actually created.
  */
-export class MyMultiControl extends ContainerControl {
-    state: MyMultiControlState;
-
-    // a flag to help with prompt specialization.
+export class MyMultiControl extends DynamicContainerControl {
+    /**
+     * a flag to help with prompt specialization. Note: this is not tracked in
+     * state as it does not need to persist between turns
+     */
     wasTheFirstNameCapturedThisTurn: boolean;
-
-    constructor(props: { id: string }) {
-        super(props);
-        this.state = new MyMultiControlState();
-    }
-
-    reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
-        if (state !== undefined) {
-            this.setSerializableState(state);
-        }
-
-        // refresh child controls by inspecting this.state.childrenTypes
-        // Note that the child control IDs must be recreated without change.
-        for (const [idx, childType] of this.state.childrenTypes.entries()) {
-            if (childType === 'firstName') {
-                this.addChild(this.makeFirstNameControl());
-            }
-            if (childType === 'lastName') {
-                this.addChild(this.makeLastNameControl());
-            }
-        }
-
-        super.reestablishState(state, controlStateMap);
-    }
 
     async canHandle(input: ControlInput): Promise<boolean> {
         let request = input.request;
@@ -136,8 +140,7 @@ export class MyMultiControl extends ContainerControl {
         let request = input.request;
         if (request.type === 'LaunchRequest') {
             // Dynamically add the first child
-            this.addChild(this.makeFirstNameControl());
-            this.state.childrenTypes.push('firstName');
+            this.addDynamicChild({ id: 'firstName' });
             return;
         }
         request = request as IntentRequest; // assume IntentRequest.
@@ -145,14 +148,24 @@ export class MyMultiControl extends ContainerControl {
 
         if ((await this.children[0].isReady(input)) && this.children.length === 1) {
             // Dynamically add the second child
-            this.addChild(this.makeLastNameControl());
-            this.state.childrenTypes.push('lastName');
+            this.addDynamicChild({ id: 'lastName' });
 
             // And set a flag to tweak the next prompt a little
             // Note, this type of this is not tracked in state
             this.wasTheFirstNameCapturedThisTurn = true;
         }
         return;
+    }
+
+    createDynamicChild(spec: DynamicControlSpecification): Control {
+        switch (spec.id) {
+            case 'firstName':
+                return this.makeFirstNameControl();
+            case 'lastName':
+                return this.makeLastNameControl();
+            default:
+                throw new Error('unknown');
+        }
     }
 
     makeFirstNameControl(): Control {

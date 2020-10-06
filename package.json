@@ -72,8 +72,18 @@
                 "section": "Features"
             },
             {
+                "type": "feat_",
+                "section": "Feature work - not included in Changelog",
+                "hidden": true
+            },
+            {
                 "type": "fix",
                 "section": "Bug Fixes"
+            },
+            {
+                "type": "fix_",
+                "section": "Bug Fixes - not included in Changelog",
+                "hidden": true
             },
             {
                 "type": "chore",
@@ -82,6 +92,11 @@
             {
                 "type": "docs",
                 "section": "Docs"
+            },
+            {
+                "type": "docs_",
+                "section": "Doc work - not included in Changelog",
+                "hidden": true
             },
             {
                 "type": "style",

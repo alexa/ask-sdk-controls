@@ -343,6 +343,11 @@ export class DateControl extends Control implements InteractionModelContributor 
         this.props = DateControl.mergeWithDefaultProps(props);
     }
 
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: DateControlProps): DeepRequired<DateControlProps> {
         const defaults: DeepRequired<DateControlProps> = {
             id: 'dummy',

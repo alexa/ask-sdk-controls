@@ -438,6 +438,11 @@ export class ListControl extends Control implements InteractionModelContributor 
         this.props = ListControl.mergeWithDefaultProps(props);
     }
 
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: ListControlProps): DeepRequired<ListControlProps> {
         const defaults: DeepRequired<ListControlProps> = {
             id: 'dummy',

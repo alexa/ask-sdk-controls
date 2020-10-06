@@ -71,6 +71,11 @@ export { Control, ControlProps } from './controls/Control';
 export { ControlInput } from './controls/ControlInput';
 export { ControlManager, renderActsInSequence } from './controls/ControlManager';
 export { ControlResult, ControlResultBuilder } from './controls/ControlResult';
+export {
+    DynamicContainerControl,
+    DynamicContainerControlState,
+    DynamicControlSpecification,
+} from './controls/DynamicContainerControl';
 export { AmazonIntent } from './intents/AmazonBuiltInIntent';
 export { AmazonBuiltInSlotType } from './intents/AmazonBuiltInSlotType';
 export { BaseControlIntent } from './intents/BaseControlIntent';

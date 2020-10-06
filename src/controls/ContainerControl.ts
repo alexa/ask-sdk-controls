@@ -39,6 +39,9 @@ export class ContainerControlState implements ControlState {
     lastInitiativeChild?: ChildActivityRecord; // ditto.
 }
 
+/**
+ * Defines the mandatory props of a ContainerControl.
+ */
 export class ContainerControlProps implements ControlProps {
     id: string;
 }
@@ -87,20 +90,21 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         this.props = ContainerControl.mergeWithDefaultProps(props);
     }
 
+    // jsDoc: see `Control`
     reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
         if (state !== undefined) {
             this.setSerializableState(state);
         }
-        this.recreateDynamicChildren(state, controlStateMap);
         for (const child of this.children) {
             child.reestablishState(controlStateMap[child.id], controlStateMap);
         }
     }
 
-    recreateDynamicChildren(state: any, controlStateMap: { [index: string]: any }): void {
-       
-    }
-
+    /**
+     * Merges the user-provided props with the default props.
+     *
+     * Any property defined by the user-provided data overrides the defaults.
+     */
     static mergeWithDefaultProps(props: ContainerControlProps): any {
         const defaults: ContainerControlCompleteProps = {
             id: 'dummy',
@@ -110,6 +114,8 @@ export class ContainerControl extends Control implements IContainerControl, Cont
 
     /**
      * Add a control as a child.
+     *
+     * The control is appended to the end of the `this.children` array.
      *
      * @param control - Control
      * @returns the container

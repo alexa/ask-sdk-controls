@@ -152,11 +152,13 @@ export abstract class Control implements IControl {
     /**
      * Reestablishes the state of the control.
      *
-     * Default: simply reattaches the serialized state.
-     *
-     * Usage:
-     *  - If a custom control has dynamically-created children, rebuild them
-     *    here and reestablish their state.
+     * Default implementations:
+     *  - `Control`: reestablishes the state via `this.setSerializableState(state)`.
+     *  - `ContainerControl`: reestablishes the `state` and recursively reestablishes
+     *    state for all children.
+     *  - `DynamicContainerControl`: reestablishes the `state`, rebuilds any
+     *    dynamic child controls, and recursively reestablishes state for all
+     *    children.
      */
     reestablishState(state: any, controlStateMap: { [index: string]: any }): void {
         if (state !== undefined) {

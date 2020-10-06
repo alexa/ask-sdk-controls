@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -20,7 +19,7 @@ import { Control } from '../controls/Control';
 import { implementsInteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import {
     ControlInteractionModelGenerator,
-    generateModelData
+    generateModelData,
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -265,11 +264,18 @@ export abstract class ControlManager implements IControlManager {
         );
     }
 
-    static saveControlStateToSessionAttributes(state: any, handlerInput: HandlerInput, attributeKey: string): void {
+    static saveControlStateToSessionAttributes(
+        state: any,
+        handlerInput: HandlerInput,
+        attributeKey: string,
+    ): void {
         handlerInput.attributesManager.getSessionAttributes()[attributeKey] = state;
     }
 
-    static loadControlStateMapFromSessionAttributes(handlerInput: HandlerInput, attributeKey: string): {[key: string]: any} {
+    static loadControlStateMapFromSessionAttributes(
+        handlerInput: HandlerInput,
+        attributeKey: string,
+    ): { [key: string]: any } {
         const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[attributeKey];
         const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
         return stateMap;
