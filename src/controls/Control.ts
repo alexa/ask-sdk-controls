@@ -45,13 +45,14 @@ export interface ControlState {
  * Abstract base class for Controls.
  *
  * Purpose:
- *  - this class provides a simpler way to define a control than direct implementation
- *    of IControl.  Various default implementations are provided.
+ *  - this class provides a simpler way to define a control than direct
+ *    implementation of IControl.  Various default implementations are provided.
  *
  * Usage:
  *  - Define new control types by sub-classing this abstract class and providing
  *    implementations for the abstract methods.
- *  - If the custom control will have children, sub-class `ContainerControl` instead.
+ *  - If the custom control will have children, sub-class `ContainerControl`
+ *    instead.
  */
 export abstract class Control implements IControl {
     readonly id: string;
@@ -132,10 +133,12 @@ export abstract class Control implements IControl {
      * Takes initiative by adding an InitiativeAct to the result.
      *
      * Framework behavior:
-     * * The initiative phase runs if the handling phase did not produce a responseItem that has `.takesInitiative = true`.
+     * * The initiative phase runs if the handling phase did not produce a
+     *   responseItem that has `.takesInitiative = true`.
      *
      * @param input - Input object.
-     * @param resultBuilder - ResultBuilder. Collect `SystemActs` that represent the system output.
+     * @param resultBuilder - ResultBuilder. Collect `SystemActs` that represent
+     * the system output.
      */
     abstract takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void | Promise<void>;
 
@@ -143,7 +146,8 @@ export abstract class Control implements IControl {
      * Determines if the value is ready for use by other parts of the skill.
      *
      * @param input - Input object.
-     * @returns `true` if the Control or one of its children can take the initiative, false otherwise.
+     * @returns `true` if the Control or one of its children can take the
+     * initiative, false otherwise.
      */
     async isReady(input: ControlInput): Promise<boolean> {
         return !(await this.canTakeInitiative(input));
@@ -153,9 +157,10 @@ export abstract class Control implements IControl {
      * Reestablishes the state of the control.
      *
      * Default implementations:
-     *  - `Control`: reestablishes the state via `this.setSerializableState(state)`.
-     *  - `ContainerControl`: reestablishes the `state` and recursively reestablishes
-     *    state for all children.
+     *  - `Control`: reestablishes the state via
+     *    `this.setSerializableState(state)`.
+     *  - `ContainerControl`: reestablishes the `state` and recursively
+     *    reestablishes state for all children.
      *  - `DynamicContainerControl`: reestablishes the `state`, rebuilds any
      *    dynamic child controls, and recursively reestablishes state for all
      *    children.
@@ -169,23 +174,33 @@ export abstract class Control implements IControl {
     /**
      * Gets the Control's state as an object that is serializable.
      *
-     * Only durable state should be included and the object should be serializable with a
-     * straightforward application of `JSON.stringify(object)`.
+     * Only durable state should be included and the object should be
+     * serializable with a straightforward application of
+     * `JSON.stringify(object)`.
      *
-     * Default:
-     *  `{return this.state;}`
+     * Default: `{return this.state;}`
      *
      * Usage:
-     *  * The default is sufficient for Controls that use the `.state` variable and only store simple data.
-     *    * Non-simple data includes functions, and objects with functions, as these will not survive the round trip.
+     *  * This method must be idempotent (multiple calls must not change the
+     *    result).
+     *  * The default is sufficient for Controls that use the `.state` variable
+     *    and only store simple data.
+     *    * Non-simple data includes functions, and objects with functions, as
+     *      these will not survive the round trip.
      *    * Other non-simple data include types with non-enumerable properties.
-     *  * It is safe to pass the actual state object as the framework guarantees to not mutate it.
-     *  * Functions that operate on the Control's state should be defined as members of the Control
+     *  * It is safe to pass the actual state object as the framework guarantees
+     *    to not mutate it.
+     *  * Functions that operate on the Control's state should be defined as
+     *    member function of the Control type, or as props.
      *
      * Framework behavior:
-     *  * The framework serializes the data use a simple application of `JSON.stringify`.
-     *  * On the subsequent turn the control tree is re-established and the state objects
-     *    are re-attached to each Control via `control.setSerializableState(serializedState)`.
+     *  * During the shutdown phase the state of the control tree is collected
+     *    by calling this function for each control.
+     *  * The framework serializes the data use a simple application of
+     *    `JSON.stringify`.
+     *  * On the subsequent turn the control tree is rebuilt and the state
+     *    objects are re-attached to each Control via
+     *    `control.setSerializableState(serializedState)`.
      *
      * @returns Serializable object defining the state of the Control
      */
@@ -196,17 +211,21 @@ export abstract class Control implements IControl {
     /**
      * Sets the state from a serialized state object.
      *
-     * Default:
-     * `{this.state = serializedState;}`
+     * Default: `{this.state = serializedState;}`
      *
      * Usage:
-     *  * It is safe to use serializedState without copying as the framework guarantees to not mutate it.
+     *  * This method must be idempotent (multiple calls must not change the
+     *    result).
+     *  * It is safe to use serializedState without copying as the framework
+     *    guarantees to not mutate it.
      *
      * Framework behavior:
-     *  * After the control tree is re-established, the state objects
-     *    are re-attached to each Control via `control.setSerializableState(serializedState)`.
+     *  * During the initialization phase the control tree is rebuilt and state
+     *    objects are re-attached to controls by calling this method for each
+     *    control.
      *
-     * @param serializedState - Serializable object defining the state of the Control
+     * @param serializedState - Serializable object defining the state of the
+     * Control
      */
     public setSerializableState(serializedState: any): void {
         this.state = serializedState;
@@ -215,8 +234,9 @@ export abstract class Control implements IControl {
     /**
      * Add response content for a system act produced by this control.
      *
-     * This is intended to be used with the default ControlManager.render() which implements a
-     * simple concatenation strategy to form a complete response from multiple result items.
+     * This is intended to be used with the default ControlManager.render()
+     * which implements a simple concatenation strategy to form a complete
+     * response from multiple result items.
      *
      * @param act - System act
      * @param input - Input
@@ -236,7 +256,8 @@ export abstract class Control implements IControl {
      * Evaluate a prompt prop.
      *
      * @param act - act
-     * @param propValue - Constant or function producing String or List-of-Strings
+     * @param propValue - Constant or function producing String or
+     * List-of-Strings
      * @param input - Input object
      */
     evaluatePromptProp(
