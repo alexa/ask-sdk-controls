@@ -21,68 +21,95 @@ import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 const log = new Logger('AskSdkControls:DynamicContainerControl');
 
 /**
- * Base type for a dynamic control specification.
+ * Defines the minimal information for a dynamic control specification.
+ *
+ * Usage:
+ * - A specification should be the minimal information required to create a
+ *   dynamic control.  For example it may be enough to know just the ID if that
+ *   is one-to-one with the code to construct the control.  If it is necessary
+ *   to know both the ID and some type information, the specification should
+ *   contain both.
+ * - A specification should not contain any non-unique information.
+ * - A specification must be serializable via `JSON.stringify()`, or convertible
+ *      to a serializable form during `Control.getSerializableState()`
+ *
+ * Example:
+ * - Consider a `ContactDetailsControl` that adds controls of two different
+ *   types depending on what information the user needs to record. Lets assume
+ *   that the only dynamic data-fields are of type `PhoneNumberControl` &
+ *   `AddressControl`.  To uniquely define each dynamic control we need to know
+ *   the id, the type, and the purpose/target.  So an appropriate specification
+ *   would be:
+ * ```
+ * DynamicContactControlSpecification:{
+ *   id: string
+ *   type: {'phoneNumber', 'home'} | {'phoneNumber', 'work'} | {'address', 'home'} | ...
+ * }
+ *
+ * ```
+ *
+ * Note:
+ * - the `id` is a mandatory part of the specification because it is needed to
+ *   reattach the control's state object on subsequent turns.
  */
 export interface DynamicControlSpecification {
+    /**
+     * Unique identifier for the dynamic control.
+     */
     id: string;
 }
 
 /**
  * State information for a DynamicContainerControl
  *
- * The state comprises the usual state for a container control and adds tracking
- * of the dynamic controls that have been added.  This information is used to
- * recreate the child controls on subsequent turns.
- *
- * Each specification should be a POJO object describing the unique
- * characteristics of the child control such as its ID.
+ * In addition to the usual state for a container control this adds tracking of
+ * the dynamic control specifications to aid recreation of the child controls on
+ * subsequent turns.
  */
 export class DynamicContainerControlState extends ContainerControlState {
     dynamicChildSpecifications: DynamicControlSpecification[] = [];
 }
 
 /**
- *  A ContainerControl that changes the set of child controls during a session.
+ *  A ContainerControl that adds/removes child controls during a session.
  *
  *  Purpose:
- *  - A DynamicContainerControl can delay and perhaps avoid the addition of
+ *  - A `DynamicContainerControl` delays and perhaps avoids the addition of
  *    child controls that are only needed occasionally.  By adding controls
  *    on-demand the control tree remains compact and easy to reason about. The
  *    alternative is to include all possible child controls and set them to be
- *    inactive until needed; this alternative is simpler when there are few
+ *    inactive until needed; this alternative may be simpler when there are few
  *    potential controls but is less convenient when there are many.
  *
  *  - A potential purpose is to support an unbounded number of child controls of
- *    a certain type (e.g. add-another-phone-number,
- *    add-another-filter-criteria). By adding additional controls the user can
- *    potentially refer to any of the children at any time (via each control's
- *    target prop) and each control can have its own durable state. However, if
- *    the user will only discuss one 'active' item at a time it may be simpler
- *    to use a static container control that manages the list data directly and
- *    which reconfigures static child controls whenever the active item changes.
+ *    a certain type (e.g. add-another-phone-number, add-another-address). By
+ *    adding additional controls the user can refer to any of the children at
+ *    any time (via each control's target prop) and each control can have its
+ *    own durable state. However, if the user will only discuss one 'active'
+ *    item at a time it may be simpler to use a regular container control that
+ *    manages the list data directly and which reconfigures static child
+ *    controls whenever the active item changes (see the FruitShop demo skill
+ *    for an example of this approach).
  *
- *  Details: The tricky part of managing a DynamicContainerControl is the
- *  re-initialization of the control at the start of each turn. To accomplish
- *  this, DynamicContainerControl introduces new conventions:
+ * Details:
  *
- *   1. The unique details for each dynamic control are tracked in `this.state`.
- *      The details for creation of a dynamic control is a minimal POJO called
- *      its `specification`.  In simple cases a child specification may be only
- *      the control ID but in complex cases it can be an object, or any object
- *      that can be converted to a serializable form during
- *      `Control.getSerializableState()`
- *   2. The built-in method `this.addDynamicChild(specification)` calls
- *      `this.createDynamicChild(specification)` to actually instantiate the
- *      control. `this.addDynamicChild()` also records that the child was
- *      created in `this.state.dynamicChildSpecifications`.
+ * The tricky part of managing a `DynamicContainerControl` is the
+ * re-initialization of the control at the start of each turn. To accomplish
+ * this, `DynamicContainerControl` introduces new conventions:
+ *
+ *   1. The minimal specification for each dynamic control is tracked in
+ *      `this.state.dynamicChildSpecifications`.
+ *   2. The built-in method `this.addDynamicChildBySpecification(specification)`
+ *      calls `this.createDynamicChild(specification)` to actually instantiate
+ *      the control. `this.addDynamicChildBySpecification()` also records that
+ *      the child was created in `this.state.dynamicChildSpecifications`.
  *
  * Usage:
  *   1. implement the abstract function `createDynamicChild(specification)` to
- *      create a control from a simple POJO describing the type of child
- *      required.
- *   2. in `handle()`, use `this.addDynamicChild(specification)` to add a
- *      dynamic child and `this.removeDynamicChild(control)` to remove a dynamic
- *      child.
+ *      create a control from a specification object.
+ *   2. in `handle()`, use `this.addDynamicChildBySpecification(specification)`
+ *      to add a dynamic child and `this.removeDynamicChild(control)` to remove
+ *      a dynamic child.
  *
  *  Example:
  * ```
@@ -90,11 +117,11 @@ export class DynamicContainerControlState extends ContainerControlState {
  *    handle(input, resultBuilder){
  *       // adding a new child control during handling.
  *       if(userWantsToAddFaxNumber){
- *         this.addDynamicChild('faxNumber')  // 'faxNumber' is the unique critical info to remember.
+ *         this.addDynamicChildBySpecification({id: 'faxNumber'})
  *       }
  *    }
  *
- *    createChildFromInfo(spec: DynamicControlSpecification): Control {
+ *    createDynamicChild(spec: DynamicControlSpecification): Control {
  *      switch(spec.id){
  *         case 'faxNumber': return new ListControl( ...propsForFaxNumber...)
  *         default: throw new Error('unknown child info');
@@ -109,17 +136,17 @@ export class DynamicContainerControlState extends ContainerControlState {
  *  `Control.reestablishState()` is to recreate a tree of controls in which each
  *  control includes both configuration props and state.  The first complication
  *  is that the configuration props are generally not serializable as they may
- *  contain functions and references.  Dynamic controls further complicate
+ *  contain functions and deep references. Dynamic controls further complicate
  *  matters as we cannot know which controls to rebuild until we have
  *  reestablished some state.
  *
  *  By rebuilding controls statically (normal case) and from POJO specifications
  *  (dynamic case) we can limit the information that must be tracked and still
- *  rebuild controls with all their complex props.  Overall, these patterns
- *  allow for arbitrarily complex props while ensuring that only the critical
- *  state information must be written and reloaded for each turn.
+ *  rebuild controls with all their complex props and state.  Overall, these
+ *  patterns allow for arbitrarily complex props while ensuring that only the
+ *  critical information is tracked between turns.
  *
- *  The dynamic-control pattern is standardized in DynamicContainerControl to
+ *  The dynamic-control pattern is standardized in `DynamicContainerControl` to
  *  reduce the need for developers to reinvent the wheel.
  */
 export abstract class DynamicContainerControl
@@ -143,7 +170,7 @@ export abstract class DynamicContainerControl
      * optional.  The specification must be serializable or convertible to a
      * serialized form.
      */
-    addDynamicChild(specification: DynamicControlSpecification): void {
+    addDynamicChildBySpecification(specification: DynamicControlSpecification): void {
         this.state.dynamicChildSpecifications.push(specification);
         this.addChild(this.createDynamicChild(specification));
     }

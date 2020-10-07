@@ -101,25 +101,25 @@ export class ControlHandler implements RequestHandler {
         this.controlManager.reestablishControlStates(this.rootControl, handlerInput);
 
         // create the input object for use in the main processing.
-        const controls = ControlHandler.createControlMap(this.rootControl, {});
+        const controlsMap = ControlHandler.createControlMap(this.rootControl, {});
         this.controlInput = new ControlInput(
             handlerInput,
             this.additionalSessionContext.turnNumber,
-            controls,
+            controlsMap,
         );
     }
 
     private static createControlMap(
         control: IControl,
-        mapAcc: { [index: string]: IControl },
+        mapAccumulator: { [index: string]: IControl },
     ): { [index: string]: IControl } {
-        mapAcc[control.id] = control;
+        mapAccumulator[control.id] = control;
         if (isContainerControl(control)) {
             for (const child of (control as any).children) {
-                ControlHandler.createControlMap(child, mapAcc);
+                ControlHandler.createControlMap(child, mapAccumulator);
             }
         }
-        return mapAcc; // returning the accumulator allows the call-site to be more readable
+        return mapAccumulator; // returning the accumulator makes the call-site more readable
     }
 
     /**

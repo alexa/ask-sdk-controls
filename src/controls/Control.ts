@@ -23,6 +23,11 @@ import { IControl } from './interfaces/IControl';
  * Defines the mandatory props of a Control.
  */
 export interface ControlProps {
+    /**
+     * Unique identifier for the control.
+     *
+     * This must be unique within the scope of the entire control tree.
+     */
     id: string;
 }
 

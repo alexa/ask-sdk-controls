@@ -50,9 +50,9 @@ suite('== dynamic controls ==', () => {
 
         control.addChild(new NumberControl({ id: 'staticChild_1' }));
 
-        control.addDynamicChild({ id: 'dynamicChild_1' });
-        control.addDynamicChild({ id: 'dynamicChild_2' });
-        control.addDynamicChild({ id: 'dynamicChild_3' });
+        control.addDynamicChildBySpecification({ id: 'dynamicChild_1' });
+        control.addDynamicChildBySpecification({ id: 'dynamicChild_2' });
+        control.addDynamicChildBySpecification({ id: 'dynamicChild_3' });
 
         expect(control.children.length).equal(4);
         expect(control.state.dynamicChildSpecifications.length).equal(3);
@@ -140,7 +140,7 @@ export class MyMultiControl extends DynamicContainerControl {
         let request = input.request;
         if (request.type === 'LaunchRequest') {
             // Dynamically add the first child
-            this.addDynamicChild({ id: 'firstName' });
+            this.addDynamicChildBySpecification({ id: 'firstName' });
             return;
         }
         request = request as IntentRequest; // assume IntentRequest.
@@ -148,7 +148,7 @@ export class MyMultiControl extends DynamicContainerControl {
 
         if ((await this.children[0].isReady(input)) && this.children.length === 1) {
             // Dynamically add the second child
-            this.addDynamicChild({ id: 'lastName' });
+            this.addDynamicChildBySpecification({ id: 'lastName' });
 
             // And set a flag to tweak the next prompt a little
             // Note, this type of this is not tracked in state
