@@ -24,7 +24,7 @@ import {
     unpackSingleValueControlIntent,
 } from '..';
 import { Strings as $ } from '../constants/Strings';
-import { Control, ControlProps, ControlState } from '../controls/Control';
+import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
@@ -113,6 +113,12 @@ export interface NumberControlProps extends ControlProps {
      * interaction model.
      */
     interactionModel?: NumberControlInteractionModelProps;
+
+    /**
+     * Props to customize the input handling functions to handle
+     * non standard inputs.
+     */
+    inputHandling?: ControlInputHandlingProps;
 }
 
 /**
@@ -377,13 +383,35 @@ export class NumberControl extends Control implements InteractionModelContributo
                 [19, 90],
             ], // TODO: generalize the default. in english it should suggest (113 <-> 130) etc.
             required: true,
+            inputHandling: {
+                customHandlingFuncs: [],
+            },
         };
         return _.merge(defaults, props);
     }
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return this.canHandleForEmptyStateValue(input) || this.canHandleForExistingStateValue(input);
+        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
+        let customCanHandle: boolean = false;
+
+        for (const customHandler of customHandleFuncs) {
+            if (customHandler[0](input) === true) {
+                this.handleFunc = customHandler[1];
+                customCanHandle = true;
+            }
+        }
+
+        const builtInCanHandle: boolean =
+            this.canHandleForEmptyStateValue(input) || this.canHandleForExistingStateValue(input);
+
+        if (customCanHandle && builtInCanHandle) {
+            log.warn(
+                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+            );
+        }
+
+        return customCanHandle || builtInCanHandle;
     }
 
     // tsDoc - see Control
@@ -947,7 +975,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
-    private commonHandlerWhenValueChanged(
+    commonHandlerWhenValueChanged(
         action: string,
         input: ControlInput,
         resultBuilder: ControlResultBuilder,

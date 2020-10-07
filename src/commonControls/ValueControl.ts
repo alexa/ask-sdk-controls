@@ -15,7 +15,7 @@ import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { Strings as $ } from '../constants/Strings';
-import { Control, ControlProps, ControlState } from '../controls/Control';
+import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
@@ -114,6 +114,12 @@ export interface ValueControlProps extends ControlProps {
      * interaction model.
      */
     interactionModel?: ValueControlInteractionModelProps;
+
+    /**
+     * Props to customize the input handling functions to handle
+     * non standard inputs.
+     */
+    inputHandling?: ControlInputHandlingProps;
 }
 
 /**
@@ -363,6 +369,9 @@ export class ValueControl extends Control implements InteractionModelContributor
                 requestValue: () => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
                 requestChangedValue: () => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE'),
             },
+            inputHandling: {
+                customHandlingFuncs: [],
+            },
         };
 
         return _.merge(defaults, props);
@@ -370,15 +379,32 @@ export class ValueControl extends Control implements InteractionModelContributor
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return (
+        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
+        let customCanHandle: boolean = false;
+
+        for (const customHandler of customHandleFuncs) {
+            if (customHandler[0](input) === true) {
+                this.handleFunc = customHandler[1];
+                customCanHandle = true;
+            }
+        }
+
+        const builtInCanHandle: boolean =
             this.isSetWithValue(input) ||
             this.isChangeWithValue(input) ||
             this.isSetWithoutValue(input) ||
             this.isChangeWithoutValue(input) ||
             this.isBareValue(input) ||
             this.isConfirmationAffirmed(input) ||
-            this.isConfirmationDisaffirmed(input)
-        );
+            this.isConfirmationDisaffirmed(input);
+
+        if (customCanHandle && builtInCanHandle) {
+            log.warn(
+                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+            );
+        }
+
+        return customCanHandle || builtInCanHandle;
     }
 
     // tsDoc - see Control
