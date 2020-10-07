@@ -14,7 +14,7 @@ import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { Strings as $ } from '../constants/Strings';
-import { Control, ControlProps, ControlState } from '../controls/Control';
+import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
@@ -108,6 +108,12 @@ export interface DateControlProps extends ControlProps {
      * interaction model.
      */
     interactionModel?: DateControlInteractionModelProps;
+
+    /**
+     * Props to customize the input handling functions to handle
+     * non standard inputs.
+     */
+    inputHandling?: ControlInputHandlingProps;
 }
 
 /**
@@ -406,6 +412,9 @@ export class DateControl extends Control implements InteractionModelContributor 
                 },
                 targets: [$.Target.Date, $.Target.It],
             },
+            inputHandling: {
+                customHandlingFuncs: [],
+            },
             validation: [],
             confirmationRequired: false,
             required: true,
@@ -416,15 +425,32 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     canHandle(input: ControlInput): boolean {
-        return (
+        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
+        let customCanHandle: boolean = false;
+
+        for (const customHandler of customHandleFuncs) {
+            if (customHandler[0](input) === true) {
+                this.handleFunc = customHandler[1];
+                customCanHandle = true;
+            }
+        }
+
+        const builtInCanHandle: boolean =
             this.isSetWithValue(input) ||
             this.isSetWithoutValue(input) ||
             this.isChangeWithValue(input) ||
             this.isChangeWithoutValue(input) ||
             this.isBareValue(input) ||
             this.isConfirmationAffirmed(input) ||
-            this.isConfirmationDisaffirmed(input)
-        );
+            this.isConfirmationDisaffirmed(input);
+
+        if (customCanHandle && builtInCanHandle) {
+            log.warn(
+                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+            );
+        }
+
+        return customCanHandle || builtInCanHandle;
     }
 
     private isSetWithValue(input: ControlInput): boolean {
@@ -658,7 +684,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private validateAndAddActs(
+    validateAndAddActs(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,

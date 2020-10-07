@@ -67,7 +67,7 @@ export {
     ContainerControlProps,
     ContainerControlState,
 } from './controls/ContainerControl';
-export { Control, ControlProps } from './controls/Control';
+export { Control, ControlProps, ControlInputHandlingProps } from './controls/Control';
 export { ControlInput } from './controls/ControlInput';
 export { ControlManager, renderActsInSequence } from './controls/ControlManager';
 export { ControlResult, ControlResultBuilder } from './controls/ControlResult';
