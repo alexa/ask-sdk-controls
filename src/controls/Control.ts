@@ -47,6 +47,18 @@ export interface ControlState {
 }
 
 /**
+ * Base type for the customHandling Functions of a Control
+ */
+export interface ControlInputHandlingProps {
+    customHandlingFuncs?: Array<
+        [
+            (input: ControlInput) => boolean | Promise<boolean>,
+            (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>,
+        ]
+    >;
+}
+
+/**
  * Abstract base class for Controls.
  *
  * Purpose:

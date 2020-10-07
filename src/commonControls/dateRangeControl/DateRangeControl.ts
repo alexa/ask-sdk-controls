@@ -14,7 +14,7 @@
 import { IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { InputUtil, SingleValueControlIntent, StringOrList } from '../..';
+import { ControlInputHandlingProps, InputUtil, SingleValueControlIntent, StringOrList } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     ContainerControl,
@@ -157,6 +157,12 @@ export interface DateRangeControlProps extends ContainerControlProps {
      * interaction model.
      */
     interactionModel?: DateRangeControlInteractionModelProps;
+
+    /**
+     * Props to customize the input handling functions to handle
+     * non standard inputs.
+     */
+    inputHandling?: ControlInputHandlingProps;
 }
 
 /**
@@ -670,6 +676,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                         value: act.payload.value,
                     }),
             },
+            inputHandling: {
+                customHandlingFuncs: [],
+            },
         };
 
         return _.mergeWith(defaults, props);
@@ -704,7 +713,26 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        return (await this.canHandleForFocus(input)) || this.canHandleForNoFocus(input);
+        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
+        let customCanHandle: boolean = false;
+
+        for (const customHandler of customHandleFuncs) {
+            if (customHandler[0](input) === true) {
+                this.handleFunc = customHandler[1];
+                customCanHandle = true;
+            }
+        }
+
+        const builtInCanHandle: boolean | Promise<boolean> =
+            (await this.canHandleForFocus(input)) || this.canHandleForNoFocus(input);
+
+        if (customCanHandle && builtInCanHandle === true) {
+            log.warn(
+                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+            );
+        }
+
+        return customCanHandle || builtInCanHandle;
     }
 
     // tsDoc - see Control
@@ -1057,7 +1085,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         }
     }
 
-    private isConfirmationAffirmed(input: ControlInput): any {
+    private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
             okIf(this.state.isConfirmingRange);
@@ -1087,7 +1115,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.ackDateRangeValueChanged(resultBuilder);
     }
 
-    private isConfirmationDisAffirmed(input: ControlInput): any {
+    private isConfirmationDisAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
             okIf(this.state.isConfirmingRange === true);

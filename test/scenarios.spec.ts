@@ -13,7 +13,16 @@
 
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { AmazonBuiltInSlotType } from '../src';
+import sinon from 'sinon';
+import { IntentRequest } from 'ask-sdk-model';
+import {
+    AmazonBuiltInSlotType,
+    DateControl,
+    InputUtil,
+    IntentBuilder,
+    Logger,
+    SimplifiedIntent,
+} from '../src';
 import { NumberControl } from '../src/commonControls/NumberControl';
 import { ValueControl } from '../src/commonControls/ValueControl';
 import { Strings as $ } from '../src/constants/Strings';
@@ -23,7 +32,10 @@ import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
 import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
-import { SingleValueControlIntent } from '../src/intents/SingleValueControlIntent';
+import {
+    SingleValueControlIntent,
+    unpackSingleValueControlIntent,
+} from '../src/intents/SingleValueControlIntent';
 import { SessionBehavior } from '../src/runtime/SessionBehavior';
 import { ValueChangedAct, ValueSetAct } from '../src/systemActs/ContentActs';
 import { RequestChangedValueAct, RequestValueAct } from '../src/systemActs/InitiativeActs';
@@ -221,3 +233,94 @@ suite(
         });
     },
 );
+
+suite('== Custom Handler Function scenarios ==', () => {
+    class DateSelectorManager extends ControlManager {
+        createControlTree(state: any): Control {
+            const topControl = new ContainerControl({ id: 'root' });
+
+            // DateControl
+            const dateControl = new DateControl({
+                id: 'dateControl',
+                interactionModel: {
+                    targets: [$.Target.Date],
+                    actions: {
+                        set: [$.Action.Set],
+                        change: [$.Action.Change],
+                    },
+                },
+                inputHandling: {
+                    customHandlingFuncs: [
+                        [isSetDateEvent, handleSetDateEvent],
+                        [isSetValue, handleSetValue],
+                    ],
+                },
+            });
+
+            function isSetDateEvent(input: ControlInput) {
+                return InputUtil.isIntent(input, 'SetDateEventIntent');
+            }
+
+            function handleSetDateEvent(input: ControlInput) {
+                const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
+                if (intent.slotResolutions.date !== undefined) {
+                    const dateValue = intent.slotResolutions.date;
+                    dateControl.setValue(dateValue.slotValue);
+                }
+            }
+
+            function isSetValue(input: ControlInput) {
+                return InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE);
+            }
+
+            function handleSetValue(input: ControlInput) {
+                const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+                dateControl.setValue(valueStr);
+            }
+
+            topControl.addChild(dateControl);
+            return topControl;
+        }
+    }
+
+    test('Check custom handlers are invoked.', async () => {
+        // Note: this test demonstrates calling customHandlingFuncs if defined on a control
+
+        const rootControl = new DateSelectorManager().createControlTree({});
+        const input = TestInput.of(
+            IntentBuilder.of('SetDateEventIntent', {
+                date: '2020-01-01',
+            }),
+        );
+        const result = new ControlResultBuilder(undefined!);
+        await rootControl.canHandle(input);
+        await rootControl.handle(input, result);
+        const dateControlState = findControlById(rootControl, 'dateControl');
+        expect(dateControlState.state.value).eq('2020-01-01');
+    });
+
+    test('Check conflicts in canHandle throws a warn log', async () => {
+        const rootControl = new DateSelectorManager().createControlTree({});
+        const input = TestInput.of(
+            SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                'AMAZON.DATE': '2018',
+                action: $.Action.Set,
+            }),
+        );
+        const spy = sinon.stub(Logger.prototype, 'warn');
+        const result = new ControlResultBuilder(undefined!);
+        await rootControl.canHandle(input);
+        await rootControl.handle(input, result);
+
+        expect(
+            spy.calledOnceWith(
+                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+            ),
+        ).eq(true);
+
+        const dateControlState = findControlById(rootControl, 'dateControl');
+        expect(dateControlState.state.value).eq('2018');
+        expect(result.acts).length(1);
+        expect(result.acts[0]).instanceOf(ValueSetAct);
+    });
+});
