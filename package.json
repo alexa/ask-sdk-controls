@@ -12,7 +12,8 @@
         "format-check": "prettier --check \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
         "format-overwrite": "prettier -w \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
         "test": "cross-env TS_NODE_FILES=true mocha -r ts-node/register \"./test/**/*.spec.ts\"",
-        "coverage": "nyc --cache npm test && nyc report --reporter=html && echo HTML report generated at coverage/index.html",
+        "test-all": "cross-env TS_NODE_FILES=true mocha --forbid-only -r ts-node/register \"./test/**/*.spec.ts\"",
+        "coverage": "nyc --cache npm test-all && nyc report --reporter=html && echo HTML report generated at coverage/index.html",
         "clean": "rm -rf ./dist",
         "reinstall": "rm -rf ./node_modules && npm install",
         "rebuild": "npm run clean && npm run build",
@@ -62,7 +63,7 @@
     "husky": {
         "hooks": {
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS && npm run lint && npm run format-check",
-            "pre-push": "npm run test"
+            "pre-push": "npm run test-all"
         }
     },
     "standard-version": {
