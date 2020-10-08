@@ -47,6 +47,7 @@ export {
     ListControlProps,
     ListControlState,
 } from './commonControls/listControl/ListControl';
+export { ListControlAPLPropsBuiltIns } from './commonControls/listControl/ListControlAPL';
 export {
     NumberControl,
     NumberControlInteractionModelProps,
@@ -151,3 +152,4 @@ export {
     testTurn,
     waitForDebugger,
 } from './utils/testSupport/TestingUtils';
+export { evaluateCustomHandleFuncs, logIfBothTrue } from './utils/ControlUtils';

@@ -17,11 +17,15 @@ import sinon from 'sinon';
 import { IntentRequest } from 'ask-sdk-model';
 import {
     AmazonBuiltInSlotType,
+    ControlHandler,
     DateControl,
     InputUtil,
     IntentBuilder,
+    ListControl,
     Logger,
     SimplifiedIntent,
+    SkillInvoker,
+    wrapRequestHandlerAsSkill,
 } from '../src';
 import { NumberControl } from '../src/commonControls/NumberControl';
 import { ValueControl } from '../src/commonControls/ValueControl';
@@ -47,6 +51,7 @@ import {
     waitForDebugger,
 } from '../src/utils/testSupport/TestingUtils';
 import { GameStrings as $$ } from './game_strings';
+import { ListControlAPLPropsBuiltIns } from '../src/commonControls/listControl/ListControlAPL';
 
 waitForDebugger();
 
@@ -234,7 +239,7 @@ suite(
     },
 );
 
-suite('== Custom Handler Function scenarios ==', () => {
+suite('== Custom Handler function scenarios ==', () => {
     class DateSelectorManager extends ControlManager {
         createControlTree(state: any): Control {
             const topControl = new ContainerControl({ id: 'root' });
@@ -322,5 +327,107 @@ suite('== Custom Handler Function scenarios ==', () => {
         expect(dateControlState.state.value).eq('2018');
         expect(result.acts).length(1);
         expect(result.acts[0]).instanceOf(ValueSetAct);
+    });
+});
+
+suite('== Custom APL Props ==', () => {
+    class ListSelector extends ControlManager {
+        createControlTree(state: any): Control {
+            const topControl = new ContainerControl({ id: 'root' });
+
+            // ListControl
+            const houseControl = new ListControl({
+                id: 'hogwarts',
+                listItemIDs: getCategoriesList(),
+                slotType: 'hogwartsHouse',
+                validation: [
+                    (state, input) =>
+                        getCategoriesList().includes(state.value!)
+                            ? true
+                            : { renderedReason: 'houseControl validation Failed' },
+                ],
+                apl: {
+                    requestValue: {
+                        dataSource: ListControlAPLPropsBuiltIns.APL_TextList_DataSource(
+                            (x) => `Wizard House: ${x}`,
+                        ),
+                        customHandlingFuncs: [
+                            { canHandle: isSelectChoiceEvent, handle: handleSelectChoiceEvent },
+                        ],
+                    },
+                },
+            });
+
+            function getCategoriesList(): string[] {
+                return ['Gryffindor', 'Ravenclaw', 'Slytherin'];
+            }
+
+            function isSelectChoiceEvent(input: ControlInput) {
+                return InputUtil.isIntent(input, 'SelectChoiceEventIntent');
+            }
+
+            function handleSelectChoiceEvent(input: ControlInput) {
+                const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
+                if (intent.slotResolutions.value !== undefined) {
+                    const listSelectedValue = intent.slotResolutions.value;
+                    houseControl.setValue(listSelectedValue.slotValue);
+                }
+            }
+
+            topControl.addChild(houseControl);
+            return topControl;
+        }
+    }
+
+    test('APL custom handlers are invoked.', async () => {
+        // Note: this test demonstrates calling customHandlingFuncs if defined on a control
+
+        const rootControl = new ListSelector().createControlTree({});
+        const input = TestInput.of(
+            IntentBuilder.of('SelectChoiceEventIntent', {
+                value: 'Hufflepuff',
+            }),
+        );
+        const result = new ControlResultBuilder(undefined!);
+        await rootControl.canHandle(input);
+        await rootControl.handle(input, result);
+        const houseControlState = findControlById(rootControl, 'hogwarts');
+        expect(houseControlState.state.value).eq('Hufflepuff');
+    });
+
+    test('APL custom mapper for slotIds.', async () => {
+        const requestHandler = new ControlHandler(new ListSelector());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+
+        const response = await skill.invoke(
+            TestInput.of(
+                SingleValueControlIntent.of('hogwartsHouse', {
+                    hogwartsHouse: 'Muggle',
+                    action: $.Action.Set,
+                }),
+            ),
+        );
+
+        expect(response.directive?.length).eq(1);
+
+        const expectedDataSource = {
+            textListData: {
+                controlId: 'hogwarts',
+                headerTitle: 'Please select...',
+                items: [
+                    {
+                        primaryText: 'Wizard House: Gryffindor',
+                    },
+                    {
+                        primaryText: 'Wizard House: Ravenclaw',
+                    },
+                    {
+                        primaryText: 'Wizard House: Slytherin',
+                    },
+                ],
+            },
+        };
+        const dataSource = (response as any).directive[0].datasources;
+        expect(dataSource).deep.equals(expectedDataSource);
     });
 });
