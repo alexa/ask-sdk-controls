@@ -50,12 +50,10 @@ export interface ControlState {
  * Base type for the customHandling Functions of a Control
  */
 export interface ControlInputHandlingProps {
-    customHandlingFuncs?: Array<
-        [
-            (input: ControlInput) => boolean | Promise<boolean>,
-            (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>,
-        ]
-    >;
+    customHandlingFuncs?: Array<{
+        canHandle: (input: ControlInput) => boolean | Promise<boolean>;
+        handle: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    }>;
 }
 
 /**
