@@ -10,7 +10,6 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { IControl } from '../controls/interfaces/IControl';
@@ -23,6 +22,17 @@ export async function evaluateCustomHandleFuncs(control: IControl, input: Contro
         canHandle: (input: ControlInput) => boolean | Promise<boolean>;
         handle: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
     }> = (control as any).props.inputHandling.customHandlingFuncs;
+
+    const aplProps = (control as any).props.apl;
+
+    // TODO: Add apl props to all commonControls
+    if (aplProps !== undefined) {
+        Object.entries(aplProps).forEach(([_key, value]) => {
+            if (typeof value === 'object' && 'customHandlingFuncs' in value!) {
+                customHandleFuncs.push(...(value as any).customHandlingFuncs);
+            }
+        });
+    }
 
     for (const { canHandle, handle } of customHandleFuncs) {
         if ((await canHandle(input)) === true) {

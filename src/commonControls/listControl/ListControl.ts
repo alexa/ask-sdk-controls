@@ -17,6 +17,7 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
+import { ControlAPL } from '../../controls/ControlAPL';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
@@ -53,7 +54,7 @@ import { evaluateCustomHandleFuncs, logIfBothTrue } from '../../utils/ControlUti
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
-import { APLListItem, generateTextListDocumentForListControl } from './APL';
+import { ListControlAPLPropsBuiltIns } from './ListControlAPL';
 
 // TODO: feature: support "what are my choices"
 // TODO: feature: voice pagination of choices.
@@ -333,16 +334,9 @@ export class ListControlAPLProps {
      */
     enabled?: boolean | ((input: ControlInput) => boolean);
 
-    /**
-     * The APL document to use when requesting a value
-     *
-     * Default: A TextListLayout document with scrollable and clickable list.
-     * See
-     * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
-     */
-    requestAPLDocument?:
-        | { [key: string]: any }
-        | ((act: RequestValueByListAct, input: ControlInput) => { [key: string]: any });
+    // TODO js docs
+    requestValue?: ControlAPL<RequestValueByListAct, ListControlState>;
+    requestChangedValue?: ControlAPL<RequestChangedValueByListAct, ListControlState>;
 }
 
 /**
@@ -525,10 +519,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                         suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
                     }),
             },
-            apl: {
-                enabled: true,
-                requestAPLDocument: generateTextListDocumentForListControl(),
-            },
+            apl: ListControlAPLPropsBuiltIns.APL_TextList((choiceId) => choiceId),
             inputHandling: {
                 customHandlingFuncs: [],
             },
@@ -1043,43 +1034,47 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
-        if (act instanceof RequestValueByListAct || act instanceof RequestChangedValueByListAct) {
-            const prompt =
-                act instanceof RequestValueByListAct
-                    ? this.evaluatePromptProp(act, this.props.prompts.requestValue, input)
-                    : this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
-            const reprompt =
-                act instanceof RequestValueByListAct
-                    ? this.evaluatePromptProp(act, this.props.reprompts.requestValue, input)
-                    : this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
+        if (act instanceof RequestValueByListAct) {
+            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestValue, input);
+            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestValue, input);
 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            if (this.evaluateBooleanProp(this.props.apl.enabled, input)) {
-                const itemsArray: APLListItem[] = [];
-                for (const choice of act.payload.allChoices) {
-                    itemsArray.push({
-                        primaryText: choice,
-                    });
-                }
+            if (
+                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+            ) {
+                const document =
+                    typeof this.props.apl.requestValue.document === 'function'
+                        ? this.props.apl.requestValue.document(act, this.state)
+                        : this.props.apl.requestValue.document;
+                const dataSource =
+                    typeof this.props.apl.requestValue.dataSource === 'function'
+                        ? this.props.apl.requestValue.dataSource(act, this.state)
+                        : this.props.apl.requestValue.dataSource;
+                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+            }
+        } else if (act instanceof RequestChangedValueByListAct) {
+            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
+            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
 
-                // If APL is defined in act & users' device support APL
-                if (getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']) {
-                    const aplDataSource = {
-                        textListData: {
-                            controlId: this.id,
-                            headerTitle: i18next.t('LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
-                            items: itemsArray,
-                        },
-                    };
-                    // TODO: apl merging / combination strategy
-                    builder.addAPLRenderDocumentDirective(
-                        'Token',
-                        this.props.apl.requestAPLDocument,
-                        aplDataSource,
-                    );
-                }
+            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
+            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
+
+            if (
+                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+            ) {
+                const document =
+                    typeof this.props.apl.requestChangedValue.document === 'function'
+                        ? this.props.apl.requestChangedValue.document(act, this.state)
+                        : this.props.apl.requestChangedValue.document;
+                const dataSource =
+                    typeof this.props.apl.requestChangedValue.dataSource === 'function'
+                        ? this.props.apl.requestChangedValue.dataSource(act, this.state)
+                        : this.props.apl.requestChangedValue.dataSource;
+                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
             }
         } else if (act instanceof UnusableInputValueAct) {
             builder.addPromptFragment(
