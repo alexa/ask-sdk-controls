@@ -46,6 +46,7 @@ import {
 import { ConfirmValueAct, RequestValueAct, SuggestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
+import { evaluateCustomHandleFuncs, logIfBothTrue } from '../utils/ControlUtils';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -115,8 +116,7 @@ export interface NumberControlProps extends ControlProps {
     interactionModel?: NumberControlInteractionModelProps;
 
     /**
-     * Props to customize the input handling functions to handle
-     * non standard inputs.
+     * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
 }
@@ -391,25 +391,12 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     // tsDoc - see Control
-    canHandle(input: ControlInput): boolean {
-        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
-        let customCanHandle: boolean = false;
-
-        for (const customHandler of customHandleFuncs) {
-            if (customHandler[0](input) === true) {
-                this.handleFunc = customHandler[1];
-                customCanHandle = true;
-            }
-        }
-
+    async canHandle(input: ControlInput): Promise<boolean> {
+        const customCanHandle = await evaluateCustomHandleFuncs(this, input);
         const builtInCanHandle: boolean =
             this.canHandleForEmptyStateValue(input) || this.canHandleForExistingStateValue(input);
 
-        if (customCanHandle && builtInCanHandle) {
-            log.warn(
-                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
-            );
-        }
+        logIfBothTrue(customCanHandle, builtInCanHandle);
 
         return customCanHandle || builtInCanHandle;
     }

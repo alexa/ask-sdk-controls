@@ -39,6 +39,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
+import { evaluateCustomHandleFuncs, logIfBothTrue } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -110,8 +111,7 @@ export interface DateControlProps extends ControlProps {
     interactionModel?: DateControlInteractionModelProps;
 
     /**
-     * Props to customize the input handling functions to handle
-     * non standard inputs.
+     * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
 }
@@ -419,17 +419,8 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     // tsDoc - see Control
-    canHandle(input: ControlInput): boolean {
-        const customHandleFuncs = this.props.inputHandling.customHandlingFuncs;
-        let customCanHandle: boolean = false;
-
-        for (const customHandler of customHandleFuncs) {
-            if (customHandler[0](input) === true) {
-                this.handleFunc = customHandler[1];
-                customCanHandle = true;
-            }
-        }
-
+    async canHandle(input: ControlInput): Promise<boolean> {
+        const customCanHandle = await evaluateCustomHandleFuncs(this, input);
         const builtInCanHandle: boolean =
             this.isSetWithValue(input) ||
             this.isSetWithoutValue(input) ||
@@ -439,12 +430,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             this.isConfirmationAffirmed(input) ||
             this.isConfirmationDisaffirmed(input);
 
-        if (customCanHandle && builtInCanHandle) {
-            log.warn(
-                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
-            );
-        }
-
+        logIfBothTrue(customCanHandle, builtInCanHandle);
         return customCanHandle || builtInCanHandle;
     }
 

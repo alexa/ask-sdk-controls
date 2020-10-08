@@ -133,7 +133,7 @@ suite('DateControl tests', () => {
             const input = TestInput.of(
                 SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
             );
-            const canHandleResult = control.canHandle(input);
+            const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
             const result = new ControlResultBuilder(undefined!);
             await control.handle(input, result);
@@ -152,7 +152,7 @@ suite('DateControl tests', () => {
                     'AMAZON.DATE': '2019-01-01',
                 }),
             );
-            const canHandleResult = control.canHandle(input);
+            const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
             const result = new ControlResultBuilder(undefined!);
             await control.handle(input, result);
@@ -167,7 +167,7 @@ suite('DateControl tests', () => {
             const input = TestInput.of(
                 GeneralControlIntent.of({ action: $.Action.Change, target: $.Target.Date }),
             );
-            const canHandleResult = control.canHandle(input);
+            const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
             const result = new ControlResultBuilder(undefined!);
             await control.handle(input, result);
@@ -180,7 +180,7 @@ suite('DateControl tests', () => {
             const input = TestInput.of(
                 SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2019-01-01' }),
             );
-            const canHandleResult = control.canHandle(input);
+            const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
 
             const result = new ControlResultBuilder(undefined!);
