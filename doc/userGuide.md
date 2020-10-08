@@ -2,6 +2,47 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD033 -->
 
+<!--
+
+  -------------------------
+  INSTRUCTIONS and TIPS
+  -------------------------
+
+ * To update the table of contents:
+    - use vscode extension "Auto Markdown TOC"
+    - set configuration
+       "markdown-toc.depthTo": 4,
+       "markdown-toc.orderedList": true,
+    - run command "Auto Markdown TOC: insert/update"
+
+ * To wrap all content to 90 characters
+    - install vscode extension 'Rewrap'
+    - set configuration
+        "rewrap.wrappingColumn": 90
+    - Select-all (ctrl-a)
+    - Run command "Rewrap comment / text"
+
+* To wrap a paragraph on demand
+    - Map command "Rewrap comment / text" to a keystroke, e.g. 'Alt+Q'
+
+* To get useful hints on markdown formatting:
+    - install vscode extension 'markdownlint'
+    - set configuration
+      "markdownlint.config": {
+        "ul-indent": false,
+        "list-marker-space": false,
+        "no-bare-urls": false,
+        "no-trailing-punctuation": false,
+        "no-duplicate-header": false,
+        "no-trailing-spaces": false,
+        "single-trailing-newline": false,
+        "no-multiple-blanks": false
+      }
+
+* To get spell checking
+    - install vscode extension "Code Spell Checker"
+-->
+
 <h1>User Guide - Controls Framework (Beta) </h3>
 
 The Controls Framework for ASK-SDK is offered as a beta and may change as we receive
@@ -24,102 +65,78 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
 <!-- spellchecker: disable -->
 <!-- TOC -->
 
--   [1. Overview](#1-overview)
-    -   [1.1. Purpose of this user guide](#11-purpose-of-this-user-guide)
-    -   [1.2. Purpose of the Controls Framework](#12-purpose-of-the-controls-framework)
--   [2. Getting started](#2-getting-started)
-    -   [2.1. Prerequisites for developing a skill with
-        Controls](#21-prerequisites-for-developing-a-skill-with-controls)
-    -   [2.2. JavaScript or TypeScript?](#22-javascript-or-typescript)
-    -   [2.3. Creating “Hello, World” in Controls](#23-creating-hello-world-in-controls)
-    -   [2.4. Getting diagnostics and tracking the runtime call
-        flow](#24-getting-diagnostics-and-tracking-the-runtime-call-flow)
-    -   [2.5. Creating a launch configuration for vscode
-        launch.json](#25-creating-a-launch-configuration-for-vscode-launchjson)
-    -   [2.6. Run the regression tests](#26-run-the-regression-tests)
-    -   [2.7. Build the interaction model for the
-        skill](#27-build-the-interaction-model-for-the-skill)
--   [3. Exploring the HelloWorld Controls
-    skill](#3-exploring-the-helloworld-controls-skill)
-    -   [3.1. Code overview](#31-code-overview)
-    -   [3.2. Interaction model](#32-interaction-model)
-    -   [3.3. Deploying Hello World](#33-deploying-hello-world)
-    -   [3.4. Live testing with local debugging](#34-live-testing-with-local-debugging)
-    -   [3.5. Running the regression tests](#35-running-the-regression-tests)
--   [4. Exploring the FruitShop demo skill](#4-exploring-the-fruitshop-demo-skill)
-    -   [4.1. Code overview](#41-code-overview)
-    -   [4.2. Category control](#42-category-control)
-    -   [4.3. Checkout control](#43-checkout-control)
-    -   [4.4. Shopping cart control](#44-shopping-cart-control)
-    -   [4.5. Root control](#45-root-control)
-    -   [4.6. Interaction model](#46-interaction-model)
-    -   [4.7. Regression tests](#47-regression-tests)
-    -   [4.8. Sidebar: Reusable leaf controls, and
-        purity](#48-sidebar-reusable-leaf-controls-and-purity)
--   [5. Developing with Controls](#5-developing-with-controls)
-    -   [5.1. What is a Control?](#51-what-is-a-control)
-    -   [5.2. What inputs does a Control respond
-        to?](#52-what-inputs-does-a-control-respond-to)
-    -   [5.3. Runtime flow](#53-runtime-flow)
-        -   [5.3.1. Initialization phase](#531-initialization-phase)
-        -   [5.3.2. CanHandle phase](#532-canhandle-phase)
-        -   [5.3.3. Handle phase](#533-handle-phase)
-        -   [5.3.4. Initiative phase](#534-initiative-phase)
-        -   [5.3.5. Render phase](#535-render-phase)
-        -   [5.3.6. Shutdown phase](#536-shutdown-phase)
-        -   [5.3.7. Ending the session](#537-ending-the-session)
-        -   [5.3.8. Handling internal errors](#538-handling-internal-errors)
-    -   [5.4. System Acts](#54-system-acts)
-        -   [5.4.1. Content acts](#541-content-acts)
-        -   [5.4.2. Initiative acts](#542-initiative-acts)
-    -   [5.5. State management](#55-state-management)
-        -   [5.5.1. Sharing information with the parent control and the
-            application](#551-sharing-information-with-the-parent-control-and-the-application)
-        -   [5.5.2. Implementing the logic of a
-            Control](#552-implementing-the-logic-of-a-control)
-            -   [5.5.2.1. Implementing
-                Control.canHandle](#5521-implementing-controlcanhandle)
-            -   [5.5.2.2. Implementing Control.handle](#5522-implementing-controlhandle)
-            -   [5.5.2.3. Implementing
-                Control.canTakeInitiative](#5523-implementing-controlcantakeinitiative)
-            -   [5.5.2.4. Implementing
-                Control.takeInitiative](#5524-implementing-controltakeinitiative)
-            -   [5.5.2.5. Implementing
-                Control.renderAct](#5525-implementing-controlrenderact)
-        -   [5.5.3. Additional notes about container
-            controls](#553-additional-notes-about-container-controls)
-    -   [5.6. Interfacing with state serialization during Shutdown
-        phase](#56-interfacing-with-state-serialization-during-shutdown-phase)
-    -   [5.7. Interaction Model](#57-interaction-model)
-        -   [5.7.1. Shareable intents](#571-shareable-intents)
-        -   [5.7.2. ControlIntents and the interaction model
-            conventions](#572-controlintents-and-the-interaction-model-conventions)
-            -   [5.7.2.1. Feedback slot type](#5721-feedback-slot-type)
-            -   [5.7.2.2. Action slot type](#5722-action-slot-type)
-            -   [5.7.2.3. Target slot type](#5723-target-slot-type)
-            -   [5.7.2.4. Head, Tail and Preposition](#5724-head-tail-and-preposition)
-        -   [5.7.3. Sample utterance shapes for Control
-            Intents](#573-sample-utterance-shapes-for-control-intents)
-        -   [5.7.4. Associating targets and actions to
-            controls](#574-associating-targets-and-actions-to-controls)
-        -   [5.7.5. Building the interaction model](#575-building-the-interaction-model)
-        -   [5.7.6. When to introduce new Intents](#576-when-to-introduce-new-intents)
--   [6. Additional topics](#6-additional-topics)
-    -   [6.1. Adding Controls to an existing
-        skill](#61-adding-controls-to-an-existing-skill)
-    -   [6.2. Migrating from the Custom Skills Dialog
-        Interface](#62-migrating-from-the-custom-skills-dialog-interface)
-    -   [6.3. Internationalization and
-        Localization](#63-internationalization-and-localization)
-        -   [6.3.1. Creating a localized interaction
-            model](#631-creating-a-localized-interaction-model)
-        -   [6.3.2. Using localized data at
-            runtime.](#632-using-localized-data-at-runtime)
--   [7. Contributing](#7-contributing)
-    -   [7.1. Get the source code](#71-get-the-source-code)
-    -   [7.2. Run the Controls Framework regression
-        tests](#72-run-the-controls-framework-regression-tests)
--   [8. Reference](#8-reference)
+- [1. Overview](#1-overview)
+    - [1.1. Purpose of this user guide](#11-purpose-of-this-user-guide)
+    - [1.2. Purpose of the Controls Framework](#12-purpose-of-the-controls-framework)
+- [2. Getting started](#2-getting-started)
+    - [2.1. Prerequisites for developing a skill with Controls](#21-prerequisites-for-developing-a-skill-with-controls)
+    - [2.2. JavaScript or TypeScript?](#22-javascript-or-typescript)
+    - [2.3. Creating “Hello, World” in Controls](#23-creating-hello-world-in-controls)
+    - [2.4. Getting diagnostics and tracking the runtime call flow](#24-getting-diagnostics-and-tracking-the-runtime-call-flow)
+    - [2.5. Creating a launch configuration for vscode launch.json](#25-creating-a-launch-configuration-for-vscode-launchjson)
+    - [2.6. Run the regression tests](#26-run-the-regression-tests)
+    - [2.7. Build the interaction model for the skill](#27-build-the-interaction-model-for-the-skill)
+- [3. Exploring the HelloWorld Controls skill](#3-exploring-the-helloworld-controls-skill)
+    - [3.1. Code overview](#31-code-overview)
+    - [3.2. Interaction model](#32-interaction-model)
+    - [3.3. Deploying Hello World](#33-deploying-hello-world)
+    - [3.4. Live testing with local debugging](#34-live-testing-with-local-debugging)
+    - [3.5. Running the regression tests](#35-running-the-regression-tests)
+- [4. Exploring the FruitShop demo skill](#4-exploring-the-fruitshop-demo-skill)
+    - [4.1. Code overview](#41-code-overview)
+    - [4.2. Category control](#42-category-control)
+    - [4.3. Checkout control](#43-checkout-control)
+    - [4.4. Shopping cart control](#44-shopping-cart-control)
+    - [4.5. Root control](#45-root-control)
+    - [4.6. Interaction model](#46-interaction-model)
+    - [4.7. Regression tests](#47-regression-tests)
+    - [4.8. Sidebar: Reusable leaf controls, and purity](#48-sidebar-reusable-leaf-controls-and-purity)
+- [5. Developing with Controls](#5-developing-with-controls)
+    - [5.1. What is a Control?](#51-what-is-a-control)
+    - [5.2. What inputs does a Control respond to?](#52-what-inputs-does-a-control-respond-to)
+    - [5.3. Runtime flow](#53-runtime-flow)
+        - [5.3.1. Initialization phase](#531-initialization-phase)
+        - [5.3.2. CanHandle phase](#532-canhandle-phase)
+        - [5.3.3. Handle phase](#533-handle-phase)
+        - [5.3.4. Initiative phase](#534-initiative-phase)
+        - [5.3.5. Render phase](#535-render-phase)
+        - [5.3.6. Shutdown phase](#536-shutdown-phase)
+        - [5.3.7. Ending the session](#537-ending-the-session)
+        - [5.3.8. Handling internal errors](#538-handling-internal-errors)
+    - [5.4. System Acts](#54-system-acts)
+        - [5.4.1. Content acts](#541-content-acts)
+        - [5.4.2. Initiative acts](#542-initiative-acts)
+    - [5.5. State management](#55-state-management)
+        - [5.5.1. Sharing information with the parent control and the application](#551-sharing-information-with-the-parent-control-and-the-application)
+        - [5.5.2. Implementing the logic of a Control](#552-implementing-the-logic-of-a-control)
+            - [5.5.2.1. Implementing Control.canHandle](#5521-implementing-controlcanhandle)
+            - [5.5.2.2. Implementing Control.handle](#5522-implementing-controlhandle)
+            - [5.5.2.3. Implementing Control.canTakeInitiative](#5523-implementing-controlcantakeinitiative)
+            - [5.5.2.4. Implementing Control.takeInitiative](#5524-implementing-controltakeinitiative)
+            - [5.5.2.5. Implementing Control.renderAct](#5525-implementing-controlrenderact)
+        - [5.5.3. Additional notes about container controls](#553-additional-notes-about-container-controls)
+    - [5.6. Interfacing with state serialization during Shutdown phase](#56-interfacing-with-state-serialization-during-shutdown-phase)
+    - [5.7. Interaction Model](#57-interaction-model)
+        - [5.7.1. Shareable intents](#571-shareable-intents)
+        - [5.7.2. ControlIntents and the interaction model conventions](#572-controlintents-and-the-interaction-model-conventions)
+            - [5.7.2.1. Feedback slot type](#5721-feedback-slot-type)
+            - [5.7.2.2. Action slot type](#5722-action-slot-type)
+            - [5.7.2.3. Target slot type](#5723-target-slot-type)
+            - [5.7.2.4. Head, Tail and Preposition](#5724-head-tail-and-preposition)
+        - [5.7.3. Sample utterance shapes for Control Intents](#573-sample-utterance-shapes-for-control-intents)
+        - [5.7.4. Associating targets and actions to controls](#574-associating-targets-and-actions-to-controls)
+        - [5.7.5. Building the interaction model](#575-building-the-interaction-model)
+        - [5.7.6. When to introduce new Intents](#576-when-to-introduce-new-intents)
+- [6. Additional topics](#6-additional-topics)
+    - [6.1. Adding Controls to an existing skill](#61-adding-controls-to-an-existing-skill)
+    - [6.2. Migrating from the Custom Skills Dialog Interface](#62-migrating-from-the-custom-skills-dialog-interface)
+    - [6.3. Internationalization and Localization](#63-internationalization-and-localization)
+        - [6.3.1. Creating a localized interaction model](#631-creating-a-localized-interaction-model)
+        - [6.3.2. Using localized data at runtime.](#632-using-localized-data-at-runtime)
+- [7. Contributing](#7-contributing)
+    - [7.1. Get the source code](#71-get-the-source-code)
+    - [7.2. Run the Controls Framework regression tests](#72-run-the-controls-framework-regression-tests)
+- [8. Reference](#8-reference)
 
 <!-- /TOC -->
 <!-- spellchecker: enable -->
@@ -245,8 +262,7 @@ ASK-SDK
 Either deploy your skill with `ask deploy` or set up local debugging (See section ["Live testing with local debugging"](#34-live-testing-with-local-debugging)).
 
 Once your skill is ready for testing, use the testing page of the developer portal
-(https://developer.amazon.com/alexa/console/ask/test/{SkillID}/development/en_US/) or `ask
-dialog` to test it out.
+(https://developer.amazon.com/alexa/console/ask/test/{SkillID}/development/en_US/) or `ask dialog` to test it out.
 
 ```text
 U: Alexa, open Hello Controls
@@ -1149,8 +1165,7 @@ it wishes. However, controls live in a collaborative environment and they must n
 over-eager to handle an input that isn't appropriate for the controls current state. So,
 for example, if a control has just asked the user a yes/no question it is appropriate for
 that control to reply `canHandle = true` if the next input is a `YesIntent`. Other
-controls that have not just asked a question should instead respond with `canHandle =
-false`. There may be situations where it is reasonable for two or more controls to respond
+controls that have not just asked a question should instead respond with `canHandle = false`. There may be situations where it is reasonable for two or more controls to respond
 with `canHandle = true`: in these cases a parent control must pick a winner.
 
 Regarding "what information to collect", low-level controls collect simple things such as
@@ -1352,8 +1367,7 @@ A: Great! we have lots of them.  How many would you like?
   [ from acts in Handle phase ] [ from Initiative phase ]
 ```
 
-The input for this turn, "U: Add some bananas", is handled by the chain `FruitShopControl
--> ShoppingCartControl -> ItemCountControl`. In this case the value is accepted and a
+The input for this turn, "U: Add some bananas", is handled by the chain `FruitShopControl -> ShoppingCartControl -> ItemCountControl`. In this case the value is accepted and a
 `ValueSetAct` is produced. Validation passes and the Product control has no further
 questions for the user. Thus, handling the input finishes without an initiative act and so
 the initiative phase runs. During the initiative phase the initiative chain is determined
@@ -2104,8 +2118,7 @@ by having one `DateControl` for each piece of data and assigning them both gener
 specific targets:
 
 -   DateControl for birth date: `Targets: builtin_it, builtin_date, birthDate`
--   DateControl for birthday event: `Targets: builtin_it, builtin_date, eventDate
-    birthdayEventDate, celebrationDate`
+-   DateControl for birthday event: `Targets: builtin_it, builtin_date, eventDate birthdayEventDate, celebrationDate`
 
 Note that some targets are the same whereas others differ. Thus if the user says "U: I
 need you to change the date" we can expect both controls to report `canHandle = true` as
