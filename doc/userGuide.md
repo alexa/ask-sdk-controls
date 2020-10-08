@@ -92,8 +92,8 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
         phase](#56-interfacing-with-state-serialization-during-shutdown-phase)
     -   [5.7. Interaction Model](#57-interaction-model)
         -   [5.7.1. Shareable intents](#571-shareable-intents)
-        -   [5.7.2. What kinds of utterances are supported by standard
-            schemas](#572-what-kinds-of-utterances-are-supported-by-standard-schemas)
+        -   [5.7.2. ControlIntents and the interaction model
+            conventions](#572-controlintents-and-the-interaction-model-conventions)
             -   [5.7.2.1. Feedback slot type](#5721-feedback-slot-type)
             -   [5.7.2.2. Action slot type](#5722-action-slot-type)
             -   [5.7.2.3. Target slot type](#5723-target-slot-type)
@@ -103,9 +103,7 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
         -   [5.7.4. Associating targets and actions to
             controls](#574-associating-targets-and-actions-to-controls)
         -   [5.7.5. Building the interaction model](#575-building-the-interaction-model)
-        -   [5.7.6. What utterance shapes are covered by Control
-            Intents](#576-what-utterance-shapes-are-covered-by-control-intents)
-        -   [5.7.7. When to introduce new Intents](#577-when-to-introduce-new-intents)
+        -   [5.7.6. When to introduce new Intents](#576-when-to-introduce-new-intents)
 -   [6. Additional topics](#6-additional-topics)
     -   [6.1. Adding Controls to an existing
         skill](#61-adding-controls-to-an-existing-skill)
@@ -130,13 +128,13 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
 
 ## 1.1. Purpose of this user guide
 
-In this user guide, we’ll show you the fundamental concepts of Controls framework by
+In this user guide, we’ll show you the fundamental concepts of the Controls Framework by
 taking you through a practical, step-by-step tutorial on how to create a simple skill
 using Controls from the existing templates (Hello World and Fruit Shop). In the first half
 of this guide (sections 1-4) we’ll detail the code in each template, so you have a solid
 understanding of a Control's skill architecture and components. In the second half of this
 user guide (sections 5-6), you will find in-depth explanations of how to build skills
-using Controls framework from the ground up.
+using Controls Framework from the ground up.
 
 ## 1.2. Purpose of the Controls Framework
 
@@ -145,7 +143,7 @@ mixed-initiative and multi-modal experiences.
 
 One specific goal of the framework is to encourage the development of re-usable
 components, called Controls, that can be shared between projects and between developers.
-The framework includes a library of reusable Controls for some of the most common tasks
+The framework includes general-purpose built-in Controls for some of the most common tasks
 that developers face. Developers can easily create new Controls and build new high-level
 Controls from low-level ones.
 
@@ -153,7 +151,7 @@ Another goal is to help developers to follow the best practices of conversationa
 and to provide a natural way to implement that concepts of [situational
 design](https://developer.amazon.com/en-US/alexa/alexa-skills-kit/situational-design).
 
-Finally, the Controls framework is designed to integrate seamlessly with existing skills
+Finally, the Controls Framework is designed to integrate seamlessly with existing skills
 written using the ASK-SDK v2 for Node.js.
 
 ---
@@ -189,7 +187,7 @@ Skill.](https://developer.amazon.com/en-US/alexa/alexa-skills-kit/get-deeper/tut
 
 ## 2.2. JavaScript or TypeScript?
 
-Skills that use the Controls framework can be written in JavaScript or Typescript, and
+Skills that use the Controls Framework can be written in JavaScript or Typescript, and
 there is no functional or performance difference from the choice. In the documentation and
 sample code we provide, we have chosen to use JavaScript as it is currently used by the
 majority of the Alexa skill developer community.
@@ -233,7 +231,7 @@ through the [developer portal](https://developer.amazon.com/alexa/console/ask).
 ask new
 > select NodeJS
 > choose a skill hosting method (not "Alexa-hosted skills" option)
-> select "Hello world (Controls framework)"
+> select "Hello world (Controls Framework)"
 ```
 
 Install the Node.js dependencies for the skill, which includes the Controls Framework for
@@ -312,7 +310,7 @@ launch.json file with suitable targets.
 
 # 3. Exploring the HelloWorld (Controls) skill
 
-The _Hello World (Controls)_ skill is a minimal skill that uses the Controls framework,
+The _Hello World (Controls)_ skill is a minimal skill that uses the Controls Framework,
 written in JavaScript. In response to a `LaunchRequest` it says hello and then closes the
 session. See the "Getting Started" section for details on how to create a local copy of
 the Hello World skill.
@@ -515,11 +513,11 @@ considerably.
 The Fruit Shop skill uses the Controls Framework to build a shopping-cart experience that
 demonstrates:
 
--   Reuse and customization of library controls, specifically the `ListControl`,
+-   Reuse and customization of built-in controls, specifically the `ListControl`,
     `NumberControl` and `DateControl`.
 -   Building custom controls that provide novel UX and business functionality.
 -   Using container controls to organize and orchestrate child controls.
--   Using APL and voice for input with the library `ListControl` and the custom
+-   Using APL and voice for input with the `ListControl` and the custom
     `ShoppingCartControl`.
 
 See the "Getting Started" section for details on how to create a local copy of the Fruit
@@ -579,11 +577,11 @@ In total, `FruitShopManager.createControlTree()` builds up the following tree:
 
 ![Fruit Shop](img/fruitShopControlTree.png 'Fruit Shop Control tree')
 
-The four leaf controls are all instances of built-in library controls that are customized
-what is the for their usage in this skill while the containers are custom controls that
-are unique to this skill. This is a common pattern as library controls are generic and
-encapsulate domain-agnostic functionality such as "obtain a date from the user" while
-custom controls provide the higher-level and application-specific behaviors.
+The four leaf controls are all instances of built-in controls that are customized what is
+the for their usage in this skill while the containers are custom controls that are unique
+to this skill. This is a common pattern as built-in controls are generic and encapsulate
+domain-agnostic functionality such as "obtain a date from the user" while custom controls
+provide the higher-level and application-specific behaviors.
 
 Before digging further into the details lets review the purpose of each control:
 
@@ -620,11 +618,11 @@ with the Skill simulator in the Alexa Developer Portal or on a device.
 ## 4.2. Category control
 
 The first leaf control has the job of obtaining a "Product Category" from the user, i.e.
-either "Fruit" or "Vegetables". It is an instance of the library `ListControl` and its
+either "Fruit" or "Vegetables". It is an instance of the built-in `ListControl` and its
 definition can be found in `shoppingCartControl.js`.
 
-Almost all the properties on the library controls are optional and have sane defaults. So,
-the `CategoryControl` is functional with only the following configuration:
+Almost all the properties on the built-in controls are optional and have sane defaults.
+So, the `CategoryControl` is functional with only the following configuration:
 
 ```js
 Minimal configuration:
@@ -637,10 +635,10 @@ Minimal configuration:
 7. );
 ```
 
--   **Line 1**: This control is customized instance of the library `ListControl` which
-    "obtains a value from the user by presenting a list with voice and APL". The rest of
-    the props for `ListControl` are optional and have defaults that allow the control to
-    be used "out of the box" and then customized as needed.
+-   **Line 1**: This control is customized instance of the `ListControl` which "obtains a
+    value from the user by presenting a list with voice and APL". The rest of the props
+    for `ListControl` are optional and have defaults that allow the control to be used
+    "out of the box" and then customized as needed.
 -   **Line 3**: Every control has an id.
 -   **Line 4**: A `ListControl` is configured with the name of slot type that defines the
     values and synonyms can use with the control. By declaring the slot type, this control
@@ -688,7 +686,7 @@ Final configuration:
 
     Note that the validation function takes the `ListControl` state object as a parameter.
     This function is only called once `state.value` has been populated. A general rule of
-    all library controls is that `state.value` contains the "working value" even if that
+    all built-in controls is that `state.value` contains the "working value" even if that
     "working value" doesn't pass validation or other tests. Parent controls can test if
     the working value is ready for use by calling `control.isReady()`.
 
@@ -1157,7 +1155,7 @@ with `canHandle = true`: in these cases a parent control must pick a winner.
 
 Regarding "what information to collect", low-level controls collect simple things such as
 a single date representing a birth-date or perhaps the date of an upcoming event. The
-library **DateControl**, for example, is a control that collects a single date from the
+built-in **DateControl**, for example, is a control that collects a single date from the
 user. It normally receives a date via a single `AMAZON.DATE` slot but it can be extended
 to implement other strategies such as asking for the year, month, and day in sequence. The
 `DateControl` can validate whether an obtained date is suitable for use and uses inference
@@ -1169,13 +1167,13 @@ application can be freed from these details.
 
 "Higher-level controls" are typically container controls that orchestrate low-level
 controls and implement higher-level logic to manage a more complex piece of information
-such as a complete address. The library `DateRangeControl` is an example of a higher-level
-control that is configurable and reusable. The `DateRangeControl` delegates any inputs to
-do with just the 'stateDate' or the 'endDate' to child controls, each of which is a
-regular `DateControl`. Any input or situation that affect both the start- and end- date
-are managed by the `DateRangeControl` itself. The higher-level control provides the same
-interface to its parent as the low-level controls. That is, it abstracts away the fact
-that child controls are participating. Every parent control should interact with its
+such as a complete address. The built-in `DateRangeControl` is an example of a
+higher-level control that is configurable and reusable. The `DateRangeControl` delegates
+any inputs to do with just the 'stateDate' or the 'endDate' to child controls, each of
+which is a regular `DateControl`. Any input or situation that affect both the start- and
+end- date are managed by the `DateRangeControl` itself. The higher-level control provides
+the same interface to its parent as the low-level controls. That is, it abstracts away the
+fact that child controls are participating. Every parent control should interact with its
 children as though they are leaf controls.
 
 ## 5.3. Runtime flow
@@ -1552,7 +1550,7 @@ These acts propel the dialog forward and give the user a strong sense of engagem
 
 As with content acts, the initiative acts have factual semantics and do not attempt to
 provide an ontology for dialog-functions or otherwise provide coverage of all possible
-needs. The built-in initiative acts are sufficient for the library controls to function
+needs. The built-in initiative acts are sufficient for the built-in controls to function
 and can be reused in other contexts. Developers should create new initiative acts if none
 of the built-ins is a good match for their need.
 
@@ -1700,10 +1698,10 @@ the control. A situation may have sub-situations which can be are encoded in add
 layers of predicate functions that drill-down. At the lowest level, the predicates are
 usually simple statements about the input details or the control state.
 
-The decision-tree approach as employed by the library controls provides a clean structure
+The decision-tree approach employed by the built-in controls provides a clean structure
 and keeps the code maintainable.
 
-By way of example, the library `ListControl` has the following:
+By way of example, the `ListControl` has the following:
 
 ```ts
  canHandle(input: ControlInput): boolean {
@@ -1768,7 +1766,7 @@ At the end of the canHandle phase, a chain of controls have been identified to p
 in the handling phase. Each control in the chain delegates to the next in the chain, and
 subsequently observes the result and performs additional work if necessary.
 
-A common pattern is demonstrated by the library `DateRangeControl`:
+A common pattern is demonstrated by the `DateRangeControl`:
 
 ```ts
 async handle(input, resultBuilder) {
@@ -1870,7 +1868,7 @@ subsequent turns if the control has actually asked a yes/no question.
 
 In large skills and advanced scenarios, the value of the turn counter can be stored and
 used to determine if a previously asked question was so far in the history that it should
-be treated as stale and discarded. The library `ContainerControl` tracks information of
+be treated as stale and discarded. The built-in `ContainerControl` tracks information of
 this kind but does not use it in the default logic.
 
 #### 5.5.2.5. Implementing Control.renderAct()
@@ -1936,82 +1934,92 @@ of this kind is implemented as the default in `ContainerControl`.
 
 The interaction model is a critical part of any Alexa skill as it defines the language
 that customers can use to interact with your skill. The Controls Framework uses the
-regular Alexa interaction model but introduces some patterns to standardize the Intents
-and Slots used. The main aims for doing this are:
+regular Alexa interaction model and introduces new patterns to standardize the Intents and
+Slots used. The primary reason to do this is to support independently developed components
+to work together. A secondary reason is simply to share best practices around interaction
+model design.
 
-1. Provide patterns for building simple, robust and extensible interaction models.
-2. Provide patterns that allow independently developed components to work together.
-
-The philosophy that underlies this approach is that Controls allow users to tell/ask Alexa
-to do something and we are building skills that allow users to be declarative: "Change
-this", "delete that", "review the itinerary", "no the other one", and so on. We are
-essentially designing a general NLU approach for "task-oriented dialog". The details that
-we describe below seem to be a good approach when using the Alexa NLU system that is
-available today. The need to understand task-oriented and generally declarative language
-from the user will remain but as Alexa NLU evolves so may our approach.
-
-Broadly, we need to reliably capture "what does the user want Alexa to do" and often "to
-what thing or things". By being general and flexible we can be extensible.
+The built-in Controls can generate the interaction model that they need to function. All
+the built-ins follow the patterns and thus avoid any utterance conflicts. Custom controls
+should take these patterns into account else they may introduce conflicts and break the
+behavior of built-in controls.
 
 ### 5.7.1. Shareable intents
 
-Perhaps the most important concept is that Controls must agree on the intents that will be
-used to represent common utterances. So, for example, if two independent controls need to
+The most important concept is that Controls must agree on the intents that will be used to
+represent common utterances. So, for example, if two independent controls need to
 understand the phrase "U: yes, the second one" then they must agree on the intent that
 will match it else there will be utterance conflicts and the controls will not see the
 inputs they expect.
 
-As we will see, in the standardized approach the phrase, "U: yes, the second one" will be
-recognized by the common `AMAZON_ORDINAL_ValueControlIntent` and all Controls should agree
-on this.
+As we will see, the phrase "U: yes, the second one" will be recognized by the common
+`AMAZON_ORDINAL_ValueControlIntent` and all Controls that react to that phrase should
+expect this intent. The built-in ListControl not only listens for this intent but it can
+generate it and add it to the interaction model automatically!
 
-The sharing of intents also necessitates the sharing of Slot types and values. However,
-neither the sharing of intents or slots will reduce the total capability of a skill. All
-utterances that are not part of the "common schema" can be recognized using custom intents
-without any problem.
+To see the problem more clearly, imagine some custom control that wants to react to the
+phrase "U: yes, the second one" and does so by listening for a `CustomOrdinalIntent` and
+the developer manually creates that intent in the interaction model. If both
+`CustomOrdinalIntent` and `AMAZON_ORDINAL_ValueControlIntent` are in the model together
+then there will be utterance conflicts and NLU will randomly select one or the other when
+the user gives the magic phrase. This can break one or both controls as they will not
+observe the inputs they need to function. There are two solutions:
 
-The only strong requirement is that utterances which can be matched by the standard
-schemas must be matched by them. Only genuinely novel utterances should be matched to new
-custom intents.
+1. The developer can change their custom control to expect the
+   `AMAZON_ORDINAL_ValueControlIntent` and ensure it is added to the interaction model.
+   This solution ensures only one intent in the model wil match the phrase.
 
-### 5.7.2. What kinds of utterances are supported by standard schemas
+2. The developer can make sure that both their custom control and all instances of
+   built-controls will react appropriately to both intents. This is more work than the
+   first solution and so it is less interesting. The tricky bit is teaching a built-in
+   control about an intent is knowns nothing about: see the
+   `inputHandling.customHandlingFuncs` prop on the built-in controls for the standard
+   solution.
 
-The starting point is that the AMAZON.\* intents are part of the standard schema except
+### 5.7.2. ControlIntents and the interaction model conventions
+
+The first convention is that the AMAZON.\* intents are part of the standard schema except
 where they cause unacceptable utterance conflicts. At this time, it is only the
 `AMAZON.NextIntent` that cannot be used as it captures many utterances such as "change
-that" which limits it usability.
+that" which is overly broad and thus limits it usability.
 
 -   All `AMAZON.*` intents except `AMAZON.NextIntent` are part of the standard schema. Any
     utterance that can be captured by an `AMAZON.*` intent should be.
 
 The existing set of `AMAZON.*` intents is not sufficient for building skills as they do
-not carry much information and they are not generic enough. To built a robust voice
+not carry enough information and they are not generic enough. To built a robust voice
 interface we need to support utterances like the following:
 
 -   `U: Yes, two apples.`
+-   `U: No, I said three.`
 -   `U: Can you change the time please?`
 -   `U: I need to update that.`
 -   `U: Put it on my visa.`
--   `U: No, I said three.`
--   `U: I'm not sure but I'm guessing Tuesday`
+-   `U: Put apples into the bag.`
+-   `U: I'm not sure but I'm thinking Tuesday`
 -   etc.
 
-If an interaction model is built organically as a skill grows it is a common experience
-that the model starts to break down due to utterance conflicts. What is needed is a more
-formal approach to intent design.
+The second convention is to introduce new intent shapes that capture these types of
+utterances. These new intents are called "Control Intents" which simply indicates that
+they follow the following rules:
 
-The Controls framework introduces some a new concept called the "Control Intent". A
-Control intent is simply an intent that follows some the new rules introduced here.
-
-Control intents use:
-
-1. Standardized slot types to convey most meaning: Feedback, Action, Target
-2. Standardized slot types to provide supporting phrases: Head, Preposition, Tail
-3. Common slot values to represent common things.
+1. Phrases such as "yes", "no", "I'm not sure" that are the major component of an answer
+   to a question are captured by a slot called "feedback".
+2. Phrases such as "change", "select", "print" that indicate what to do are captured by a
+   slot called "action".
+3. Phrases such as "the time" and "my visa" that indicate what to act upon are captured by
+   a slot called "target".
+4. Phrases such as 'two', 'apples', and 'tomorrow' that indicate a value are captured by
+   slots that are named with the SlotType that they capture. If there is more than one
+   slot for a given type, they are named with suffix ".a", ".b" and so on.
+5. additional slots are defined to help with fine-grained understanding. For example, a
+   slot called "preposition" is defined to help distinguish between "in to", "onto" etc.
+   This fine-grained information may not be used but it is preferable to capture slots
+   rather than to lose the information.
 
 #### 5.7.2.1. Feedback slot type
 
-The `Feedback` slot type represent things the user says to Alexa about "her recent
+The `Feedback` slot type represents things the user says to Alexa about "her recent
 statements". That is, the user is giving feedback. For example "not that's not right" is a
 feedback utterance, as is "awesome, ...". The built-in feedback slot values are
 
@@ -2019,15 +2027,14 @@ feedback utterance, as is "awesome, ...". The built-in feedback slot values are
 -   `builtin_disaffirm`: "Disagree". Synonyms: "no", "oh no", "ugh", etc.
 
 More standard feedback values may be added in time, and developers can and should add
-additional feedback slot values, assuming they are compatible with the sample utterance
-shapes.
+additional feedback slot values.
 
 #### 5.7.2.2. Action slot type
 
 The `Action` slot type captures the primary verb of a input. This allows the user to
 mention what they are asking Alexa 'to do'. For example "delete" and "deploy" should be
-captured as actions. Controls in the skill know the actions that they can perform and so
-an action is extremely useful information in an utterance.
+captured as actions. Controls in the skill know the actions that they can perform and they
+will not attempt to handle utterances containing unknown actions.
 
 The built-in action slot values are:
 
@@ -2037,20 +2044,18 @@ The built-in action slot values are:
 -   `builtin_select`: "Select a value". Synonyms: "select", "pick", "take", etc.
 
 More standard feedback values may be added in time, and developers can and should add
-additional action slot values assuming they are compatible with the sample utterance
-shapes.
+additional action slot values.
 
 #### 5.7.2.3. Target slot type
 
-The `Target` slot captures the primary noun of an input. This allows the user to mention
-'what' they are asking Alexa to manipulate. The user will not always mention a target, but
-when they do it is extremely useful information and the controls in a skill define the
-targets they are associated with so that the correct control(s) can be identified during
-the can-handle phase.
+The `Target` slot captures the primary noun of an input. The user will not always mention
+a target but when they do it is extremely useful information. Controls know what targets
+they are associated with and they will not attempt to handle inputs that mention an
+unknown target.
 
 The built-in target slot values are:
 
--   builtin_it: "The noun-topic of conversation". Synonyms: "it", "this", "that", etc.
+-   builtin_it: "The anaphoric noun of the conversation". Synonyms: "it", "that", etc.
 -   builtin_date: "The date of something". Synonyms: "date", "the date", "day", etc.
 -   builtin_startDate: "The start date of something". Synonyms: "start date", "the start
     date", etc.
@@ -2058,17 +2063,45 @@ The built-in target slot values are:
 -   and various others. See `Strings.Target` for the full list of built-in targets.
 
 More standard target values may be added in time, and developers can and should add
-additional target slot values assuming they are compatible with the sample utterance
-shapes. It is very usual for Control instances to need new target values to indicate "what
-the control is capturing". For example, if a `NumberControl` will be used to collect the
-number of tickets for an event, it should have at least one custom target like: `id:
-"eventTicketCount", synonyms: "number of tickets", "event tickets", "tickets", ...` so
-that the user can be understood when they say things like "U: I need to change the number
-of tickets".
+additional target slot values. It is very usual for Control instances to need new target
+values to indicate "what the control is capturing". For example, if a `NumberControl` will
+be used to collect the number of tickets for an event, it should have at least one custom
+target slot value like so that the user can be understood when they say things like "U: I
+need to change the number of tickets".
+
+Example:
+
+```json
+ {
+  "interactionModel": {
+    "languageModel": {
+      "types": [
+        {
+          "name": "target",
+          "values": [
+            ...,
+            {
+              "id": "eventTicketCount",
+              "name": {
+                "value": "eventTicketCount",
+                "synonyms": [
+                  "number of tickets",
+                  "the number of tickets",
+                  "tickets",
+                  "tickets for the game"
+                ]
+              }
+            }
+          ]
+        },
+        ...
+
+```
 
 Robust skills must deal with target ambiguity. For example, a skill might want to capture
 the user's birth date and also the date of their birthday celebration. This will be solved
-by having one `DateControl` for each piece of data and assigning them targets (See below).
+by having one `DateControl` for each piece of data and assigning them both generic and
+specific targets:
 
 -   DateControl for birth date: `Targets: builtin_it, builtin_date, birthDate`
 -   DateControl for birthday event: `Targets: builtin_it, builtin_date, eventDate
@@ -2079,11 +2112,13 @@ need you to change the date" we can expect both controls to report `canHandle = 
 they both are managing some data to do with `builtin_date = "the date"`. This is a
 situation with ambiguity and it will be the responsibility of their parent controls to
 decide a winner. A common solution will be to choose the control that most recently
-'spoke' to the user but perhaps different logic will apply.
+'spoke' to the user but perhaps different logic will apply. (Note that the builtin
+`ContainerControl` has default logic to track the its recently active child.)
 
 However, if the utterance is "I need you to change the date of my celebration" then only
 the second Control will report `canHandle = true` and the parents will not have to resolve
-any ambiguity.
+any ambiguity. Targets thus give the user the power to precisely describe what they are
+talking about, if and when they like.
 
 #### 5.7.2.4. Head, Tail and Preposition
 
@@ -2093,54 +2128,55 @@ for the Head slot along with many others. As such a sample utterance like "{head
 {target}" will be able to match the utterance "U: Could you please change the time".
 
 The head, tail and preposition slots are "mostly content free" in the sense that the
-specific value that a user matches is not used in dialog logic. However, it is not
-absolutely true as some controls may change their behavior depending on the exact words.
+specific value that a user matches is not used in dialog logic. However, if it proves
+necessary to distinguish the values, that can be accommodated by virtue of capturing the
+phrase as a slot value.
 
 ### 5.7.3. Sample utterance shapes for Control Intents
 
-The `GeneralControlIntent` defines the most basic "control intent utterances". See
-`systemResource.en.translation.GENERAL_CONTROL_INTENT_SAMPLES`. A selection of the sample
+The `GeneralControlIntent` defines the most general purpose common utterance shapes (See
+`systemResource.en.translation.GENERAL_CONTROL_INTENT_SAMPLES`). A selection of the sample
 utterances are:
 
 ```text
-Sample utterance definition              Sample user utterance w/ slot-matching
+Utterance 'shape' definition             Sample user utterance w/ slot-matching
 ----------------------------             ---------------------------------------
 
-"{feedback} {action}",                   {No}, {delete}
-"{feedback} {action} {target}",          {Yes}, {change} {the delivery date}
-"{feedback} {tail}",                     {Yes}, {thanks}
-"{feedback} {action} {tail}",            {Yes} {review} {would be great}
-"{feedback} {action} {target} {tail}",   {Yes} {review} {the delivery date} {please}
-"{action} {target}",                     {change} {start date}
-"{head} {action}",                       {just} {delete}
-"{head} {action} {target}",              {just} {delete} {it}
-"{action} {tail}",                       {delete} {is correct}
-"{action} {target} {tail}",              {update} {my address} {please}
-"{head} {action} {tail}",                {go ahead and} {delete} {thanks}
-"{head} {action} {target} {tail}",       {go ahead and} {delete} {the item} {thanks}
+"{feedback} {action}",                   "{Yes}, {delete}"
+"{feedback} {action} {target}",          "{No}, {change} {the delivery date}"
+"{feedback} {tail}",                     "{Yes}, {thanks}"
+"{feedback} {action} {tail}",            "{Yes} {review} {would be great}"
+"{feedback} {action} {target} {tail}",   "{Yes} {change} {the delivery date} {please}"
+"{action} {target}",                     "{change} {start date}"
+"{head} {action}",                       "{just} {pause}"
+"{head} {action} {target}",              "{just} {delete} {it}"
+"{action} {tail}",                       "{delete} {is correct}"
+"{action} {target} {tail}",              "{update} {my address} {please}"
+"{head} {action} {tail}",                "{go ahead and} {delete} {thanks}"
+"{head} {action} {target} {tail}",       "{go ahead and} {delete} {the item} {thanks}"
 ```
 
 Note that this short set of sample utterance definitions can capture a wide variety of
 user utterance by means of the feedback, action, target, head, and tail slot types. This
 means that individual controls can simply define new targets etc and listen for the
-`GeneralControlIntent`. Even better is that library controls, such as `ListControl` can be
-built to listen for `GeneralControlIntent` and be customized to listen for specific
-targets.
+`GeneralControlIntent`. The built-in controls, such as `ListControl`, allow the developer
+to customize the targets associated with the control so that each `ListControl` instance
+can be directly targeted by user utterances.
 
 ### 5.7.4. Associating targets and actions to controls
 
-The library controls allow the developer to define the actions and targets that should be
-recognized by means of props. So, for example, a NumberControl that collects the number of
-diners for a reservation may be configured as:
+The built-in controls allow the developer to define the actions and targets that should be
+recognized by means of props. For example, a `NumberControl` that collects the number of
+diners for a reservation would be configured as:
 
 ```js
 1. new NumberControl(
-2.     {
-3.         id: 'dinerCount',
-4.         interactionModel: {
-5.             targets: ['builtin_it', 'count', 'dinerCount', 'attendees', 'partySize']
-6.         }
-7.     }
+2.   {
+3.     id: 'dinerCount',
+4.     interactionModel: {
+5.       targets: ['builtin_it', 'count', 'dinerCount', 'attendees', 'partySize']
+6.     }
+7.   }
 8. );
 ```
 
@@ -2149,48 +2185,47 @@ diners for a reservation may be configured as:
     one of those IDs should be considered relevant to this control. Likewise, if the
     target slot is filled with anything else, this control will assume it is not relevant.
 
-Actions are also important as they represent the verbs that are relevant to a control. By
-default a `NumberControl` only knows about the `set` and `change` actions, and they are
-associated with the `set` and `change` capabilities of the skill. Let's imagine a
-restaurant skill want to understand user utterances like "U: Increase the party size". Be
-default, the word "increase" is not understood by the dinerCount control. To fix this, we
-decide that the verb "increase" should be associated with the change capability for the
-NumberControl (as it doesn't actually know have the "increase capability" yet). We then
-need to decide if the word "increase" should be treated as an exact synonym of "change" or
-whether it should have its own identity. Our general guidance is to define new
-actions/targets when the semantics do seem meaningfully different. So, we update the
-definition to:
+Actions represent the verbs that are relevant to a control. By default a `NumberControl`
+only knows about the `set` and `change` actions, and they are associated with the `set`
+and `change` capabilities of the skill. Let's imagine a restaurant skill want to
+understand user utterances like "U: Increase the party size". Be default, the word
+"increase" is not understood by the dinerCount control. To fix this, we decide that the
+verb "increase" should be associated with the change capability for the NumberControl (as
+it doesn't actually have the "increase capability" yet). We then need to decide if the
+word "increase" should be treated as an exact synonym of "change" or whether it should
+have its own identity. Our general guidance is to define new actions/targets when the
+semantics do seem meaningfully different. So, we update the definition to:
 
 ```js
  1. new NumberControl(
- 2.     {
- 3.         id: 'dinerCount',
- 4.         interactionModel: {
- 5.             targets: ['builtin_it', 'count', 'partySize'],
- 6.             actions: {
- 7.                      change: ['builtin_change', 'increase']
- 8.             }
- 9.         }
-10.     }
+ 2.   {
+ 3.     id: 'dinerCount',
+ 4.     interactionModel: {
+ 5.       targets: ['builtin_it', 'count', 'partySize'],
+ 6.       actions: {
+ 7.         change: ['builtin_change', 'increase']
+ 8        }
+ 9.     }
+10.   }
 11. );
 ```
 
 -   **Line 7**: Note that when overriding a prop we must specify all the action IDs,
-    including the built_ins that we wish to keep). The new content specifies that an
-    Action slot value with `id = increase` should be considered a match for the "Change
-    capability" of this Number control. As a result, the utterance "U: Increase the party
-    size" will be interpreted as `(action=increase, target=partySize`) and recognized by
-    this control. The control will thus report `canHandle = true` unless it's internal
-    state makes that behavior inadmissable.
+    including the built\*ins that we wish to keep. Line 7 specifies that an Action slot
+    value with `id = builtin_change | increase` should be considered a match for the
+    "Change capability" of this Control. As a result, the utterance "U: Increase the party
+    size" will be interpreted as `(action=increase, target=partySize)` and recognized by
+    this control as an attempt to change the control's value. The control will thus report
+    `canHandle = true` unless it's internal state makes that behavior inadmissable.
 
 To complete the skill, the novel targets and actions must be added to the interaction
 model. If the decision is made to treat new words as exact synonyms for existing
-built-ins, that information must also be added to the interaction model
+built-ins, that information must also be added to the interaction model.
 
 ### 5.7.5. Building the interaction model
 
-For a skill built using library controls, the bulk of the interaction model can be
-produced by the following script:
+For a skill that uses built-in controls the bulk of the interaction model can be produced
+by the following script:
 
 ```js
 new ControlInteractionModelGenerator()
@@ -2200,16 +2235,15 @@ new ControlInteractionModelGenerator()
 console.log('done.');
 ```
 
-The output file will include all the ControlIntents that are needed by the library
-controls used in the skill, and all the associated slot types and type values. The actual
-prompt fragments will use their default localized strings for the `en-US` locale.
+The output file will include all the intents, slot types, and utterances shapes that are
+needed to run straight-forward interactions. The actual prompt fragments will use their
+default localized strings for the `en-US` locale.
 
-However, the auto-generated interaction model will not have any of the custom data that is
-necessary for custom actions, targets, and so on. This additional data should be added
-either by `Control.updateInteractionModel` for new Controls that have default requirements
-or by directly adding content to the interaction-model building file.
+The auto-generated interaction model will not have any of the custom data that is
+necessary for custom actions, targets, and so on. This additional data can be added by
+extending the interaction-model building script.
 
-The second style will look like:
+Example:
 
 ```js
  1. new ControlInteractionModelGenerator()
@@ -2241,33 +2275,18 @@ The second style will look like:
 -   **Line 5-11**: Adds a new `action` slot value with id='increase'. The associated words
     can now be understood in any sample utterance that uses the `{action}` slot.
 
-### 5.7.6. What utterance shapes are covered by Control Intents
-
-Control intents should cover all the most common and basic utterance shapes that are of
-general purpose use.
-
-The foundation is `GeneralControlIntent` which recognizes phrases involving `{feedback}`,
-`{action}`, and `{target}` plus the mostly content free `{head}` and `{tail}`. Thus, any
-utterance that the skill need to capture that is basically a verb, a noun and/or some
-carrier words should re-use the GeneralControlIntent by defining any new actions and
-targets that are required.
-
-The next step up is the class of `ValueControlIntent` which recognizes phrases that may
-include all the general contents AND which include a value-slot. So, for example, the
-`AMAZON_NUMBER_ValueControlIntent` can recognize "U: change the party size to five". If
-your skill needs to capture phrases of that form it can reuse
-`AMAZON_NUMBER_ValueControlIntent`.
-
-See the list of standard intents in the tech docs for more information.
+As user-testing uncovers utterance coverage gaps the auto-generated interaction model can
+also be extended and amended via code.
 
 ### 5.7.7. When to introduce new Intents
 
 The standard ControlIntents are general-purpose and hence do not cover all the interesting
-utterances that a skill may need. For example if some complex utterance like "Send the
-email then mark the task complete" are expected then new Custom Intents should be created.
-None of the library controls will recognize such intents but that is no problem -- the
-correct control to handle such as complex utterance will be a parent control that can
-orchestrate all the behaviors needed.
+utterances that a skill may need. For example if a skill must react to an utterance like
+"Add two apples to the shopping cart" then a new Custom Intent should be created. The
+built-in controls will not recognize such intents but we can still arrange to update them
+in response to such inputs. The main idea is to have a parent control handle these inputs
+nd manipulate its child controls as necessary. See the FruitShop skill which demonstrates
+this.
 
 # 6. Additional topics
 
@@ -2275,10 +2294,10 @@ orchestrate all the behaviors needed.
 
 This section is a quick walk-through of the steps to add Controls to an existing skill.
 
-The Controls framework provides a library of pre-made controls that offer solutions for
-common interactions scenarios such as presenting a list of options to a user. These
-controls include their own interaction models which can be merged with your existing
-skill's interaction model.
+The Controls Framework provides various built-in controls that offer solutions for common
+interactions scenarios such as presenting a list of options to a user. These controls
+include their own interaction models which can be merged with your existing skill's
+interaction model.
 
 As an example, we'll add a
 [ListControl](https://ask-sdk-controls-typedoc.s3.amazonaws.com/modules/_commoncontrols_listcontrol_listcontrol_.html)
@@ -2326,8 +2345,8 @@ that asks users to select their favorite color to an existing skill:
         .buildAndWrite('./en-US-generated.json');
     ```
 
-3. Run `build_interaction_models.js` script to build a new interaction model with one that
-   includes the library control interaction models included:
+3. Run `build_interaction_models.js` script to build a new interaction model that includes
+   auto-generated intents and slots for the built-in controls:
 
     ```bash
     node ./build_interaction_model.js
@@ -2384,7 +2403,8 @@ directive](https://developer.amazon.com/en-US/docs/alexa/custom-skills/ialog-int
 is of particular use. Controls should use `Dialog.ElicitSlot` whenever they directly ask
 the user for a value as it can dramatically increase speech recognition quality of the
 user's response. Dialog directives can set a `updatedIntent` to sequence stateful intents
-together. See the library controls for examples of using `Dialog.ElicitSlot`.
+together. See the built-in control implementations for examples of using
+`Dialog.ElicitSlot`.
 
 ## 6.3. Internationalization and Localization
 
@@ -2439,7 +2459,7 @@ At runtime there are two i18n instances: one is used by the framework and is con
 during construction of the `ControlManager`. The other is for the custom skill and can be
 used to localized skill-specific strings that are passed as props etc.
 
-1. To adjust the built-in localization data for the library controls, provide your
+1. To adjust the built-in localization data for the built-in controls, provide your
    overrides during construction of the ControlManager, as done for interaction model
    building.
 2. To localize skill-specific strings, stand up your own i18n manager and use it when
