@@ -187,15 +187,16 @@ export abstract class DynamicContainerControl
     }
 
     /**
-     * Create a Control object from a DynamicControlSpecification
+     * Create a Control from a DynamicControlSpecification
      *
      * Purpose:
      *  - This method is called to create a dynamic control at the time of first
      *    creation and during the initialization phase of every subsequent turn.
      *
      * Usage:
-     *  - inspect the specification object and determine the type of Control to
+     *  - Inspect the specification object and determine the type of Control to
      *    instantiate.
+     *  - Instantiate a new control and ensure control.id = specification.id.
      */
     abstract createDynamicChild(specification: DynamicControlSpecification): Control;
 
