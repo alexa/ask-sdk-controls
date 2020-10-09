@@ -15,6 +15,7 @@ import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
 import { IntentRequest } from 'ask-sdk-model';
+import { getSupportedInterfaces } from 'ask-sdk-core';
 import {
     AmazonBuiltInSlotType,
     ControlHandler,
@@ -348,12 +349,10 @@ suite('== Custom APL Props ==', () => {
                 ],
                 apl: {
                     requestValue: {
-                        dataSource: ListControlAPLPropsBuiltIns.APL_TextList_DataSource(
+                        dataSource: ListControlAPLPropsBuiltIns.TextListDataSourceGenerator(
                             (x) => `Wizard House: ${x}`,
                         ),
-                        customHandlingFuncs: [
-                            { canHandle: isSelectChoiceEvent, handle: handleSelectChoiceEvent },
-                        ],
+                        customHandlingFuncs: [{ canHandle: isButtonSelected, handle: handleButtonSelection }],
                     },
                 },
             });
@@ -362,15 +361,19 @@ suite('== Custom APL Props ==', () => {
                 return ['Gryffindor', 'Ravenclaw', 'Slytherin'];
             }
 
-            function isSelectChoiceEvent(input: ControlInput) {
-                return InputUtil.isIntent(input, 'SelectChoiceEventIntent');
+            function isButtonSelected(input: ControlInput) {
+                return InputUtil.isIntent(input, 'HouseConfirmButtonIntent');
             }
 
-            function handleSelectChoiceEvent(input: ControlInput) {
-                const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
-                if (intent.slotResolutions.value !== undefined) {
-                    const listSelectedValue = intent.slotResolutions.value;
-                    houseControl.setValue(listSelectedValue.slotValue);
+            function handleButtonSelection(input: ControlInput) {
+                if (getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']) {
+                    const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
+                    const result = new ControlResultBuilder(undefined!);
+                    if (intent.slotResolutions.value !== undefined) {
+                        const listSelectedValue = intent.slotResolutions.value;
+                        houseControl.setValue(listSelectedValue.slotValue);
+                        houseControl.validateAndAddActs(input, result, $.Action.Set);
+                    }
                 }
             }
 
@@ -384,7 +387,7 @@ suite('== Custom APL Props ==', () => {
 
         const rootControl = new ListSelector().createControlTree();
         const input = TestInput.of(
-            IntentBuilder.of('SelectChoiceEventIntent', {
+            IntentBuilder.of('HouseConfirmButtonIntent', {
                 value: 'Hufflepuff',
             }),
         );

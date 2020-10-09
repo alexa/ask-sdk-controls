@@ -23,21 +23,19 @@ export namespace ListControlAPLPropsBuiltIns {
      * For information about the TextListTemplate, see following doc:
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function APL_TextList(slotIdMapper: { [index: string]: string } | ((choiceId: string) => string)) {
-        return {
-            enabled: true,
-            requestValue: {
-                document: APL_TextList_Document(),
-                dataSource: APL_TextList_DataSource(slotIdMapper),
-                customHandlingFuncs: [],
-            },
-            requestChangedValue: {
-                document: APL_TextList_Document(),
-                dataSource: APL_TextList_DataSource(slotIdMapper),
-                customHandlingFuncs: [],
-            },
-        };
-    }
+    export const TextList = {
+        enabled: true,
+        requestValue: {
+            document: TextListDocumentGenerator(),
+            dataSource: TextListDataSourceGenerator((choiceId) => choiceId),
+            customHandlingFuncs: [],
+        },
+        requestChangedValue: {
+            document: TextListDocumentGenerator(),
+            dataSource: TextListDataSourceGenerator((choiceId) => choiceId),
+            customHandlingFuncs: [],
+        },
+    };
 
     /**
      * The APL dataSource to use when requesting a value
@@ -46,7 +44,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
-    export function APL_TextList_DataSource(
+    export function TextListDataSourceGenerator(
         slotIdMapper: { [index: string]: string } | ((choiceId: string) => string),
     ) {
         return (act: RequestChangedValueByListAct) => {
@@ -75,7 +73,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function APL_TextList_Document() {
+    export function TextListDocumentGenerator() {
         return {
             type: 'APL',
             version: '1.3',
