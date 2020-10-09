@@ -519,7 +519,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                         suggestions: ListFormatting.format(act.payload.choicesFromActivePage),
                     }),
             },
-            apl: ListControlAPLPropsBuiltIns.APL_TextList((choiceId) => choiceId),
+            apl: ListControlAPLPropsBuiltIns.TextList,
             inputHandling: {
                 customHandlingFuncs: [],
             },
@@ -1045,14 +1045,8 @@ export class ListControl extends Control implements InteractionModelContributor 
                 this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
                 getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
             ) {
-                const document =
-                    typeof this.props.apl.requestValue.document === 'function'
-                        ? this.props.apl.requestValue.document(act, this.state)
-                        : this.props.apl.requestValue.document;
-                const dataSource =
-                    typeof this.props.apl.requestValue.dataSource === 'function'
-                        ? this.props.apl.requestValue.dataSource(act, this.state)
-                        : this.props.apl.requestValue.dataSource;
+                const document = this.evaluateAPLProp(act, this.props.apl.requestValue.document);
+                const dataSource = this.evaluateAPLProp(act, this.props.apl.requestValue.dataSource);
                 builder.addAPLRenderDocumentDirective('Token', document, dataSource);
             }
         } else if (act instanceof RequestChangedValueByListAct) {
@@ -1066,14 +1060,8 @@ export class ListControl extends Control implements InteractionModelContributor 
                 this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
                 getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
             ) {
-                const document =
-                    typeof this.props.apl.requestChangedValue.document === 'function'
-                        ? this.props.apl.requestChangedValue.document(act, this.state)
-                        : this.props.apl.requestChangedValue.document;
-                const dataSource =
-                    typeof this.props.apl.requestChangedValue.dataSource === 'function'
-                        ? this.props.apl.requestChangedValue.dataSource(act, this.state)
-                        : this.props.apl.requestChangedValue.dataSource;
+                const document = this.evaluateAPLProp(act, this.props.apl.requestChangedValue.document);
+                const dataSource = this.evaluateAPLProp(act, this.props.apl.requestChangedValue.dataSource);
                 builder.addAPLRenderDocumentDirective('Token', document, dataSource);
             }
         } else if (act instanceof UnusableInputValueAct) {

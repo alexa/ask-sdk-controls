@@ -299,4 +299,17 @@ export abstract class Control implements IControl {
     ): boolean {
         return typeof propValue === 'function' ? propValue.call(this, input) : propValue;
     }
+
+    /**
+     * Evaluate an APL document/data source prop.
+     *
+     * @param act - act
+     * @param propValue - Constant or function producing a map of key:value pairs
+     */
+    evaluateAPLProp(
+        act: SystemAct,
+        propValue: { [key: string]: any } | ((act: SystemAct, state: ControlState) => { [key: string]: any }),
+    ): { [key: string]: any } {
+        return typeof propValue === 'function' ? (propValue as any).call(this, act, this.state) : propValue;
+    }
 }
