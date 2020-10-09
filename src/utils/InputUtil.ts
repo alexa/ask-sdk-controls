@@ -96,6 +96,18 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the input is an Alexa.Presentation.APL.UserEvent with sourceId
+     * equal to the provided source ID.
+     * @param input - Input
+     */
+    export function isAPLUserEventWithMatchingSourceId(input: ControlInput, sourceId: string): boolean {
+        return (
+            isAPLUserEventWithArgs(input) &&
+            (input.request as interfaces.alexa.presentation.apl.UserEvent).source.id === sourceId
+        );
+    }
+
+    /**
      * Test if the input is an Alexa.Presentation.APL.UserEvent with a first
      * argument equal to the provided control ID.
      * @param input - Input

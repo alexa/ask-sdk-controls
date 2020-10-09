@@ -14,7 +14,8 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
-import { IntentRequest } from 'ask-sdk-model';
+import { IntentRequest, interfaces } from 'ask-sdk-model';
+import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
 import { getSupportedInterfaces } from 'ask-sdk-core';
 import {
     AmazonBuiltInSlotType,
@@ -350,9 +351,12 @@ suite('== Custom APL Props ==', () => {
                 apl: {
                     requestValue: {
                         dataSource: ListControlAPLPropsBuiltIns.TextListDataSourceGenerator(
-                            (x) => `Wizard House: ${x}`,
+                            (x: string) => `Wizard House: ${x}`,
                         ),
-                        customHandlingFuncs: [{ canHandle: isButtonSelected, handle: handleButtonSelection }],
+                        customHandlingFuncs: [
+                            { canHandle: isButtonSelected, handle: handleButtonSelection },
+                            { canHandle: isHouseSelected, handle: handleHouseSelection },
+                        ],
                     },
                 },
             });
@@ -361,22 +365,30 @@ suite('== Custom APL Props ==', () => {
                 return ['Gryffindor', 'Ravenclaw', 'Slytherin'];
             }
 
-            function isButtonSelected(input: ControlInput) {
-                return InputUtil.isIntent(input, 'HouseConfirmButtonIntent');
+            function isButtonSelected(input: ControlInput): boolean {
+                return InputUtil.isAPLUserEventWithMatchingSourceId(input, 'HouseTextButton');
             }
 
-            function handleButtonSelection(input: ControlInput) {
+            function handleButtonSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
+                const houseId = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![0];
+                houseControl.setValue(houseId, true);
+                houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
+            }
+
+            function isHouseSelected(input: ControlInput) {
+                return InputUtil.isIntent(input, 'HouseSelectionIntent');
+            }
+
+            function handleHouseSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
                 if (getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']) {
                     const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
-                    const result = new ControlResultBuilder(undefined!);
                     if (intent.slotResolutions.value !== undefined) {
                         const listSelectedValue = intent.slotResolutions.value;
                         houseControl.setValue(listSelectedValue.slotValue);
-                        houseControl.validateAndAddActs(input, result, $.Action.Set);
+                        houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
                     }
                 }
             }
-
             topControl.addChild(houseControl);
             return topControl;
         }
@@ -387,7 +399,7 @@ suite('== Custom APL Props ==', () => {
 
         const rootControl = new ListSelector().createControlTree();
         const input = TestInput.of(
-            IntentBuilder.of('HouseConfirmButtonIntent', {
+            IntentBuilder.of('HouseSelectionIntent', {
                 value: 'Hufflepuff',
             }),
         );
@@ -401,18 +413,20 @@ suite('== Custom APL Props ==', () => {
     test('APL custom mapper for slotIds.', async () => {
         const requestHandler = new ControlHandler(new ListSelector());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
-
-        const response = await skill.invoke(
-            TestInput.of(
-                SingleValueControlIntent.of('hogwartsHouse', {
-                    hogwartsHouse: 'Muggle',
-                    action: $.Action.Set,
-                }),
-            ),
-        );
-
-        expect(response.directive?.length).eq(1);
-
+        const testUserEvent: UserEvent = {
+            type: 'Alexa.Presentation.APL.UserEvent',
+            requestId: 'amzn1.echo-api.request.1',
+            timestamp: '2019-10-04T18:48:22Z',
+            locale: 'en-US',
+            arguments: ['Muggle'],
+            components: {},
+            source: {
+                type: 'TouchWrapper',
+                handler: 'Press',
+                id: 'HouseTextButton',
+            },
+            token: 'houseButtonToken',
+        };
         const expectedDataSource = {
             textListData: {
                 controlId: 'hogwarts',
@@ -430,7 +444,13 @@ suite('== Custom APL Props ==', () => {
                 ],
             },
         };
+        const response = await skill.invoke(TestInput.userEvent(testUserEvent));
         const dataSource = (response as any).directive[0].datasources;
+
+        expect(response.directive?.length).eq(1);
+        expect(response.prompt).eq(
+            'Sorry, Muggle is not a valid choice because houseControl validation Failed. What is your selection? Some suggestions are Gryffindor, Ravenclaw or Slytherin.',
+        );
         expect(dataSource).deep.equals(expectedDataSource);
     });
 });
