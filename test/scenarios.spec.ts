@@ -154,7 +154,7 @@ suite(
         test('U: set count, A: move focus and ask question', async () => {
             // Note: this test demonstrates calling simpleInvoke() which includes the initiative phase (yielding a composite ControlResult)
 
-            const rootControl = new TwoSelectorManager().createControlTree({});
+            const rootControl = new TwoSelectorManager().createControlTree();
             const input = TestInput.of(
                 SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     action: $.Action.Set,
@@ -170,7 +170,7 @@ suite(
         });
 
         test('U: set count, A:move focus and ask question, U: change count to specific value', async () => {
-            const rootControl = new TwoSelectorManager().createControlTree({});
+            const rootControl = new TwoSelectorManager().createControlTree();
 
             // -- turn 1
             const input1 = TestInput.of(
@@ -241,7 +241,7 @@ suite(
 
 suite('== Custom Handler function scenarios ==', () => {
     class DateSelectorManager extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             const topControl = new ContainerControl({ id: 'root' });
 
             // DateControl
@@ -291,7 +291,7 @@ suite('== Custom Handler function scenarios ==', () => {
     test('Check custom handlers are invoked.', async () => {
         // Note: this test demonstrates calling customHandlingFuncs if defined on a control
 
-        const rootControl = new DateSelectorManager().createControlTree({});
+        const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
             IntentBuilder.of('SetDateEventIntent', {
                 date: '2020-01-01',
@@ -305,7 +305,7 @@ suite('== Custom Handler function scenarios ==', () => {
     });
 
     test('Check conflicts in canHandle throws a warn log', async () => {
-        const rootControl = new DateSelectorManager().createControlTree({});
+        const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
             SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                 'AMAZON.DATE': '2018',
@@ -332,7 +332,7 @@ suite('== Custom Handler function scenarios ==', () => {
 
 suite('== Custom APL Props ==', () => {
     class ListSelector extends ControlManager {
-        createControlTree(state: any): Control {
+        createControlTree(): Control {
             const topControl = new ContainerControl({ id: 'root' });
 
             // ListControl
@@ -382,7 +382,7 @@ suite('== Custom APL Props ==', () => {
     test('APL custom handlers are invoked.', async () => {
         // Note: this test demonstrates calling customHandlingFuncs if defined on a control
 
-        const rootControl = new ListSelector().createControlTree({});
+        const rootControl = new ListSelector().createControlTree();
         const input = TestInput.of(
             IntentBuilder.of('SelectChoiceEventIntent', {
                 value: 'Hufflepuff',

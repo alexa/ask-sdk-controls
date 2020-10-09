@@ -13,7 +13,7 @@
         "format-overwrite": "prettier -w \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\"",
         "test": "cross-env TS_NODE_FILES=true mocha -r ts-node/register \"./test/**/*.spec.ts\"",
         "test-all": "cross-env TS_NODE_FILES=true mocha --forbid-only -r ts-node/register \"./test/**/*.spec.ts\"",
-        "coverage": "nyc --cache npm test-all && nyc report --reporter=html && echo HTML report generated at coverage/index.html",
+        "coverage": "nyc --cache npm run test-all && nyc report --reporter=html && echo HTML report generated at coverage/index.html",
         "clean": "rm -rf ./dist",
         "reinstall": "rm -rf ./node_modules && npm install",
         "rebuild": "npm run clean && npm run build",
