@@ -1,5 +1,7 @@
 import i18next from 'i18next';
 import { RequestChangedValueByListAct } from '../..';
+import { DeepRequired } from '../../utils/DeepRequired';
+import { ListControlAPLProps } from './ListControl';
 
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -23,7 +25,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * For information about the TextListTemplate, see following doc:
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export const TextList = {
+    export const TextList: DeepRequired<ListControlAPLProps> = {
         enabled: true,
         requestValue: {
             document: TextListDocumentGenerator(),
