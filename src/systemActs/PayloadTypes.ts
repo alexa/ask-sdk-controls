@@ -11,10 +11,17 @@
  * permissions and limitations under the License.
  */
 
+export interface RenderedPayload<T> {
+    /**
+     * The rendered value.
+     */
+    renderedValue: T;
+}
+
 /**
  * Payload for ValueSetAct
  */
-export interface ValueSetPayload<T> {
+export interface ValueSetPayload<T> extends RenderedPayload<T> {
     /**
      * The control value.
      */
@@ -24,25 +31,27 @@ export interface ValueSetPayload<T> {
 /**
  * Payload for ValueChangedAct
  */
-export interface ValueChangedPayload<T> {
+export interface ValueChangedPayload<T> extends RenderedPayload<T> {
     value: T;
 
     /**
      * The previous control value.
      */
     previousValue: T;
+
+    previousRenderedValue: T;
 }
 
 /**
  *
  */
-export interface InvalidValuePayload<T> {
+export interface InvalidValuePayload<T> extends RenderedPayload<T> {
     value: T;
     reasonCode?: string;
     renderedReason?: string;
 }
 
-export interface ProblematicInputValuePayload<T> {
+export interface ProblematicInputValuePayload<T> extends RenderedPayload<T> {
     value: T;
     reasonCode: string;
     renderedReason?: string;
@@ -52,7 +61,7 @@ export interface RequestValuePayload {
     renderedTarget?: string;
 }
 
-export interface RequestChangedValuePayload {
+export interface RequestChangedValuePayload extends RenderedPayload<string> {
     currentValue: string;
     renderedTarget?: string;
 }
@@ -60,14 +69,18 @@ export interface RequestChangedValuePayload {
 export interface RequestValueByListPayload {
     choicesFromActivePage: string[];
     allChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAllChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }
 
-export interface RequestChangedValueByListPayload {
+export interface RequestChangedValueByListPayload extends RenderedPayload<string> {
     currentValue: string;
     choicesFromActivePage: string[];
     allChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAllChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }

@@ -315,64 +315,76 @@ export class NumberControl extends Control implements InteractionModelContributo
             prompts: {
                 requestValue: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
                 confirmValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueDisconfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 valueSet: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 suggestValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 informConfusingDisconfirmation: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_DISCONFIRMATION'),
                 informConfusingConfirmation: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_CONFIRMATION', {
-                        previousValue: act.payload.value,
+                        previousValue: act.payload.renderedValue,
                     }),
                 problematicInputValue: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_REPEAT_UNUSABLE_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                             reason: act.payload.renderedReason,
                         });
                     }
                     return i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     });
                 },
             },
             reprompts: {
                 requestValue: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
                 confirmValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueDisconfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
                 valueSet: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 suggestValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', { value: act.payload.value }),
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 informConfusingDisconfirmation: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_DISCONFIRMATION'),
                 informConfusingConfirmation: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_CONFIRMATION', {
-                        previousValue: act.payload.value,
+                        previousValue: act.payload.renderedValue,
                     }),
                 problematicInputValue: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_REPEAT_UNUSABLE_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                             reason: act.payload.renderedReason,
                         });
                     }
                     return i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     });
                 },
             },
@@ -649,6 +661,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             new ProblematicInputValueAct(this, {
                 reasonCode: 'ValuePreviouslyRejected',
                 value: this.state.value,
+                renderedValue: this.state.value,
             }),
         );
         resultBuilder.addAct(new RequestValueAct(this));
@@ -692,7 +705,9 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder: ControlResultBuilder,
     ): void {
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value! }));
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, { value: this.state.value!, renderedValue: this.state.value! }),
+        );
         this.commonHandlerWhenValueRejected(input, resultBuilder);
     }
 
@@ -727,6 +742,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
                 value: this.state.value!,
+                renderedValue: this.state.value!,
                 reasonCode: 'DisconfirmedWithSameValue',
             }),
         );
@@ -800,11 +816,14 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingConfirmationAct(this, {
                 value: previousValue,
+                renderedValue: previousValue,
                 reasonCode: 'ConfirmedWithDifferentValue',
             }),
         );
         this.state.activeInitiativeAct = 'ConfirmValueAct';
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+        );
     }
 
     private isBareYesConfirmingValue(input: ControlInput): boolean {
@@ -869,7 +888,9 @@ export class NumberControl extends Control implements InteractionModelContributo
     ): void {
         this.state.isValueConfirmed = true;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueConfirmedAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+        );
     }
 
     private isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
@@ -902,7 +923,9 @@ export class NumberControl extends Control implements InteractionModelContributo
     ): void {
         this.state.isValueConfirmed = true;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueConfirmedAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+        );
     }
 
     private isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
@@ -978,6 +1001,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(
                 new InvalidValueAct(this, {
                     value: this.state.value!,
+                    renderedValue: this.state.value!,
                     renderedReason: validationResult.renderedReason,
                 }),
             );
@@ -985,10 +1009,14 @@ export class NumberControl extends Control implements InteractionModelContributo
         } else if (!this.isConfirmationRequired(input)) {
             this.state.isValueConfirmed = true;
             this.state.activeInitiativeAct = undefined;
-            resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
+            resultBuilder.addAct(
+                new ValueSetAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            );
         } else {
             this.state.activeInitiativeAct = 'ConfirmValueAct';
-            resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+            resultBuilder.addAct(
+                new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            );
         }
     }
 
@@ -1007,7 +1035,9 @@ export class NumberControl extends Control implements InteractionModelContributo
             if (validationResult === true) {
                 // this is to confirm from users for the suggestedValue
                 this.state.activeInitiativeAct = 'ConfirmValueAct';
-                resultBuilder.addAct(new SuggestValueAct(this, { value: this.state.value }));
+                resultBuilder.addAct(
+                    new SuggestValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+                );
             } else {
                 this.state.value = previousValue;
                 resultBuilder.addAct(new RequestValueAct(this));
@@ -1047,6 +1077,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InvalidValueAct(this, {
                 value: this.state.value!,
+                renderedValue: this.state.value!,
                 reasonCode: 'ValueInvalid',
                 renderedReason: (validationResult as ValidationResult).renderedReason,
             }),
@@ -1068,7 +1099,9 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = 'ConfirmValueAct';
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+        );
     }
 
     private validateNumber(input: ControlInput): true | ValidationResult {

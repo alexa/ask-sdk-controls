@@ -114,6 +114,12 @@ export interface DateControlProps extends ControlProps {
      * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
+
+    /**
+     * Function that maps the date value to a corresponding rendered value that will be presented
+     * to the user.
+     */
+    valueRenderer?: (value: string, input: ControlInput) => string;
 }
 
 /**
@@ -360,15 +366,15 @@ export class DateControl extends Control implements InteractionModelContributor 
             prompts: {
                 confirmValue: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
                 valueAffirmed: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_SET'),
                 valueChanged: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
-                        old: act.payload.previousValue,
-                        new: act.payload.value,
+                        old: act.payload.previousRenderedValue,
+                        new: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
@@ -384,15 +390,15 @@ export class DateControl extends Control implements InteractionModelContributor 
             reprompts: {
                 confirmValue: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
                 valueAffirmed: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisaffirmed: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_SET'),
                 valueChanged: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
-                        old: act.payload.previousValue,
-                        new: act.payload.value,
+                        old: act.payload.previousRenderedValue,
+                        new: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
@@ -415,6 +421,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             inputHandling: {
                 customHandlingFuncs: [],
             },
+            valueRenderer: (value: string, input) => value,
             validation: [],
             confirmationRequired: false,
             required: true,
@@ -582,7 +589,12 @@ export class DateControl extends Control implements InteractionModelContributor 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = undefined;
         this.state.isValueConfirmed = true;
-        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueConfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
     }
 
     private isConfirmationDisaffirmed(input: ControlInput): any {
@@ -599,7 +611,12 @@ export class DateControl extends Control implements InteractionModelContributor 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
@@ -663,7 +680,12 @@ export class DateControl extends Control implements InteractionModelContributor 
                 resultBuilder.addAct(new RequestValueAct(this));
                 return;
             case $.Action.Change:
-                resultBuilder.addAct(new RequestChangedValueAct(this, { currentValue: this.state.value! }));
+                resultBuilder.addAct(
+                    new RequestChangedValueAct(this, {
+                        currentValue: this.state.value!,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    }),
+                );
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
@@ -684,7 +706,9 @@ export class DateControl extends Control implements InteractionModelContributor 
                     resultBuilder.addAct(
                         new ValueChangedAct<string>(this, {
                             previousValue: this.state.previousValue,
+                            previousRenderedValue: this.props.valueRenderer(this.state.previousValue, input),
                             value: this.state.value!,
+                            renderedValue: this.props.valueRenderer(this.state.value!, input),
                         }),
                     );
                 } else {
@@ -693,13 +717,19 @@ export class DateControl extends Control implements InteractionModelContributor 
                     );
                 }
             } else {
-                resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
+                resultBuilder.addAct(
+                    new ValueSetAct(this, {
+                        value: this.state.value,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    }),
+                );
             }
         } else {
             // feedback
             resultBuilder.addAct(
                 new InvalidValueAct<string>(this, {
                     value: this.state.value!,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input),
                     reasonCode: validationResult.reasonCode,
                     renderedReason: validationResult.renderedReason,
                 }),
@@ -723,7 +753,12 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = 'ConfirmValueAct';
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
     }
 
     private wantsToFixInvalidValue(input: ControlInput): boolean {

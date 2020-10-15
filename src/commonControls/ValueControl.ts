@@ -120,6 +120,12 @@ export interface ValueControlProps extends ControlProps {
      * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
+
+    /**
+     * Function that maps the slot value to a corresponding rendered value
+     * that will be presented to the user.
+     */
+    valueRenderer?: (slotValueId: string, input: ControlInput) => string;
 }
 
 /**
@@ -330,22 +336,26 @@ export class ValueControl extends Control implements InteractionModelContributor
             },
             prompts: {
                 confirmValue: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueConfirmed: i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 valueSet: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_SET', { value: act.payload.renderedValue }),
                 valueChanged: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
+                        value: act.payload.renderedValue,
+                    }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                             reason: act.payload.renderedReason,
                         });
                     }
                     return i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     });
                 },
                 requestValue: () => i18next.t('VALUE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
@@ -353,22 +363,28 @@ export class ValueControl extends Control implements InteractionModelContributor
             },
             reprompts: {
                 confirmValue: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueConfirmed: i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
                 valueDisconfirmed: i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
                 valueSet: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueChanged: (act) =>
-                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', { value: act.payload.value }),
+                    i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
+                        value: act.payload.renderedValue,
+                    }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                             reason: act.payload.renderedReason,
                         });
                     }
                     return i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     });
                 },
                 requestValue: () => i18next.t('VALUE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
@@ -377,6 +393,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             inputHandling: {
                 customHandlingFuncs: [],
             },
+            valueRenderer: (value: string, input) => value,
         };
 
         return _.merge(defaults, props);
@@ -634,7 +651,12 @@ export class ValueControl extends Control implements InteractionModelContributor
         this.state.activeInitiativeAct = undefined;
         this.state.isValueConfirmed = true;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueConfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueConfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
     }
 
     /**
@@ -669,7 +691,12 @@ export class ValueControl extends Control implements InteractionModelContributor
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
         this.state.activeInitiativeAct = undefined;
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
@@ -738,7 +765,9 @@ export class ValueControl extends Control implements InteractionModelContributor
                     resultBuilder.addAct(
                         new ValueChangedAct<string>(this, {
                             previousValue: this.state.previousValue,
+                            previousRenderedValue: this.props.valueRenderer(this.state.previousValue, input),
                             value: this.state.value!,
+                            renderedValue: this.props.valueRenderer(this.state.value!, input),
                         }),
                     );
                 } else {
@@ -747,13 +776,19 @@ export class ValueControl extends Control implements InteractionModelContributor
                     );
                 }
             } else {
-                resultBuilder.addAct(new ValueSetAct(this, { value: this.state.value }));
+                resultBuilder.addAct(
+                    new ValueSetAct(this, {
+                        value: this.state.value,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    }),
+                );
             }
         } else {
             // feedback
             resultBuilder.addAct(
                 new InvalidValueAct<string>(this, {
                     value: this.state.value!,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input),
                     reasonCode: validationResult.reasonCode,
                     renderedReason: validationResult.renderedReason,
                 }),
@@ -812,7 +847,12 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = 'ConfirmValueAct';
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: this.state.value }));
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value!, input),
+            }),
+        );
     }
 
     /**
@@ -880,7 +920,12 @@ export class ValueControl extends Control implements InteractionModelContributor
                 resultBuilder.addAct(new RequestValueAct(this));
                 return;
             case $.Action.Change:
-                resultBuilder.addAct(new RequestChangedValueAct(this, { currentValue: this.state.value! }));
+                resultBuilder.addAct(
+                    new RequestChangedValueAct(this, {
+                        currentValue: this.state.value!,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    }),
+                );
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${this.state.elicitationAction}`);

@@ -350,15 +350,13 @@ suite('== Custom APL Props ==', () => {
                 ],
                 apl: {
                     requestValue: {
-                        dataSource: ListControlAPLPropsBuiltIns.TextListDataSourceGenerator(
-                            (x: string) => `Wizard House: ${x}`,
-                        ),
                         customHandlingFuncs: [
                             { canHandle: isButtonSelected, handle: handleButtonSelection },
                             { canHandle: isHouseSelected, handle: handleHouseSelection },
                         ],
                     },
                 },
+                valueRenderer: (x: string, input) => `Wizard House: ${x}`,
             });
 
             function getCategoriesList(): string[] {
@@ -449,7 +447,7 @@ suite('== Custom APL Props ==', () => {
 
         expect(response.directive?.length).eq(1);
         expect(response.prompt).eq(
-            'Sorry, Muggle is not a valid choice because houseControl validation Failed. What is your selection? Some suggestions are Gryffindor, Ravenclaw or Slytherin.',
+            'Sorry, Wizard House: Muggle is not a valid choice because houseControl validation Failed. What is your selection? Some suggestions are Wizard House: Gryffindor, Wizard House: Ravenclaw or Wizard House: Slytherin.',
         );
         expect(dataSource).deep.equals(expectedDataSource);
     });

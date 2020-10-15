@@ -1,5 +1,7 @@
 import i18next from 'i18next';
 import { RequestChangedValueByListAct } from '../..';
+import { ControlState } from '../../controls/Control';
+import { ControlInput } from '../../controls/ControlInput';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { ListControlAPLProps } from './ListControl';
 
@@ -25,19 +27,21 @@ export namespace ListControlAPLPropsBuiltIns {
      * For information about the TextListTemplate, see following doc:
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export const TextList: DeepRequired<ListControlAPLProps> = {
-        enabled: true,
-        requestValue: {
-            document: TextListDocumentGenerator(),
-            dataSource: TextListDataSourceGenerator((choiceId) => choiceId),
-            customHandlingFuncs: [],
-        },
-        requestChangedValue: {
-            document: TextListDocumentGenerator(),
-            dataSource: TextListDataSourceGenerator((choiceId) => choiceId),
-            customHandlingFuncs: [],
-        },
-    };
+    export function TextList(valueRenderer: (value: string, input: ControlInput) => string) {
+        return {
+            enabled: true,
+            requestValue: {
+                document: TextListDocumentGenerator(),
+                dataSource: TextListDataSourceGenerator(valueRenderer),
+                customHandlingFuncs: [],
+            },
+            requestChangedValue: {
+                document: TextListDocumentGenerator(),
+                dataSource: TextListDataSourceGenerator(valueRenderer),
+                customHandlingFuncs: [],
+            },
+        };
+    }
 
     /**
      * The APL dataSource to use when requesting a value
@@ -47,14 +51,16 @@ export namespace ListControlAPLPropsBuiltIns {
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
     export function TextListDataSourceGenerator(
-        slotIdMapper: { [index: string]: string } | ((choiceId: string) => string),
+        valueRenderer: (value: string, input: ControlInput) => string,
     ) {
-        return (act: RequestChangedValueByListAct) => {
+        return (act: RequestChangedValueByListAct, input: ControlInput, state: ControlState) => {
             const itemsArray: APLListItem[] = [];
             for (const choice of (act as any).payload.allChoices) {
                 itemsArray.push({
                     primaryText:
-                        typeof slotIdMapper === 'function' ? slotIdMapper(choice) : slotIdMapper[choice],
+                        typeof valueRenderer === 'function'
+                            ? valueRenderer(choice, input)
+                            : valueRenderer[choice],
                 });
             }
 

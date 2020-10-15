@@ -163,6 +163,12 @@ export interface DateRangeControlProps extends ContainerControlProps {
      * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
+
+    /**
+     * Function that maps the date(s) / date range values to a corresponding
+     * rendered value that will be presented to the user.
+     */
+    valueRenderer?: (value: string, input: ControlInput) => string;
 }
 
 /**
@@ -509,17 +515,17 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 startDate: {
                     confirmValue: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_START_DATE', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_DISAFFIRMED'),
                     valueSet: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueChanged: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_CHANGED', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     invalidValue: (act) => {
                         if (act.payload.renderedReason !== undefined) {
@@ -537,17 +543,17 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 endDate: {
                     confirmValue: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_END_DATE', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_DISAFFIRMED'),
                     valueSet: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_SET', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueChanged: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_CHANGED', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     invalidValue: (act) => {
                         if (act.payload.renderedReason !== undefined) {
@@ -586,24 +592,24 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 confirmValue: (act) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
             },
             reprompts: {
                 startDate: {
                     confirmValue: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_START_DATE', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_DISAFFIRMED'),
                     valueSet: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_SET', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueChanged: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_START_DATE_CHANGED', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     invalidValue: (act) => {
                         if (act.payload.reasonCode !== undefined) {
@@ -624,17 +630,17 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 endDate: {
                     confirmValue: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_END_DATE', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueAffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_AFFIRMED'),
                     valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_DISAFFIRMED'),
                     valueSet: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_SET', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     valueChanged: (act) =>
                         i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_CHANGED', {
-                            value: act.payload.value,
+                            value: act.payload.renderedValue,
                         }),
                     invalidValue: (act) => {
                         if (act.payload.reasonCode !== undefined) {
@@ -673,12 +679,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 valueDisaffirmed: i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED'),
                 confirmValue: (act) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
-                        value: act.payload.value,
+                        value: act.payload.renderedValue,
                     }),
             },
             inputHandling: {
                 customHandlingFuncs: [],
             },
+            valueRenderer: (value: string, input) => value,
         };
 
         return _.mergeWith(defaults, props);
@@ -1092,11 +1099,17 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             start: this.state.startDate,
             end: this.state.endDate,
         });
+        const renderedActPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.props.valueRenderer(this.state.startDate!, input),
+            end: this.props.valueRenderer(this.state.endDate!, input),
+        });
         if (this.wantsToCorrectRange(input)) {
             this.correctRange(input, resultBuilder);
             return;
         }
-        resultBuilder.addAct(new ValueConfirmedAct(this, { value: actPayload }));
+        resultBuilder.addAct(
+            new ValueConfirmedAct(this, { value: actPayload, renderedValue: renderedActPayload }),
+        );
         this.ackDateRangeValueChanged(resultBuilder);
     }
 
@@ -1118,7 +1131,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             start: this.state.startDate,
             end: this.state.endDate,
         });
-        resultBuilder.addAct(new ValueDisconfirmedAct(this, { value: actPayload }));
+        const renderedActPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.props.valueRenderer(this.state.startDate!, input),
+            end: this.props.valueRenderer(this.state.endDate!, input),
+        });
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, { value: actPayload, renderedValue: renderedActPayload }),
+        );
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
@@ -1291,9 +1310,14 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 start: this.state.startDate,
                 end: this.state.endDate,
             });
+            const renderedActPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+                start: this.props.valueRenderer(this.state.startDate!, input),
+                end: this.props.valueRenderer(this.state.endDate!, input),
+            });
             resultBuilder.addAct(
                 new InvalidValueAct<string>(this, {
                     value: actPayload,
+                    renderedValue: renderedActPayload,
                     reasonCode: rangeValidationResult.reasonCode,
                     renderedReason: rangeValidationResult.renderedReason,
                 }),
@@ -1330,7 +1354,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             start: this.state.startDate,
             end: this.state.endDate,
         });
-        resultBuilder.addAct(new ConfirmValueAct(this, { value: actPayload }));
+        const renderedActPayload = i18next.t('DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END', {
+            start: this.props.valueRenderer(this.state.startDate!, input),
+            end: this.props.valueRenderer(this.state.endDate!, input),
+        });
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, { value: actPayload, renderedValue: renderedActPayload }),
+        );
     }
 
     // tsDoc - see ContainerControl
