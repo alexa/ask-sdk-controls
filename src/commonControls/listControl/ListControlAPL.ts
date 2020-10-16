@@ -2,8 +2,6 @@ import i18next from 'i18next';
 import { RequestChangedValueByListAct } from '../..';
 import { ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
-import { DeepRequired } from '../../utils/DeepRequired';
-import { ListControlAPLProps } from './ListControl';
 
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -27,17 +25,17 @@ export namespace ListControlAPLPropsBuiltIns {
      * For information about the TextListTemplate, see following doc:
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function TextList(valueRenderer: (value: string, input: ControlInput) => string) {
+    export function textList(valueRenderer: (slotValue: string, input: ControlInput) => string) {
         return {
             enabled: true,
             requestValue: {
-                document: TextListDocumentGenerator(),
-                dataSource: TextListDataSourceGenerator(valueRenderer),
+                document: textListDocumentGenerator(),
+                dataSource: textListDataSourceGenerator(valueRenderer),
                 customHandlingFuncs: [],
             },
             requestChangedValue: {
-                document: TextListDocumentGenerator(),
-                dataSource: TextListDataSourceGenerator(valueRenderer),
+                document: textListDocumentGenerator(),
+                dataSource: textListDataSourceGenerator(valueRenderer),
                 customHandlingFuncs: [],
             },
         };
@@ -50,17 +48,14 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
-    export function TextListDataSourceGenerator(
-        valueRenderer: (value: string, input: ControlInput) => string,
+    export function textListDataSourceGenerator(
+        valueRenderer: (slotValue: string, input: ControlInput) => string,
     ) {
         return (act: RequestChangedValueByListAct, input: ControlInput, state: ControlState) => {
             const itemsArray: APLListItem[] = [];
             for (const choice of (act as any).payload.allChoices) {
                 itemsArray.push({
-                    primaryText:
-                        typeof valueRenderer === 'function'
-                            ? valueRenderer(choice, input)
-                            : valueRenderer[choice],
+                    primaryText: valueRenderer(choice, input),
                 });
             }
 
@@ -81,7 +76,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function TextListDocumentGenerator() {
+    export function textListDocumentGenerator() {
         return {
             type: 'APL',
             version: '1.3',

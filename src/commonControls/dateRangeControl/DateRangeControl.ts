@@ -165,10 +165,12 @@ export interface DateRangeControlProps extends ContainerControlProps {
     inputHandling?: ControlInputHandlingProps;
 
     /**
-     * Function that maps the date(s) / date range values to a corresponding
+     * Function that maps the date(s) / date range slotValue to a corresponding
      * rendered value that will be presented to the user.
+     *
+     * Default: returns the slotValue unchanged.
      */
-    valueRenderer?: (value: string, input: ControlInput) => string;
+    valueRenderer?: (slotValue: string, input: ControlInput) => string;
 }
 
 /**

@@ -11,7 +11,15 @@
  * permissions and limitations under the License.
  */
 
-export interface RenderedPayload<T> {
+/**
+ * Payload for ValueSetAct
+ */
+export interface ValueSetPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
     /**
      * The rendered value.
      */
@@ -19,53 +27,69 @@ export interface RenderedPayload<T> {
 }
 
 /**
- * Payload for ValueSetAct
+ * Payload for ValueChangedAct
  */
-export interface ValueSetPayload<T> extends RenderedPayload<T> {
+export interface ValueChangedPayload<T> {
     /**
      * The control value.
      */
     value: T;
-}
 
-/**
- * Payload for ValueChangedAct
- */
-export interface ValueChangedPayload<T> extends RenderedPayload<T> {
-    value: T;
+    /**
+     * The rendered value.
+     */
+    renderedValue: T;
 
     /**
      * The previous control value.
      */
     previousValue: T;
 
+    /**
+     * The previous rendered value.
+     */
     previousRenderedValue: T;
 }
 
 /**
- *
+ * Payload for InvalidValueAct
  */
-export interface InvalidValuePayload<T> extends RenderedPayload<T> {
+export interface InvalidValuePayload<T> {
     value: T;
+    renderedValue: T;
     reasonCode?: string;
     renderedReason?: string;
 }
 
-export interface ProblematicInputValuePayload<T> extends RenderedPayload<T> {
+/**
+ * Payload for UnusableInputValueAct
+ */
+export interface ProblematicInputValuePayload<T> {
     value: T;
+    renderedValue: T;
     reasonCode: string;
     renderedReason?: string;
 }
 
+/**
+ * Payload for RequestValueAct
+ */
 export interface RequestValuePayload {
     renderedTarget?: string;
 }
 
-export interface RequestChangedValuePayload extends RenderedPayload<string> {
+/**
+ * Payload for RequestChangedValueAct
+ */
+export interface RequestChangedValuePayload {
     currentValue: string;
+    renderedValue: string;
     renderedTarget?: string;
 }
 
+/**
+ * Payload for RequestValueByListAct
+ */
 export interface RequestValueByListPayload {
     choicesFromActivePage: string[];
     allChoices: string[];
@@ -75,8 +99,12 @@ export interface RequestValueByListPayload {
     renderedChoices?: string;
 }
 
-export interface RequestChangedValueByListPayload extends RenderedPayload<string> {
+/**
+ * Payload for RequestChangedValueByListAct
+ */
+export interface RequestChangedValueByListPayload {
     currentValue: string;
+    renderedValue: string;
     choicesFromActivePage: string[];
     allChoices: string[];
     renderedChoicesFromActivePage: string[];
@@ -85,6 +113,9 @@ export interface RequestChangedValueByListPayload extends RenderedPayload<string
     renderedChoices?: string;
 }
 
+/**
+ * Payload for LiteralInitiativeAct
+ */
 export interface LiteralContentPayload {
     promptFragment: string;
     repromptFragment?: string;

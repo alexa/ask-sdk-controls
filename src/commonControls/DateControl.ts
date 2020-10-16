@@ -116,10 +116,12 @@ export interface DateControlProps extends ControlProps {
     inputHandling?: ControlInputHandlingProps;
 
     /**
-     * Function that maps the date value to a corresponding rendered value that will be presented
+     * Function that maps the date slotValue to a corresponding rendered value that will be presented
      * to the user.
+     *
+     * Default: returns the date slotValue unchanged.
      */
-    valueRenderer?: (value: string, input: ControlInput) => string;
+    valueRenderer?: (slotValue: string, input: ControlInput) => string;
 }
 
 /**
