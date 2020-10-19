@@ -119,6 +119,14 @@ export interface NumberControlProps extends ControlProps {
      * Props to configure input handling.
      */
     inputHandling?: ControlInputHandlingProps;
+
+    /**
+     * Function that maps the NumberControlState.value to rendered value that
+     * will be presented to the user as a list.
+     *
+     * Default: returns the value unchanged in string format.
+     */
+    valueRenderer?: (value: number, input: ControlInput) => string;
 }
 
 /**
@@ -403,6 +411,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             inputHandling: {
                 customHandlingFuncs: [],
             },
+            valueRenderer: (value: number, input) => value.toString(),
         };
         return _.merge(defaults, props);
     }
@@ -661,7 +670,8 @@ export class NumberControl extends Control implements InteractionModelContributo
             new ProblematicInputValueAct(this, {
                 reasonCode: 'ValuePreviouslyRejected',
                 value: this.state.value,
-                renderedValue: this.state.value !== undefined ? this.state.value.toString() : '',
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
         resultBuilder.addAct(new RequestValueAct(this));
@@ -708,7 +718,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value!,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
         this.commonHandlerWhenValueRejected(input, resultBuilder);
@@ -745,7 +756,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
                 value: this.state.value!,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
                 reasonCode: 'DisconfirmedWithSameValue',
             }),
         );
@@ -819,7 +831,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingConfirmationAct(this, {
                 value: previousValue,
-                renderedValue: previousValue !== undefined ? previousValue.toString() : '',
+                renderedValue:
+                    previousValue !== undefined ? this.props.valueRenderer(previousValue, input) : '',
                 reasonCode: 'ConfirmedWithDifferentValue',
             }),
         );
@@ -827,7 +840,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
     }
@@ -897,7 +911,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
     }
@@ -935,7 +950,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
     }
@@ -1013,7 +1029,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(
                 new InvalidValueAct(this, {
                     value: this.state.value!,
-                    renderedValue: this.state.value!.toString(),
+                    renderedValue:
+                        this.state.value !== undefined
+                            ? this.props.valueRenderer(this.state.value, input)
+                            : '',
                     renderedReason: validationResult.renderedReason,
                 }),
             );
@@ -1024,7 +1043,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: this.state.value,
-                    renderedValue: this.state.value!.toString(),
+                    renderedValue:
+                        this.state.value !== undefined
+                            ? this.props.valueRenderer(this.state.value, input)
+                            : '',
                 }),
             );
         } else {
@@ -1032,7 +1054,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: this.state.value,
-                    renderedValue: this.state.value!.toString(),
+                    renderedValue:
+                        this.state.value !== undefined
+                            ? this.props.valueRenderer(this.state.value, input)
+                            : '',
                 }),
             );
         }
@@ -1056,7 +1081,10 @@ export class NumberControl extends Control implements InteractionModelContributo
                 resultBuilder.addAct(
                     new SuggestValueAct(this, {
                         value: this.state.value,
-                        renderedValue: this.state.value!.toString(),
+                        renderedValue:
+                            this.state.value !== undefined
+                                ? this.props.valueRenderer(this.state.value, input)
+                                : '',
                     }),
                 );
             } else {
@@ -1098,7 +1126,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InvalidValueAct(this, {
                 value: this.state.value!,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
                 reasonCode: 'ValueInvalid',
                 renderedReason: (validationResult as ValidationResult).renderedReason,
             }),
@@ -1123,7 +1152,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
-                renderedValue: this.state.value!.toString(),
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
     }

@@ -509,4 +509,41 @@ suite('NumberControl e2e tests', () => {
             ).eq(0);
         });
     });
+
+    suite('NumberControl e2e tests - NumberControl with custom valueRenderer function', () => {
+        const TEST_CONTROL_ID = 'NumberSelectorWithoutValidationExpectation';
+
+        class NumberControlManager extends ControlManager {
+            createControlTree(): Control {
+                return new NumberControl({
+                    id: TEST_CONTROL_ID,
+                    confirmationRequired: true,
+                    valueRenderer: (value, input) => `Number: ${value}`,
+                });
+            }
+        }
+
+        test('custom valueRenderer defined displayed on prompts', async () => {
+            const requestHandler = new ControlHandler(new NumberControlManager());
+            await testE2E(requestHandler, [
+                'U: ',
+                TestInput.of(GeneralControlIntent.of({})),
+                'A: What number?',
+                'U: Sixteen',
+                TestInput.of(
+                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                ),
+                'A: Was that Number: 16?',
+                'U: No.',
+                TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
+                'A: My mistake. Did you perhaps mean Number: 60?',
+                'U: Yes',
+                TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+                'A: Great.',
+            ]);
+            expect(
+                (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState).value,
+            ).eq(60);
+        });
+    });
 });
