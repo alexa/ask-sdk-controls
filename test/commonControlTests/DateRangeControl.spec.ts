@@ -104,6 +104,30 @@ class VariableResponseTwoDatesControlManager extends ControlManager {
     }
 }
 
+class CustomizedValueDateRangeControlManager extends ControlManager {
+    createControlTree(): Control {
+        return new DateRangeControl({
+            id: 'DateRangeControl',
+            validation: {
+                rangeValid: [DateRangeControlValidations.START_BEFORE_END],
+            },
+            confirmationRequired: true,
+            valueRenderer: (value, component, input) => {
+                switch (component) {
+                    case 'START_DATE':
+                        return `YYYY:MM:DD :: ${value.startDate!}`;
+                    case 'END_DATE':
+                        return `YYYY:MM:DD :: ${value.endDate!}`;
+                    case 'RANGE':
+                        return `(YYYY:MM:DD) ${value.startDate} to (YYYY:MM:DD) ${value.endDate}`;
+                    default:
+                        throw new Error(`Unhandled. Unknown component ${component}`);
+                }
+            },
+        });
+    }
+}
+
 suite('DateRangeControl', () => {
     beforeEach(() => {
         // set now to 2019-01-03
@@ -1004,6 +1028,29 @@ suite('DateRangeControl', () => {
             );
             const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).false;
+        });
+    });
+
+    suite('DateRangeControl custom valueRenderer scenarios', () => {
+        test('valueRendered prompts must be displayed', async () => {
+            const handler = new ControlHandler(new CustomizedValueDateRangeControlManager());
+            await testE2E(handler, [
+                'U: set start date to 2017 and end date to 2018',
+                TestInput.of(
+                    DateRangeControlIntent.of({
+                        'action.a': $.Action.Set,
+                        'target.a': $.Target.StartDate,
+                        'AMAZON.DATE.a': '2017',
+                        'action.b': $.Action.Set,
+                        'target.b': $.Target.EndDate,
+                        'AMAZON.DATE.b': '2018',
+                    }),
+                ),
+                'A: Was that (YYYY:MM:DD) 2017-01-01 to (YYYY:MM:DD) 2018-12-31?',
+                'U: Yes',
+                TestInput.intent(AmazonIntent.YesIntent),
+                'A: Great. Got it. The start date is YYYY:MM:DD :: 2017-01-01 and the end date is YYYY:MM:DD :: 2018-12-31.',
+            ]);
         });
     });
 });

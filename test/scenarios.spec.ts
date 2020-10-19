@@ -325,6 +325,8 @@ suite('== Custom Handler function scenarios ==', () => {
             ),
         ).eq(true);
 
+        spy.restore();
+
         const dateControlState = findControlById(rootControl, 'dateControl');
         expect(dateControlState.state.value).eq('2018');
         expect(result.acts).length(1);

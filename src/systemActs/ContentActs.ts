@@ -186,11 +186,21 @@ export class ValueChangedAct<T> extends ContentAct {
 export class DateRangeSetAct extends ContentAct {
     public readonly startDate: string | undefined;
     public readonly endDate: string | undefined;
+    public readonly renderedStartDate: string | undefined;
+    public readonly renderedEndDate: string | undefined;
 
-    constructor(control: Control, start: string | undefined, end: string | undefined) {
+    constructor(
+        control: Control,
+        start: string | undefined,
+        end: string | undefined,
+        renderedStartDate: string,
+        renderedEndDate: string,
+    ) {
         super(control);
         this.startDate = start;
         this.endDate = end;
+        this.renderedStartDate = renderedStartDate;
+        this.renderedEndDate = renderedEndDate;
     }
 
     render(input: ControlInput, responseBuilder: ControlResponseBuilder): void {
@@ -218,6 +228,8 @@ export class DateRangeSetAct extends ContentAct {
 export class DateRangeChangedAct extends ContentAct {
     public readonly startDate: string | undefined;
     public readonly endDate: string | undefined;
+    public readonly renderedStartDate: string | undefined;
+    public readonly renderedEndDate: string | undefined;
     public readonly priorStartDate: string | undefined;
     public readonly priorEndDate: string | undefined;
 
@@ -227,11 +239,15 @@ export class DateRangeChangedAct extends ContentAct {
         end: string | undefined,
         priorStart: string | undefined,
         priorEnd: string | undefined,
+        renderedStartDate: string,
+        renderedEndDate: string,
     ) {
         super(control);
         this.startDate = start;
+        this.renderedStartDate = renderedStartDate;
         this.priorStartDate = priorStart;
         this.endDate = end;
+        this.renderedEndDate = renderedEndDate;
         this.priorEndDate = priorEnd;
     }
 

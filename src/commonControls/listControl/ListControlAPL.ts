@@ -25,7 +25,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * For information about the TextListTemplate, see following doc:
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function textList(valueRenderer: (slotValue: string, input: ControlInput) => string) {
+    export function textList(valueRenderer: (value: string, input: ControlInput) => string) {
         return {
             enabled: true,
             requestValue: {
@@ -49,7 +49,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
     export function textListDataSourceGenerator(
-        valueRenderer: (slotValue: string, input: ControlInput) => string,
+        valueRenderer: (value: string, input: ControlInput) => string,
     ) {
         return (act: RequestChangedValueByListAct, input: ControlInput, state: ControlState) => {
             const itemsArray: APLListItem[] = [];

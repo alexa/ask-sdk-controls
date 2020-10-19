@@ -23,7 +23,7 @@ export interface ValueSetPayload<T> {
     /**
      * The rendered value.
      */
-    renderedValue: T;
+    renderedValue: string;
 }
 
 /**
@@ -38,7 +38,7 @@ export interface ValueChangedPayload<T> {
     /**
      * The rendered value.
      */
-    renderedValue: T;
+    renderedValue: string;
 
     /**
      * The previous control value.
@@ -48,7 +48,7 @@ export interface ValueChangedPayload<T> {
     /**
      * The previous rendered value.
      */
-    previousRenderedValue: T;
+    previousRenderedValue: string;
 }
 
 /**
@@ -56,7 +56,7 @@ export interface ValueChangedPayload<T> {
  */
 export interface InvalidValuePayload<T> {
     value: T;
-    renderedValue: T;
+    renderedValue: string;
     reasonCode?: string;
     renderedReason?: string;
 }
@@ -66,7 +66,7 @@ export interface InvalidValuePayload<T> {
  */
 export interface ProblematicInputValuePayload<T> {
     value: T;
-    renderedValue: T;
+    renderedValue: string;
     reasonCode: string;
     renderedReason?: string;
 }

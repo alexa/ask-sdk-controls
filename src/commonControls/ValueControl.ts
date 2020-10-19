@@ -122,12 +122,12 @@ export interface ValueControlProps extends ControlProps {
     inputHandling?: ControlInputHandlingProps;
 
     /**
-     * Function that maps the slot value to a corresponding rendered value
+     * Function that maps the ValueControlState.value to a corresponding rendered value
      * that will be presented to the user.
      *
-     * Default: returns the slotValue unchanged.
+     * Default: returns the value unchanged.
      */
-    valueRenderer?: (slotValue: string, input: ControlInput) => string;
+    valueRenderer?: (value: string, input: ControlInput) => string;
 }
 
 /**

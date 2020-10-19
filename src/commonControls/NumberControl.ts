@@ -661,7 +661,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             new ProblematicInputValueAct(this, {
                 reasonCode: 'ValuePreviouslyRejected',
                 value: this.state.value,
-                renderedValue: this.state.value,
+                renderedValue: this.state.value !== undefined ? this.state.value.toString() : '',
             }),
         );
         resultBuilder.addAct(new RequestValueAct(this));
@@ -706,7 +706,10 @@ export class NumberControl extends Control implements InteractionModelContributo
     ): void {
         this.state.activeInitiativeAct = undefined;
         resultBuilder.addAct(
-            new ValueDisconfirmedAct(this, { value: this.state.value!, renderedValue: this.state.value! }),
+            new ValueDisconfirmedAct(this, {
+                value: this.state.value!,
+                renderedValue: this.state.value!.toString(),
+            }),
         );
         this.commonHandlerWhenValueRejected(input, resultBuilder);
     }
@@ -742,7 +745,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
                 value: this.state.value!,
-                renderedValue: this.state.value!,
+                renderedValue: this.state.value!.toString(),
                 reasonCode: 'DisconfirmedWithSameValue',
             }),
         );
@@ -816,13 +819,16 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InformConfusingConfirmationAct(this, {
                 value: previousValue,
-                renderedValue: previousValue,
+                renderedValue: previousValue !== undefined ? previousValue.toString() : '',
                 reasonCode: 'ConfirmedWithDifferentValue',
             }),
         );
         this.state.activeInitiativeAct = 'ConfirmValueAct';
         resultBuilder.addAct(
-            new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            new ConfirmValueAct(this, {
+                value: this.state.value,
+                renderedValue: this.state.value!.toString(),
+            }),
         );
     }
 
@@ -889,7 +895,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         this.state.isValueConfirmed = true;
         this.state.activeInitiativeAct = undefined;
         resultBuilder.addAct(
-            new ValueConfirmedAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            new ValueConfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.state.value!.toString(),
+            }),
         );
     }
 
@@ -924,7 +933,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         this.state.isValueConfirmed = true;
         this.state.activeInitiativeAct = undefined;
         resultBuilder.addAct(
-            new ValueConfirmedAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            new ValueConfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.state.value!.toString(),
+            }),
         );
     }
 
@@ -1001,7 +1013,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(
                 new InvalidValueAct(this, {
                     value: this.state.value!,
-                    renderedValue: this.state.value!,
+                    renderedValue: this.state.value!.toString(),
                     renderedReason: validationResult.renderedReason,
                 }),
             );
@@ -1010,12 +1022,18 @@ export class NumberControl extends Control implements InteractionModelContributo
             this.state.isValueConfirmed = true;
             this.state.activeInitiativeAct = undefined;
             resultBuilder.addAct(
-                new ValueSetAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+                new ValueSetAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.state.value!.toString(),
+                }),
             );
         } else {
             this.state.activeInitiativeAct = 'ConfirmValueAct';
             resultBuilder.addAct(
-                new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+                new ConfirmValueAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.state.value!.toString(),
+                }),
             );
         }
     }
@@ -1036,7 +1054,10 @@ export class NumberControl extends Control implements InteractionModelContributo
                 // this is to confirm from users for the suggestedValue
                 this.state.activeInitiativeAct = 'ConfirmValueAct';
                 resultBuilder.addAct(
-                    new SuggestValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+                    new SuggestValueAct(this, {
+                        value: this.state.value,
+                        renderedValue: this.state.value!.toString(),
+                    }),
                 );
             } else {
                 this.state.value = previousValue;
@@ -1077,7 +1098,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(
             new InvalidValueAct(this, {
                 value: this.state.value!,
-                renderedValue: this.state.value!,
+                renderedValue: this.state.value!.toString(),
                 reasonCode: 'ValueInvalid',
                 renderedReason: (validationResult as ValidationResult).renderedReason,
             }),
@@ -1100,7 +1121,10 @@ export class NumberControl extends Control implements InteractionModelContributo
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.activeInitiativeAct = 'ConfirmValueAct';
         resultBuilder.addAct(
-            new ConfirmValueAct(this, { value: this.state.value, renderedValue: this.state.value! }),
+            new ConfirmValueAct(this, {
+                value: this.state.value,
+                renderedValue: this.state.value!.toString(),
+            }),
         );
     }
 
