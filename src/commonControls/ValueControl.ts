@@ -767,7 +767,7 @@ export class ValueControl extends Control implements InteractionModelContributor
                     resultBuilder.addAct(
                         new ValueChangedAct<string>(this, {
                             previousValue: this.state.previousValue,
-                            previousRenderedValue: this.props.valueRenderer(this.state.previousValue, input),
+                            renderedPreviousValue: this.props.valueRenderer(this.state.previousValue, input),
                             value: this.state.value!,
                             renderedValue: this.props.valueRenderer(this.state.value!, input),
                         }),

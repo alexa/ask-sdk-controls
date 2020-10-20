@@ -48,7 +48,7 @@ export interface ValueChangedPayload<T> {
     /**
      * The previous rendered value.
      */
-    previousRenderedValue: string;
+    renderedPreviousValue: string;
 }
 
 /**

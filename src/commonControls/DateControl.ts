@@ -375,7 +375,7 @@ export class DateControl extends Control implements InteractionModelContributor 
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_SET'),
                 valueChanged: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
-                        old: act.payload.previousRenderedValue,
+                        old: act.payload.renderedPreviousValue,
                         new: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -399,7 +399,7 @@ export class DateControl extends Control implements InteractionModelContributor 
                 valueSet: i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_SET'),
                 valueChanged: (act) =>
                     i18next.t('DATE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
-                        old: act.payload.previousRenderedValue,
+                        old: act.payload.renderedPreviousValue,
                         new: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -708,7 +708,7 @@ export class DateControl extends Control implements InteractionModelContributor 
                     resultBuilder.addAct(
                         new ValueChangedAct<string>(this, {
                             previousValue: this.state.previousValue,
-                            previousRenderedValue: this.props.valueRenderer(this.state.previousValue, input),
+                            renderedPreviousValue: this.props.valueRenderer(this.state.previousValue, input),
                             value: this.state.value!,
                             renderedValue: this.props.valueRenderer(this.state.value!, input),
                         }),
