@@ -19,59 +19,103 @@ export interface ValueSetPayload<T> {
      * The control value.
      */
     value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
 }
 
 /**
  * Payload for ValueChangedAct
  */
 export interface ValueChangedPayload<T> {
+    /**
+     * The control value.
+     */
     value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
 
     /**
      * The previous control value.
      */
     previousValue: T;
+
+    /**
+     * The previous rendered value.
+     */
+    renderedPreviousValue: string;
 }
 
 /**
- *
+ * Payload for InvalidValueAct
  */
 export interface InvalidValuePayload<T> {
     value: T;
+    renderedValue: string;
     reasonCode?: string;
     renderedReason?: string;
 }
 
+/**
+ * Payload for UnusableInputValueAct
+ */
 export interface ProblematicInputValuePayload<T> {
     value: T;
+    renderedValue: string;
     reasonCode: string;
     renderedReason?: string;
 }
 
+/**
+ * Payload for RequestValueAct
+ */
 export interface RequestValuePayload {
     renderedTarget?: string;
 }
 
+/**
+ * Payload for RequestChangedValueAct
+ */
 export interface RequestChangedValuePayload {
     currentValue: string;
+    renderedValue: string;
     renderedTarget?: string;
 }
 
+/**
+ * Payload for RequestValueByListAct
+ */
 export interface RequestValueByListPayload {
     choicesFromActivePage: string[];
     allChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAllChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }
 
+/**
+ * Payload for RequestChangedValueByListAct
+ */
 export interface RequestChangedValueByListPayload {
     currentValue: string;
+    renderedValue: string;
     choicesFromActivePage: string[];
     allChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAllChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }
 
+/**
+ * Payload for LiteralInitiativeAct
+ */
 export interface LiteralContentPayload {
     promptFragment: string;
     repromptFragment?: string;

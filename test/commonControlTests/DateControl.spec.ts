@@ -21,6 +21,7 @@ import {
     ControlInput,
     IntentBuilder,
     InvalidValueAct,
+    Logger,
     RequestChangedValueAct,
     RequestValueAct,
     SingleValueControlIntent,
@@ -224,6 +225,7 @@ suite('DateControl tests', () => {
             const control = dateControlUnderTest();
             const input = emptyInput;
             const result = new ControlResultBuilder(undefined!);
+            const spy = sinon.stub(Logger.prototype, 'error');
             try {
                 await control.takeInitiative(input, result);
             } catch (err) {
@@ -231,6 +233,7 @@ suite('DateControl tests', () => {
                     'DateControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.',
                 );
             }
+            spy.restore();
         });
 
         test('test controller askElicitationQuestion throws error for invalid action.', async () => {

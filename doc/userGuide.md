@@ -259,8 +259,7 @@ ASK-SDK
  npm install
 ```
 
-Either deploy your skill with `ask deploy` or set up local debugging (See section ["Live
-testing with local debugging"](#live-testing-with-local-debugging)).
+Either deploy your skill with `ask deploy` or set up local debugging (See section ["Live testing with local debugging"](#34-live-testing-with-local-debugging)).
 
 Once your skill is ready for testing, use the testing page of the developer portal
 (https://developer.amazon.com/alexa/console/ask/test/{SkillID}/development/en_US/) or `ask dialog` to test it out.

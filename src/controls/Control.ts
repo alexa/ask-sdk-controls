@@ -304,12 +304,16 @@ export abstract class Control implements IControl {
      * Evaluate an APL document/data source prop.
      *
      * @param act - act
+     * @param input - The input object
      * @param propValue - Constant or function producing a map of key:value pairs
      */
     evaluateAPLProp(
         act: SystemAct,
+        input: ControlInput,
         propValue: { [key: string]: any } | ((act: SystemAct, state: ControlState) => { [key: string]: any }),
     ): { [key: string]: any } {
-        return typeof propValue === 'function' ? (propValue as any).call(this, act, this.state) : propValue;
+        return typeof propValue === 'function'
+            ? (propValue as any).call(this, act, input, this.state)
+            : propValue;
     }
 }

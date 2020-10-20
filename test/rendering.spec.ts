@@ -51,6 +51,7 @@ class RenderingDemoControl extends Control {
             new UnusableInputValueAct(this, {
                 reasonCode: 'exampleReasonCode',
                 value: '<dummy>',
+                renderedValue: '<dummy>',
                 renderedReason: 'That input is unusable for reasons',
             }),
         );
@@ -62,7 +63,11 @@ class RenderingDemoControl extends Control {
          */
 
         resultBuilder.addAct(
-            new InvalidValueAct(this, { reasonCode: 'exampleReasonCode', value: '<dummy>' }),
+            new InvalidValueAct(this, {
+                reasonCode: 'exampleReasonCode',
+                value: '<dummy>',
+                renderedValue: '<dummy>',
+            }),
         );
         resultBuilder.addAct(new RequestValueAct(this, {}));
     }
