@@ -22,7 +22,7 @@
         "release": "npm run coverage && npm run lint && npm run format-check"
     },
     "dependencies": {
-        "ask-sdk-core": "^2.8.0",
+        "ask-sdk-core": "^2.10.1",
         "ask-sdk-model": "^1.28.0",
         "ask-sdk-local-debug": "^1.0.0",
         "ask-smapi-model": "^1.5.0",

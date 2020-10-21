@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { HandlerInput, RequestHandler } from 'ask-sdk-core';
+import { HandlerInput, RequestHandler, UserAgentManager } from 'ask-sdk-core';
 import { Response } from 'ask-sdk-model';
 import _ from 'lodash';
 import { ControlInput } from '../controls/ControlInput';
@@ -107,6 +107,9 @@ export class ControlHandler implements RequestHandler {
             this.additionalSessionContext.turnNumber,
             controlsMap,
         );
+
+        // userAgent setup
+        UserAgentManager.registerComponent(this.userAgentInfo());
     }
 
     private static createControlMap(
