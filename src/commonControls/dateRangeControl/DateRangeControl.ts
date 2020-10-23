@@ -125,9 +125,9 @@ export interface DateRangeControlProps extends ContainerControlProps {
     /**
      * Determines if the Control must obtain a value.
      *
-     * If `true`:
-     *  - the Control report isReady() = false if no value has been obtained.
-     *  - the control will take the initiative when given the opportunity.
+     * - If `true` the Control will take initiative to elicit a value.
+     * - If `false` the Control will not take initiative to elicit a value, but the user
+     *   can provide one if they wish, e.g. "U: I need it between Monday and Friday".
      */
     required?: boolean | ((input: ControlInput) => boolean);
 
@@ -135,9 +135,8 @@ export interface DateRangeControlProps extends ContainerControlProps {
      * Whether the Control has to obtain explicit confirmation of the value.
      *
      * If `true`:
-     *  - the Control will report `isReady() = false` if the value has not been
-     *    explicitly confirmed as correct by user.
-     *  - the Control will take the initiative when given the opportunity.
+     *  - the Control will take initiative to explicitly confirm the value with a yes/no
+     *    question.
      */
     confirmationRequired?: boolean | ((input: ControlInput) => boolean);
 

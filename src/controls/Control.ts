@@ -39,8 +39,8 @@ export interface ControlState {
      * The value managed by a control.
      *
      * Usage:
-     * - The value is not necessarily valid, confirmed or otherwise ready for
-     *   use. Consumers can call `control.isReady()` to determine if the value
+     * - The value is not necessarily valid, confirmed or otherwise ready for use. Parent
+     *   controls and other consumers should `control.isReady()` to determine if the value
      *   is ready for use.
      */
     value?: any; //TODO: make mandatory to tighten the convention.
@@ -121,26 +121,27 @@ export abstract class Control implements IControl {
      * Determines if the Control can take the initiative.
      *
      * Usage:
-     * - Taking initiative can and should be contextual, i.e. A control should
-     *   only return `canTakeInitiative = true` if the control, in its current
-     *   state, has something important to ask of the user.
+     * - A control should only return `canTakeInitiative = true` if the control, in its
+     *   current state, has something important to ask of the user.  This could be a
+     *   necessary elicitation, clarification, confirmation or some other activity to
+     *   obtain and finalize the information managed by the Control.
      *
-     * - A @see ContainerControl should return true if one or more of its
-     *   children returns `canTakeInitiative = true`. Thus the root of a Control
-     *   tree should return `canTakeInitiative = true` unless there is no
-     *   control in the entire tree that can take the initiative.
+     * - A @see ContainerControl should return `true` if one of its children returns
+     *   `canTakeInitiative = true` or if the container needs to ask the user a question
+     *   directly. Thus the root of a Control tree should return `canTakeInitiative = true`
+     *   if any control in the entire tree reports `canTakeInitiative = true`.
      *
-     * - The implementation should be deterministic and effectively memoryless.
-     *   i.e. no state changes should be made that would be exposed by
-     *   `getSerializableState()`.
+     * - The implementation should be deterministic, idempotent, and effectively
+     *   memoryless. Effectively memoryless means that any state changes are temporary and
+     *   will not be exposed in the serialized state.
      *
      * Framework behavior:
-     * - The initiative phase runs if the handling phase did not produce a
-     *   responseItem that has `.takesInitiative = true`.
+     * - The initiative phase runs if the handling phase did not produce a responseItem
+     *   that has `.takesInitiative = true`.
      *
      * @param input - Input object.
-     * @returns `true` if the Control or one of its children can take the
-     * initiative, `false` otherwise.
+     * @returns `true` if the Control or one of its children can take the initiative,
+     * `false` otherwise.
      */
     abstract canTakeInitiative(input: ControlInput): boolean | Promise<boolean>;
 
@@ -158,11 +159,16 @@ export abstract class Control implements IControl {
     abstract takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void | Promise<void>;
 
     /**
-     * Determines if the value is ready for use by other parts of the skill.
+     * Determines if the Control's value is ready for use by other parts of the skill.
+     *
+     * Note:
+     *  - A basic invariant is `isReady === !canTakeInitiative` because `isReady` implies
+     *    that no further discussion is required and thus there is no need to take the
+     *    initiative.
      *
      * @param input - Input object.
-     * @returns `true` if the Control or one of its children can take the
-     * initiative, false otherwise.
+     * @returns `true` if the control has no further questions to ask the user such as
+     * elicitation, clarification or confirmation.
      */
     async isReady(input: ControlInput): Promise<boolean> {
         return !(await this.canTakeInitiative(input));
