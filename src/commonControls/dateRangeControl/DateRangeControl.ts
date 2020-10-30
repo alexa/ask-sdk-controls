@@ -24,7 +24,7 @@ import {
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
-import { ValidationResult } from '../../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import {
     ActionAndTask,
@@ -51,7 +51,7 @@ import { SystemAct } from '../../systemActs/SystemAct';
 import { evaluateCustomHandleFuncs, logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
-import { DateControl, DateControlPromptProps, DateValidationFunction } from '../DateControl';
+import { DateControl, DateControlPromptProps, DateControlState } from '../DateControl';
 import { alexaDateFormatToDate, findEdgeDateOfDateRange } from './DateHelper';
 import { DateRangeControlIntentInput, generateDatesInputGroups } from './DateRangeNLUHelper';
 
@@ -85,7 +85,9 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateControlValidations.FUTURE_DATE_ONLY,
          * ```
          */
-        startDateValid?: DateValidationFunction | DateValidationFunction[];
+        startDateValid?:
+            | StateValidationFunction<DateControlState>
+            | Array<StateValidationFunction<DateControlState>>;
 
         /**
          * Function(s) that determine if the end date (in isolation) is valid.
@@ -102,7 +104,9 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateControlValidations.FUTURE_DATE_ONLY,
          * ```
          */
-        endDateValid?: DateValidationFunction | DateValidationFunction[];
+        endDateValid?:
+            | StateValidationFunction<DateControlState>
+            | Array<StateValidationFunction<DateControlState>>;
 
         /**
          * Function(s) that determine if the date-range is valid.
@@ -119,7 +123,9 @@ export interface DateRangeControlProps extends ContainerControlProps {
          * valid: DateRangeControlValidations.START_BEFORE_END,
          * ```
          */
-        rangeValid?: DateRangeValidationFunction | DateRangeValidationFunction[];
+        rangeValid?:
+            | StateValidationFunction<DateRangeControlState>
+            | Array<StateValidationFunction<DateRangeControlState>>;
     };
 
     /**
@@ -176,14 +182,6 @@ export type DateRange = {
     startDate: string;
     endDate: string;
 };
-
-/**
- * Date range validation function
- */
-export type DateRangeValidationFunction = (
-    state: DateRangeControlState,
-    input: ControlInput,
-) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -362,10 +360,10 @@ export enum DateRangeValidationFailReasonCode {
  * Built-in validation functions for use with DateControl
  */
 export namespace DateRangeControlValidations {
-    export const START_BEFORE_END: DateRangeValidationFunction = (
+    export const START_BEFORE_END: StateValidationFunction<DateRangeControlState> = (
         state: DateRangeControlState,
         input: ControlInput,
-    ): true | ValidationResult => {
+    ): true | ValidationFailure => {
         const startDate = alexaDateFormatToDate(state.startDate!);
         const endDate = alexaDateFormatToDate(state.endDate!);
         if (startDate > endDate) {
@@ -1214,13 +1212,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         }
     }
 
-    private validateDateRange(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: DateRangeValidationFunction[] =
+    private validateDateRange(input: ControlInput): true | ValidationFailure {
+        const listOfValidationFunc: Array<StateValidationFunction<DateRangeControlState>> =
             typeof this.props.validation.rangeValid === 'function'
                 ? [this.props.validation.rangeValid]
                 : this.props.validation.rangeValid;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationResult = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `DateRangeControl.validate(): validation failed. Reason: ${JSON.stringify(
@@ -1326,7 +1324,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         try {
             // Only fix range when range is set and there's no open question
             okIf(!this.needsValue(input) && !this.state.isChangingRange);
-            const rangeValidationResult: true | ValidationResult = this.validateDateRange(input);
+            const rangeValidationResult: true | ValidationFailure = this.validateDateRange(input);
             okIf(rangeValidationResult !== true);
             this.takeInitiativeFunc = this.correctRange;
             return true;
@@ -1336,7 +1334,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     }
 
     private correctRange(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        const rangeValidationResult: true | ValidationResult = this.validateDateRange(input);
+        const rangeValidationResult: true | ValidationFailure = this.validateDateRange(input);
         this.state.onFocus = true;
         if (rangeValidationResult !== true) {
             const dateRange = {

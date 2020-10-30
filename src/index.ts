@@ -19,7 +19,7 @@ export {
     DateControlProps,
     DateControlState,
     DateControlValidations,
-    DateValidationFunction,
+    DateValidationFailReasonCode,
 } from './commonControls/DateControl';
 export {
     alexaDateFormatToDate,
@@ -30,18 +30,28 @@ export {
     getEndDateOfRange,
     getMonth,
     getStartDateOfRange,
+    getUTCDate,
     getYear,
 } from './commonControls/dateRangeControl/DateHelper';
 export {
+    DateControlTarget,
+    DateRange,
     DateRangeControl,
+    DateRangeControlActionProps,
+    DateRangeControlInteractionModelProps,
+    DateRangeControlPromptProps,
     DateRangeControlProps,
     DateRangeControlState,
+    DateRangeControlTargetProps,
     DateRangeControlValidations,
+    DateRangeValidationFailReasonCode,
     TargetCategory,
 } from './commonControls/dateRangeControl/DateRangeControl';
+export { defaultI18nResources } from './commonControls/LanguageStrings';
 export {
     ListControl,
     ListControlActionProps,
+    ListControlAPLProps,
     ListControlInteractionModelProps,
     ListControlPromptProps,
     ListControlProps,
@@ -49,7 +59,9 @@ export {
 } from './commonControls/listControl/ListControl';
 export { ListControlAPLPropsBuiltIns } from './commonControls/listControl/ListControlAPL';
 export {
+    NumberConfirmationRequireFunction,
     NumberControl,
+    NumberControlActionProps,
     NumberControlInteractionModelProps,
     NumberControlPromptsProps,
     NumberControlProps,
@@ -57,7 +69,9 @@ export {
 } from './commonControls/NumberControl';
 export {
     ValueControl,
+    ValueControlActionProps,
     ValueControlInteractionModelProps,
+    ValueControlPromptProps,
     ValueControlProps,
     ValueControlState,
 } from './commonControls/ValueControl';
@@ -68,7 +82,7 @@ export {
     ContainerControlProps,
     ContainerControlState,
 } from './controls/ContainerControl';
-export { Control, ControlProps, ControlInputHandlingProps } from './controls/Control';
+export { Control, ControlInputHandlingProps, ControlProps } from './controls/Control';
 export { ControlInput } from './controls/ControlInput';
 export { ControlManager, renderActsInSequence } from './controls/ControlManager';
 export { ControlResult, ControlResultBuilder } from './controls/ControlResult';
@@ -90,6 +104,11 @@ export {
     GeneralControlIntentSlots,
     unpackGeneralControlIntent,
 } from './intents/GeneralControlIntent';
+export {
+    OrdinalControlIntent,
+    OrdinalControlIntentSlots,
+    unpackOrdinalControlIntent,
+} from './intents/OrdinalControlIntent';
 export {
     SingleValueControlIntent,
     SingleValueControlIntentSlots,
@@ -125,6 +144,7 @@ export { ISystemAct, SystemAct } from './systemActs/SystemAct';
 export { matchIfDefined, mismatch, moveArrayItem, randomlyPick } from './utils/ArrayUtils';
 export { StringOrList, StringOrTrue } from './utils/BasicTypes';
 export { generateControlTreeTextDiagram } from './utils/ControlTreeVisualization';
+export { evaluateCustomHandleFuncs, logIfBothTrue } from './utils/ControlUtils';
 export { visitControls } from './utils/ControlVisitor';
 export { DeepRequired } from './utils/DeepRequired';
 export { throwIf, throwIfUndefined } from './utils/ErrorUtils';
@@ -152,4 +172,3 @@ export {
     testTurn,
     waitForDebugger,
 } from './utils/testSupport/TestingUtils';
-export { evaluateCustomHandleFuncs, logIfBothTrue } from './utils/ControlUtils';

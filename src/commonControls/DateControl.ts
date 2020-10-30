@@ -18,7 +18,7 @@ import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { ValidationResult } from '../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import {
@@ -71,7 +71,7 @@ export interface DateControlProps extends ControlProps {
      * valid: DateControlValidations.FUTURE_DATE_ONLY,
      * ```
      */
-    validation?: DateValidationFunction | DateValidationFunction[];
+    validation?: StateValidationFunction<DateControlState> | Array<StateValidationFunction<DateControlState>>;
 
     /**
      * Determines if the Control must obtain a value.
@@ -122,14 +122,6 @@ export interface DateControlProps extends ControlProps {
      */
     valueRenderer?: (value: string, input: ControlInput) => string;
 }
-
-/**
- * ValueControl validation function
- */
-export type DateValidationFunction = (
-    state: DateControlState,
-    input: ControlInput,
-) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -240,10 +232,10 @@ export namespace DateControlValidations {
      * @param state - Control state
      * @param input - Input
      */
-    export const PAST_DATE_ONLY: DateValidationFunction = (
+    export const PAST_DATE_ONLY: StateValidationFunction<DateControlState> = (
         state: DateControlState,
         input: ControlInput,
-    ): true | ValidationResult => {
+    ): true | ValidationFailure => {
         const startDate = getStartDateOfRange(state.value!);
         const startDateInUTC = getUTCDate(startDate);
 
@@ -262,10 +254,10 @@ export namespace DateControlValidations {
      * @param state - Control state
      * @param input - Input
      */
-    export const FUTURE_DATE_ONLY: DateValidationFunction = (
+    export const FUTURE_DATE_ONLY: StateValidationFunction<DateControlState> = (
         state: DateControlState,
         input: ControlInput,
-    ): true | ValidationResult => {
+    ): true | ValidationFailure => {
         const endDate = getEndDateOfRange(state.value!);
         const endDateInUTC = getUTCDate(endDate);
 
@@ -699,7 +691,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         elicitationAction: string,
     ): void {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationResult = this.validate(input);
+        const validationResult: true | ValidationFailure = this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -774,11 +766,11 @@ export class DateControl extends Control implements InteractionModelContributor 
         this.validateAndAddActs(input, resultBuilder, $.Action.Change);
     }
 
-    private validate(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: DateValidationFunction[] =
+    private validate(input: ControlInput): true | ValidationFailure {
+        const listOfValidationFunc: Array<StateValidationFunction<DateControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationResult = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `DateControl.validate(): validation failed. Reason: ${JSON.stringify(

@@ -28,7 +28,7 @@ import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { ValidationResult } from '../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../controls/ValidationResult';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../interactionModelGeneration/ModelTypes';
@@ -68,7 +68,9 @@ export interface NumberControlProps extends ControlProps {
      * - Validation functions return either `true` or a `ValidationResult` to
      *   describe what validation failed.
      */
-    validation?: NumberValidationFunction | NumberValidationFunction[];
+    validation?:
+        | StateValidationFunction<NumberControlState>
+        | Array<StateValidationFunction<NumberControlState>>;
 
     /**
      * Determines if the Control must obtain a value.
@@ -127,14 +129,6 @@ export interface NumberControlProps extends ControlProps {
      */
     valueRenderer?: (value: number, input: ControlInput) => string;
 }
-
-/**
- * NumberControl validation function
- */
-export type NumberValidationFunction = (
-    state: NumberControlState,
-    input: ControlInput,
-) => true | ValidationResult;
 
 /**
  * NumberControl isRequired function
@@ -1111,7 +1105,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         if (!this.evaluateBooleanProp(this.props.required, input) || this.state.value === undefined) {
             return false;
         }
-        const validationResult: true | ValidationResult = this.validateNumber(input);
+        const validationResult: true | ValidationFailure = this.validateNumber(input);
         if (validationResult === true) {
             return false;
         }
@@ -1128,7 +1122,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 renderedValue:
                     this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
                 reasonCode: 'ValueInvalid',
-                renderedReason: (validationResult as ValidationResult).renderedReason,
+                renderedReason: (validationResult as ValidationFailure).renderedReason,
             }),
         );
         resultBuilder.addAct(new RequestValueAct(this));
@@ -1157,11 +1151,11 @@ export class NumberControl extends Control implements InteractionModelContributo
         );
     }
 
-    private validateNumber(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: NumberValidationFunction[] =
+    private validateNumber(input: ControlInput): true | ValidationFailure {
+        const listOfValidationFunc: Array<StateValidationFunction<NumberControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: boolean | ValidationResult = validationFunction(this.state, input);
+            const validationResult: boolean | ValidationFailure = validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `NumberControl.validate(): validation failed. Reason: ${JSON.stringify(

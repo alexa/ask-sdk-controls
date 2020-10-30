@@ -20,7 +20,7 @@ import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { ValidationResult } from '../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../controls/ValidationResult';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import {
@@ -77,7 +77,9 @@ export interface ValueControlProps extends ControlProps {
      * - Validation functions return either `true` or a `ValidationResult` to
      *   describe what validation failed.
      */
-    validation?: SlotValidationFunction | SlotValidationFunction[];
+    validation?:
+        | StateValidationFunction<ValueControlState>
+        | Array<StateValidationFunction<ValueControlState>>;
 
     /**
      * Determines if the Control must obtain a value.
@@ -128,14 +130,6 @@ export interface ValueControlProps extends ControlProps {
      */
     valueRenderer?: (value: string, input: ControlInput) => string;
 }
-
-/**
- * ValueControl validation function
- */
-export type SlotValidationFunction = (
-    state: ValueControlState,
-    input: ControlInput,
-) => true | ValidationResult;
 
 /**
  * Mapping of action slot values to the behaviors that this control supports.
@@ -758,7 +752,7 @@ export class ValueControl extends Control implements InteractionModelContributor
         elicitationAction: string,
     ): void {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationResult = this.validate(input);
+        const validationResult: true | ValidationFailure = this.validate(input);
         if (typeof validationResult === 'boolean') {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -804,11 +798,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      *
      * @param input - Input.
      */
-    private validate(input: ControlInput): true | ValidationResult {
-        const listOfValidationFunc: SlotValidationFunction[] =
+    private validate(input: ControlInput): true | ValidationFailure {
+        const listOfValidationFunc: Array<StateValidationFunction<ValueControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationResult = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `ValueControl.validate(): validation failed. Reason: ${JSON.stringify(
