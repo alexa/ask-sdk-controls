@@ -43,7 +43,7 @@ import { IntentBuilder, SimplifiedIntent } from '../src/utils/IntentUtils';
 import { SkillInvoker } from '../src/utils/testSupport/SkillInvoker';
 import { wrapRequestHandlerAsSkill } from '../src/utils/testSupport/SkillWrapper';
 import {
-    findControlById,
+    findControlInTreeById,
     simpleInvoke,
     TestInput,
     waitForDebugger,
@@ -115,7 +115,7 @@ suite('== game_e2e.ts ==', () => {
             expect(result5.acts).length(1);
             expect(result5.acts[0]).instanceOf(ValueSetAct);
             expect(result5.sessionBehavior).equals(SessionBehavior.OPEN);
-            expect(findControlById(rootControl, $$.ID.PetName).state.value).eq('Coco');
+            expect(findControlInTreeById(rootControl, $$.ID.PetName).state.value).eq('Coco');
         });
 
         test('request class value (by list)', async () => {
@@ -208,7 +208,7 @@ suite('== game_e2e.ts ==', () => {
                 ),
             );
             expect((result2.acts[0] as SystemAct).control.id).equal($$.ID.PlayerClass);
-            expect(findControlById(rootControl, $$.ID.PlayerClass).state.value).eq($$.Value.Human);
+            expect(findControlInTreeById(rootControl, $$.ID.PlayerClass).state.value).eq($$.Value.Human);
         });
     });
 

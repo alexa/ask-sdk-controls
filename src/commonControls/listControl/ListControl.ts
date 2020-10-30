@@ -21,7 +21,7 @@ import { ControlAPL } from '../../controls/ControlAPL';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
@@ -50,7 +50,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateCustomHandleFuncs, logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
@@ -555,7 +555,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             this.isOrdinalScreenEvent(input) ||
             this.isOrdinalSelection(input);
 
-        logIfBothTrue(customCanHandle, builtInCanHandle);
+        _logIfBothTrue(customCanHandle, builtInCanHandle);
         return customCanHandle || builtInCanHandle;
     }
 

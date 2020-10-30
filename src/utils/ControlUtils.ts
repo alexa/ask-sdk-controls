@@ -10,6 +10,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { IControl } from '../controls/interfaces/IControl';
@@ -43,10 +44,31 @@ export async function evaluateCustomHandleFuncs(control: IControl, input: Contro
     return false;
 }
 
-export function logIfBothTrue(customCanHandle: boolean, builtInCanHandle: boolean) {
+//Exported for internal use only. Not sufficiently well-defined or valuable for public export.
+export function _logIfBothTrue(customCanHandle: boolean, builtInCanHandle: boolean) {
     if (customCanHandle === true && builtInCanHandle === true) {
         log.warn(
             'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
         );
     }
+}
+
+/**
+ * Selects the first control with specific ID from an array.
+ *
+ * Behavior:
+ * - implemented by linear search.
+ * - if more than one control matches, the first is returned.
+ * - if parameter `id` is undefined, returns `undefined`.
+ * - if there is no control with matching id, returns `undefined`.
+ *
+ * @param controls - Controls
+ * @param childId - The id to match
+ * @returns - The matching childControl, or undefined if not present.
+ */
+export function findControlById(controls: Control[], id: string | undefined): Control | undefined {
+    if (id === undefined) {
+        return undefined;
+    }
+    return controls.find((c) => c.id === id);
 }

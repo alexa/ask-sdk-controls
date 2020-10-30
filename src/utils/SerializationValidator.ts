@@ -15,7 +15,7 @@ import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
 import { Logger } from '../logging/Logger';
-import { extractStateFromControlTree } from '../runtime/ControlHandler';
+import { _extractStateFromControlTree } from '../runtime/ControlHandler';
 
 const log = new Logger('AskSdkControls:SerializationValidator');
 
@@ -39,7 +39,7 @@ export function validateSerializedState(
     controlManager.reestablishControlStates(rebuiltTopControl, input.handlerInput);
 
     // and then re-serialize to complete the round trip
-    const roundTrippedUISerialized = JSON.stringify(extractStateFromControlTree(rebuiltTopControl), null, 2);
+    const roundTrippedUISerialized = JSON.stringify(_extractStateFromControlTree(rebuiltTopControl), null, 2);
 
     if (serializedState !== roundTrippedUISerialized) {
         log.info(

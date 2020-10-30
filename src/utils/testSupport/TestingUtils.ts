@@ -56,7 +56,7 @@ export function waitForDebugger() {
  * @param rootControl - Root control
  * @param id - Control id to search for
  */
-export function findControlById(rootControl: IControl, id: string): any {
+export function findControlInTreeById(rootControl: IControl, id: string): any {
     return find(rootControl, 'id', id);
 }
 

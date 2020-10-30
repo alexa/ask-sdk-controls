@@ -28,7 +28,7 @@ import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../interactionModelGeneration/ModelTypes';
@@ -46,7 +46,7 @@ import {
 import { ConfirmValueAct, RequestValueAct, SuggestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateCustomHandleFuncs, logIfBothTrue } from '../utils/ControlUtils';
+import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../utils/ControlUtils';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -415,7 +415,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         const builtInCanHandle: boolean =
             this.canHandleForEmptyStateValue(input) || this.canHandleForExistingStateValue(input);
 
-        logIfBothTrue(customCanHandle, builtInCanHandle);
+        _logIfBothTrue(customCanHandle, builtInCanHandle);
 
         return customCanHandle || builtInCanHandle;
     }
