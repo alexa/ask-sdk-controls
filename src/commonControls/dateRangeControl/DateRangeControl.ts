@@ -24,7 +24,7 @@ import {
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import {
     ActionAndTask,
@@ -48,7 +48,7 @@ import {
 } from '../../systemActs/ContentActs';
 import { ConfirmValueAct, RequestValueAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
-import { evaluateCustomHandleFuncs, logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 import { DateControl, DateControlPromptProps, DateControlState } from '../DateControl';
@@ -742,7 +742,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         const customCanHandle = await evaluateCustomHandleFuncs(this, input);
         const builtInCanHandle =
             (await this.canHandleForFocus(input)) || (await this.canHandleForNoFocus(input));
-        logIfBothTrue(customCanHandle, builtInCanHandle);
+        _logIfBothTrue(customCanHandle, builtInCanHandle);
         return customCanHandle || builtInCanHandle;
     }
 

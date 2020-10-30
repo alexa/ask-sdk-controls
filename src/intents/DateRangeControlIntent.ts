@@ -124,6 +124,7 @@ export function unpackDateRangeControlIntent(intent: Intent): DateRangeControlIn
     };
 }
 
+//TODO: consolidated with ConjunctionControlIntent and export in index.ts.
 export function hasOneOrMoreTargets(input: DateRangeControlIntentSlots | null): boolean {
     if (!input) {
         return false;
@@ -134,6 +135,7 @@ export function hasOneOrMoreTargets(input: DateRangeControlIntentSlots | null): 
     return false;
 }
 
+//TODO: consolidated with ConjunctionControlIntent and export in index.ts.
 export function hasOneOrMoreActions(input: DateRangeControlIntentSlots | null): boolean {
     if (!input) {
         return false;
@@ -158,7 +160,7 @@ export function hasOneOrMoreValues(input: DateRangeControlIntentSlots | null): b
     return false;
 }
 
-export function validateControlInput(input: DateRangeControlIntentSlots | null): boolean {
+export function validateDateRangeControlIntentSlots(input: DateRangeControlIntentSlots | null): boolean {
     if (!input) {
         return false;
     }

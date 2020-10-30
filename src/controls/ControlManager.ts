@@ -19,7 +19,7 @@ import { Control } from '../controls/Control';
 import { implementsInteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import {
     ControlInteractionModelGenerator,
-    generateModelData,
+    _generateModelData,
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -235,7 +235,7 @@ export abstract class ControlManager implements IControlManager {
      */
     buildInteractionModel(generator: ControlInteractionModelGenerator): void {
         const rootControl = this.createControlTree();
-        const imData: ModelData = generateModelData();
+        const imData: ModelData = _generateModelData();
         updateIMForControlTree(rootControl, generator, imData);
     }
 

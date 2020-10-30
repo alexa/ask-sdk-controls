@@ -16,6 +16,7 @@
  *
  * (This is not a complete list)
  */
+//TODO: naming should be consistent with AmazonBuiltInSlotType. pick one.
 export enum AmazonIntent {
     CancelIntent = 'AMAZON.CancelIntent',
     FallbackIntent = 'AMAZON.FallbackIntent',

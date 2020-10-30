@@ -11,20 +11,11 @@
  * permissions and limitations under the License.
  */
 
-/**
- * Constants for Alexa's built-in slot types.
- *
- * (This is not a complete list.)
- */
+import { Response } from 'ask-sdk-model';
 
-//TODO: naming should be consistent with AmazonIntent. pick one.
-export enum AmazonBuiltInSlotType {
-    DATE = 'AMAZON.DATE',
-    DURATION = 'AMAZON.DURATION',
-    NUMBER = 'AMAZON.NUMBER',
-    FOUR_DIGIT_NUMBER = 'AMAZON.FOUR_DIGIT_NUMBER',
-    ORDINAL = 'AMAZON.Ordinal',
-    PHONENUMBER = 'AMAZON.PhoneNumber',
-    TIME = 'AMAZON.TIME',
-    SEARCH_QUERY = 'AMAZON.SearchQuery',
+/**
+ * Extended Response, surfacing additional information
+ */
+export interface IControlResponse extends Response {
+    isTurnEnding: boolean;
 }

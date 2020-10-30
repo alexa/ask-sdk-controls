@@ -19,6 +19,10 @@ import { BaseControlIntent } from './BaseControlIntent';
 
 /**
  * Slot values conveyed by a SingleValueControlIntent
+ *
+ * Note that the value is conveyed in a slot that is named for its type.  This is due to
+ * NLU build-time restriction that the model (as a whole) may not have slots that share a
+ * name but have different types.
  */
 export interface SingleValueControlIntentSlots {
     feedback?: string;
@@ -27,6 +31,9 @@ export interface SingleValueControlIntentSlots {
     [key: string]: string | undefined;
 }
 
+/**
+ * Information conveyed by a SingleValueControlIntent
+ */
 export interface SingleValuePayload {
     feedback?: string;
     action?: string;

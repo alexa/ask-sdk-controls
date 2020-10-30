@@ -20,6 +20,7 @@ import { isContainerControl } from '../controls/interfaces/IContainerControl';
 import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
+import { IControlResponse } from '../controls/interfaces/IControlResponse';
 import { IControlResult } from '../controls/interfaces/IControlResult';
 import { IControlResultBuilder } from '../controls/interfaces/IControlResultBuilder';
 import { Logger } from '../logging/Logger';
@@ -37,13 +38,6 @@ const log = new Logger('AskSdkControls:ControlHandler');
  */
 class AdditionalSessionContext {
     turnNumber: number = 0;
-}
-
-/**
- * Extended Response, surfacing additional information
- */
-export interface IControlResponse extends Response {
-    isTurnEnding: boolean;
 }
 
 /**
@@ -413,7 +407,7 @@ export class ControlHandler implements RequestHandler {
 
     // public for testing
     public getSerializableControlStates(): { [key: string]: any } {
-        return extractStateFromControlTree(this.rootControl!);
+        return _extractStateFromControlTree(this.rootControl!);
     }
 }
 
@@ -422,7 +416,8 @@ export class ControlHandler implements RequestHandler {
  *
  * @param rootControl - Root control
  */
-export function extractStateFromControlTree(rootControl: IControl): { [key: string]: any } {
+//Exported for internal use only.
+export function _extractStateFromControlTree(rootControl: IControl): { [key: string]: any } {
     const stateObj: any = {};
     extractStateCore(rootControl, stateObj);
     return stateObj;

@@ -20,7 +20,7 @@ import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../controls/ValidationResult';
+import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import {
@@ -41,7 +41,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateCustomHandleFuncs, logIfBothTrue } from '../utils/ControlUtils';
+import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -407,7 +407,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             this.isConfirmationAffirmed(input) ||
             this.isConfirmationDisaffirmed(input);
 
-        logIfBothTrue(customCanHandle, builtInCanHandle);
+        _logIfBothTrue(customCanHandle, builtInCanHandle);
         return customCanHandle || builtInCanHandle;
     }
 

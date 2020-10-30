@@ -46,7 +46,7 @@ const dummyPrompts: Prompt[] = [
 ];
 
 /**
- * Interaction model generator for skills that use the Controls Framework
+ * Interaction model generator for skills that use the Controls Framework.
  *
  * This class extends `InteractionModelGenerator` with Controls-specific functionality.
  */
@@ -54,16 +54,17 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
     public targetSlotIds: Set<string> = new Set();
 
     /**
-     * Update the interaction model for a controlManager
+     * Adds content to the interaction model from a ControlManager.
      *
      * Behavior:
-     * - Calls `controlManager.buildInteractionModel` to update the IM And add
-     *   dummy dialogModel if SimpleControlIntent is used in control
+     * - Calls `controlManager.buildInteractionModel` to update the IM
+     * - If any built-in controls are used, this also adds a dummy dialogModel to the
+     *   interaction model to ensure that Dialog.SlotElicitation directive can be used.
      *
-     * Usage: If the ControlManager is lacking data for the chosen locale, the
-     * appropriate data should be add by user themselves User would need to
-     * update the ModelDataMap instance and provide it to ControlManager's
-     * constructor
+     * Usage:
+     *  - If the built-in IM content does not include some desired locale, pass the
+     *    appropriate data during instantiation of the ControlManager.
+     *
      * @param controlManager - Control manager
      */
     buildCoreModelForControls(controlManager: ControlManager): ControlInteractionModelGenerator {
@@ -248,14 +249,15 @@ function validateTargetSlots(interactionModel: InteractionModelData, targetSlotI
 }
 
 /**
- * Generate the modelData Object by reading the i18n instance.
+ * Produces a lookup table of localized slot and intent definitions used when adding
+ * built-ins to the interaction model.
  *
- * This is the consolidated localization information for the built-ins.  This
- * data is not included in the generated interaction model unless the components
- * are actually used. I.e. this is a map of data from which to extract bits
- * and pieces as needed.
+ * Usage:
+ * - initiative i18next before calling this function.
  */
-export function generateModelData(): ModelData {
+// Exported for internal-use only.
+// TODO: review this convention: use _ prefix for functions that are for internal use only
+export function _generateModelData(): ModelData {
     const slotTypes: SlotType[] = [];
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_FEEDBACK', { returnObjects: true }));
     slotTypes.push(i18next.t('SHARED_SLOT_TYPES_FILTERED_FEEDBACK', { returnObjects: true }));

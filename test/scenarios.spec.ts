@@ -47,7 +47,7 @@ import { ValueChangedAct, ValueSetAct } from '../src/systemActs/ContentActs';
 import { RequestChangedValueAct, RequestValueAct } from '../src/systemActs/InitiativeActs';
 import { SystemAct } from '../src/systemActs/SystemAct';
 import {
-    findControlById,
+    findControlInTreeById,
     simpleInvoke,
     TestInput,
     waitForDebugger,
@@ -87,7 +87,7 @@ suite('== Single value selector scenarios ==', () => {
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
-        const playerNameState = findControlById(rootControl, $$.ID.PlayerName);
+        const playerNameState = findControlInTreeById(rootControl, $$.ID.PlayerName);
         expect(playerNameState.state.value).eq('Mike');
         expect(result.acts).length(1);
         expect(result.acts[0]).instanceOf(ValueSetAct);
@@ -165,7 +165,7 @@ suite(
                 }),
             );
             const result = await simpleInvoke(rootControl, input);
-            const playerCountState = findControlById(rootControl, PLAYER_COUNT);
+            const playerCountState = findControlInTreeById(rootControl, PLAYER_COUNT);
             expect(playerCountState.state.value).eq('3');
             expect(result.acts[0]).instanceOf(ValueSetAct);
             expect(result.acts[1]).instanceOf(RequestValueAct);
@@ -197,7 +197,7 @@ suite(
             );
             const result2 = await simpleInvoke(rootControl, request2);
 
-            const playerCountState = findControlById(rootControl, PLAYER_COUNT);
+            const playerCountState = findControlInTreeById(rootControl, PLAYER_COUNT);
             expect(playerCountState.state.value).eq('4'); // <--- changed successfully
             expect(result2.acts[0]).instanceOf(ValueChangedAct); // <--- appropriate feedback act
             expect(result2.acts[1]).instanceOf(RequestValueAct); // <-- ask for age again.
@@ -302,7 +302,7 @@ suite('== Custom Handler function scenarios ==', () => {
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
-        const dateControlState = findControlById(rootControl, 'dateControl');
+        const dateControlState = findControlInTreeById(rootControl, 'dateControl');
         expect(dateControlState.state.value).eq('2020-01-01');
     });
 
@@ -327,7 +327,7 @@ suite('== Custom Handler function scenarios ==', () => {
 
         spy.restore();
 
-        const dateControlState = findControlById(rootControl, 'dateControl');
+        const dateControlState = findControlInTreeById(rootControl, 'dateControl');
         expect(dateControlState.state.value).eq('2018');
         expect(result.acts).length(1);
         expect(result.acts[0]).instanceOf(ValueSetAct);
@@ -406,7 +406,7 @@ suite('== Custom APL Props ==', () => {
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
-        const houseControlState = findControlById(rootControl, 'hogwarts');
+        const houseControlState = findControlInTreeById(rootControl, 'hogwarts');
         expect(houseControlState.state.value).eq('Hufflepuff');
     });
 

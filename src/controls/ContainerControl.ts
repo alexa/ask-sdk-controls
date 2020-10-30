@@ -14,6 +14,7 @@
 import _ from 'lodash';
 import { InputUtil } from '..';
 import { Logger } from '../logging/Logger';
+import { findControlById } from '../utils/ControlUtils';
 import { Control, ControlProps, ControlState } from './Control';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
@@ -248,10 +249,10 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             return undefined;
         }
         if (InputUtil.isFallbackIntent(input)) {
-            const last = tryGetForId(candidates, this.state.lastInitiativeChild?.controlId);
+            const last = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
             return last ? last : undefined;
         }
-        const mruMatch = tryGetForId(candidates, this.state.lastInitiativeChild?.controlId);
+        const mruMatch = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
         return mruMatch ?? candidates[0];
     }
 
@@ -335,20 +336,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         if (candidates.length === 0) {
             return undefined;
         }
-        const mruMatch = tryGetForId(candidates, this.state.lastInitiativeChild?.controlId);
+        const mruMatch = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
         return mruMatch ?? candidates[0];
     }
-}
-
-/**
- * Returns the control with `id = childID` if it exists
- *
- * @param controls - Controls
- * @param childId - The id to match
- */
-export function tryGetForId(controls: Control[], childId?: string) {
-    if (childId === undefined) {
-        return undefined;
-    }
-    return controls.find((c) => c.id === childId);
 }
