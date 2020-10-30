@@ -11,27 +11,47 @@
  * permissions and limitations under the License.
  */
 
-// The return type of all builtin controls' validation function when validation fails
+import { ControlInput } from './ControlInput';
 
 /**
- * Describes what validation failure occurred.
+ * State validation function
+ *
+ * Takes a Control state object and returns `true` if the state passes validation.  If
+ * validation fails, a `ValidationResult` object is returned instead.
+ */
+export type StateValidationFunction<TState> = (
+    state: TState,
+    input: ControlInput,
+) => true | ValidationFailure;
+
+/**
+ * Describes a validation failure.
  *
  * Usage:
- * - A reason code should be provided in situations where the reason may need
- *   context-specific rendering.
+ * - A reason code should be provided that uniquely describes the kind of validation
+ *   failure.  A reason code is useful for context-specific rendering and other business
+ *   function.   It is not mandatory as for some simple cases it may be duplicative to
+ *   provide both a reason code and a single rendering of that reason code.
  *
- * - A rendered reason can be provided if there is no need for context-specific
- *   rendering. Rendering the reason directly during construction may simplify
- *   code in these situations.
+ * - A rendered reason for situations where the rendered form is not context-sensitive and
+ *   can be conveniently provided when the ValidationFailure is instantiated.
  */
-export type ValidationResult = {
+export type ValidationFailure = {
     /**
      * A code representing what validation failed.
+     *
+     * Usage:
+     *  - use reasonCode for business logic and transform to a prompt during the rendering
+     *    phase.
      */
     reasonCode?: string;
 
     /**
      * A rendered prompt fragment that can be directly included in the `Response`.
+     *
+     * Usage:
+     *  - If convenient, generate the prompt fragment at instantiation time.
+     *  - A renderedReason should not be used in logic or further transformed.
      */
     renderedReason?: string;
 };
