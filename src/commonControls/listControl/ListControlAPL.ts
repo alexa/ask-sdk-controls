@@ -41,6 +41,22 @@ export namespace ListControlAPLPropsBuiltIns {
         };
     }
 
+    export function MVStextList(valueRenderer: (value: string[], input: ControlInput) => string) {
+        return {
+            enabled: true,
+            requestValue: {
+                document: textListDocumentGenerator(),
+                dataSource: textListDataSourceGenerator((value: string, input) => value),
+                customHandlingFuncs: [],
+            },
+            requestChangedValue: {
+                document: textListDocumentGenerator(),
+                dataSource: textListDataSourceGenerator((value: string, input) => value),
+                customHandlingFuncs: [],
+            },
+        };
+    }
+
     /**
      * The APL dataSource to use when requesting a value
      *

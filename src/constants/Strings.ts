@@ -31,6 +31,10 @@ export namespace Strings {
         Change = 'builtin_change',
         Select = 'builtin_select',
         None = 'builtin_none',
+        Add = 'builtin_add',
+        Remove = 'builtin_remove',
+        Delete = 'builtin_delete',
+        Ignore = 'builtin_ignore',
     }
 
     /**

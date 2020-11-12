@@ -12,10 +12,12 @@
  */
 
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
+import { LastInitiativeState } from '../commonControls/listControl/MVSListControl';
 import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
+import { MultiValueSlot, unpackMultiValueControlIntent } from '../intents/MultiValueControlIntent';
 import {
     SingleValueControlIntent,
     unpackSingleValueControlIntent,
@@ -249,7 +251,7 @@ export namespace InputUtil {
      * cannot be understood.)
      * @param value - Value
      */
-    export function valueStrDefined(value: string | undefined): boolean {
+    export function valueStrDefined(value: MultiValueSlot[] | string | undefined): boolean {
         return value !== undefined && value !== '?';
     }
 
@@ -324,5 +326,24 @@ export namespace InputUtil {
     export function getValueResolution(input: ControlInput): { valueStr: string; erMatch: boolean } {
         const { valueStr, erMatch } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         return { valueStr: valueStr!, erMatch: erMatch! };
+    }
+
+    /**
+     * Extracts the value and erMatch array list from a MultiValueControlIntent
+     * @param input - Input
+     */
+    export function getMultiValueResolution(input: ControlInput): MultiValueSlot[] {
+        const { values } = unpackMultiValueControlIntent((input.request as IntentRequest).intent);
+        return values;
+    }
+
+    export function lastInitiativeMatch(
+        lastInitiative: LastInitiativeState | undefined,
+        actName: string,
+    ): boolean {
+        if (lastInitiative !== undefined) {
+            return lastInitiative.actName === actName;
+        }
+        return false;
     }
 }

@@ -22,8 +22,8 @@ import {
 import { Strings as $, Strings } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
-import { ValidationResult } from '../../src/controls/ValidationResult';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
+import { MultiValueControlIntent } from '../../src/intents/MultiValueControlIntent';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import {
@@ -49,14 +49,6 @@ suite('MVSListControl e2e tests', () => {
                     valueConfirmed: 'Awesome',
                 },
                 confirmationRequired: true,
-                inputHandling: {
-                    customHandlingFuncs: [
-                        {
-                            canHandle: isAddProductIntent,
-                            handle: handleAddProductIntent,
-                        },
-                    ],
-                },
             });
 
             function isAddProductIntent(input: ControlInput): boolean {
@@ -102,10 +94,10 @@ suite('MVSListControl e2e tests', () => {
                 const products = state.value!;
                 let result: true | MVSValidationResult = true;
                 products.forEach((product) => {
-                    if (getProductList().includes(product) !== true) {
+                    if (getProductList().includes(product.id) !== true) {
                         result = {
                             renderedReason: 'Apple Suite category validation failed',
-                            failedValue: product,
+                            failedValue: product.id,
                         };
                     }
                 });
@@ -116,29 +108,29 @@ suite('MVSListControl e2e tests', () => {
         }
     }
 
-    test.only('Add multiple items', async () => {
+    test('Add multiple items', async () => {
         const requestHandler = new ControlHandler(new MVSListControlManager());
         await testE2E(requestHandler, [
             'U: add iPhone and MacBook',
             TestInput.of(
-                IntentBuilder.of('AddProductIntent', {
-                    product: ['iPhone', 'MacBook'],
+                MultiValueControlIntent.of('AppleSuite', {
+                    AppleSuite: ['iPhone', 'MacBook'],
+                    action: $.Action.Add,
                 }),
             ),
-            'A: Was that iPhone, MacBook?',
-            ' u: no',
+            'A: Was that iPhone and MacBook?',
             'U: Yeah.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Awesome',
-            'U: iPac',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPac' })),
-            'A: Sorry, iPac is not a valid choice because Apple Suite category validation failed. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
-            'U: AirPods', //replacement for iPac
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'AirPods' })),
-            'A: Was that AirPods?',
-            'U: Yes',
-            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
-            'A: ',
+            // 'U: add iPac',
+            // TestInput.of(MultiValueControlIntent.of('AppleSuite', { AppleSuite: ['iPac'], action: $.Action.Add})),
+            // 'A: Sorry, iPac is not a valid choice because Apple Suite category validation failed. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
+            // 'U: AirPods', //replacement for iPac
+            // TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'AirPods' })),
+            // 'A: Was that AirPods?',
+            // 'U: Yes',
+            // TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            // 'A: ',
         ]);
     });
 });
@@ -156,4 +148,16 @@ suite('MVSListControl e2e tests', () => {
     Xmas Card selector
     state.lastInitiative = {actName: elicitReplacement, valueId=iPod}
     value { slotValue, confirmed, valid }
+ */
+
+/**
+ *
+ * U: Send Gift cards to Mary, Christine, Chrishell
+ * A: Ok do you want me to send card to Mary, Christine, Chrishell?
+ * U: No, and Amazon
+ * A: Great, Amazon is a not valid name in your friend's list, what do you want to replace with?
+ * U: Maya
+ * A: Great. Is that all?
+ * U: Yep
+ * A: Ok, sending them gift cards!!
  */

@@ -19,7 +19,7 @@
         "composite": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "importHelpers": true
+        "importHelpers": true,
     },
     "include": [
         "src",
