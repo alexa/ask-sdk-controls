@@ -246,3 +246,24 @@ export class SuggestValueAct<T> extends InitiativeAct {
         controlResponseBuilder.addPromptFragment(`Did you perhaps mean ${this.payload.value}?`);
     }
 }
+
+export class RequestReplacementValueByListAct extends InitiativeAct {
+    payload: RequestChangedValueByListPayload;
+
+    constructor(control: Control, payload: RequestChangedValueByListPayload) {
+        super(control);
+        this.payload = payload;
+    }
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
+            controlResponseBuilder.addPromptFragment(
+                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+            );
+        } else {
+            throw new Error(
+                `Cannot directly render RequestReplacementValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
+        }
+    }
+}
