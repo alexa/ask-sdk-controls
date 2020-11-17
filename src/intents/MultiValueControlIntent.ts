@@ -241,6 +241,9 @@ export class MultiValueControlIntent extends BaseControlIntent {
             {
                 name: `${this.valueSlotType}`,
                 type: `${this.valueSlotType}`,
+                multipleValues: {
+                    enabled: true,
+                },
             },
         ];
 
@@ -248,6 +251,9 @@ export class MultiValueControlIntent extends BaseControlIntent {
             slots.push({
                 name: `${this.filteredValueSlotType}`,
                 type: `${this.filteredValueSlotType}`,
+                multipleValues: {
+                    enabled: true,
+                },
             });
         }
 

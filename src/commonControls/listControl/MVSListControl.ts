@@ -589,7 +589,9 @@ export class MVSListControl extends Control implements InteractionModelContribut
         const customCanHandle = await evaluateCustomHandleFuncs(this, input);
         const builtInCanHandle: boolean =
             this.isAddProductWithValue(input) ||
+            this.isChangeWithValue(input) ||
             this.isConfirmationAffirmed(input) ||
+            this.isConfirmationDisaffirmed(input) ||
             this.isBareValue(input);
 
         _logIfBothTrue(customCanHandle, builtInCanHandle);
@@ -656,11 +658,83 @@ export class MVSListControl extends Control implements InteractionModelContribut
                             : '',
                 }),
             );
+        } else {
+            const valueIds = this.state.value!.map(({ id }) => id);
+            resultBuilder.addAct(
+                new ValueSetAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
         }
         return;
     }
 
-    private isConfirmationAffirmed(input: ControlInput): any {
+    private isChangeWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.valueStrDefined(values));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
+            this.handleFunc = this.handleChangeWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const slotValues = InputUtil.getMultiValueResolution(input);
+        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
+        if (
+            this.state.lastInitiative !== undefined &&
+            this.state.lastInitiative.actName === InvalidValueAct.name
+        ) {
+            // delete the invalid value from state
+            const values: MVSListStateValue[] = this.state.value!;
+            const deleteValue = this.state.lastInitiative.valueId as string;
+            const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
+            values.splice(removeIndex, 1);
+
+            this.state.lastInitiative = undefined;
+            // Add the new values to state with confirmation set to false
+            slotValues.forEach((slotObject) => {
+                this.addValue({
+                    id: slotObject.slotValue as string,
+                    confirmed: false,
+                    erMatch: slotObject.isEntityResolutionMatch as boolean,
+                });
+            });
+        }
+
+        if (this.isConfirmationRequired(input) !== false) {
+            this.state.lastInitiative = {
+                actName: ConfirmValueAct.name,
+                valueId: valueIds,
+            };
+            resultBuilder.addAct(
+                new ConfirmValueAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
+        } else {
+            resultBuilder.addAct(
+                new ValueSetAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
+        }
+        return;
+    }
+
+    private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
             okIf(InputUtil.lastInitiativeMatch(this.state.lastInitiative, ConfirmValueAct.name));
@@ -704,13 +778,36 @@ export class MVSListControl extends Control implements InteractionModelContribut
         return;
     }
 
+    private isConfirmationDisaffirmed(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isBareNo(input));
+            okIf(InputUtil.lastInitiativeMatch(this.state.lastInitiative, ConfirmValueAct.name));
+            this.handleFunc = this.handleConfirmationDisaffirmed;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const values = this.state.lastInitiative!.valueId;
+        // If values to be confirmed are more than one. Confirm them individually.
+        if (values.length === 1) {
+            const deleteValue = this.state.lastInitiative!.valueId as string;
+            const removeIndex = this.state.value!.map((value) => value.id).indexOf(deleteValue[0]);
+            this.state.value!.splice(removeIndex, 1);
+        }
+        this.state.lastInitiative = undefined;
+        return;
+    }
+
     private isBareValue(input: ControlInput): any {
         try {
             okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
-            okIf(InputUtil.feedbackIsUndefined(feedback));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(values));
@@ -729,13 +826,17 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const slotValues = InputUtil.getMultiValueResolution(input);
+        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
         if (
             this.state.lastInitiative !== undefined &&
-            this.state.lastInitiative.actName === InvalidValueAct.name
+            (this.state.lastInitiative.actName === InvalidValueAct.name ||
+                this.state.lastInitiative.actName === ConfirmValueAct.name)
         ) {
             // delete the changed value from state
             const values: MVSListStateValue[] = this.state.value!;
-            const deleteValue = this.state.lastInitiative.valueId as string;
+            const deleteValue = Array.isArray(this.state.lastInitiative.valueId)
+                ? this.state.lastInitiative.valueId[0]
+                : this.state.lastInitiative.valueId;
             const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
             values.splice(removeIndex, 1);
         }
@@ -747,7 +848,26 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 erMatch: slotObject.isEntityResolutionMatch as boolean,
             });
         });
-        this.state.lastInitiative = undefined;
+
+        if (this.isConfirmationRequired(input) !== false) {
+            this.state.lastInitiative = {
+                actName: ConfirmValueAct.name,
+                valueId: valueIds,
+            };
+            resultBuilder.addAct(
+                new ConfirmValueAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
+        } else {
+            resultBuilder.addAct(
+                new ValueSetAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
+        }
         return;
     }
 
@@ -836,6 +956,9 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const valueIds = this.state.value!.filter(({ confirmed }) => confirmed === false).map(({ id }) => id);
+        if (this.state.lastInitiative === undefined) {
+            valueIds.splice(1);
+        }
         this.state.lastInitiative = {
             actName: ConfirmValueAct.name,
             valueId: valueIds,
