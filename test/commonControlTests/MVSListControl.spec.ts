@@ -228,7 +228,7 @@ suite('MVSListControl e2e tests', () => {
                         action: 'send',
                     }),
                 ),
-                'A: OK, Mary and Maya.',
+                'A: OK, added Mary and Maya.',
             ]);
         });
 
@@ -242,7 +242,7 @@ suite('MVSListControl e2e tests', () => {
                         action: 'send',
                     }),
                 ),
-                'A: OK, Amazon and Jake. Sorry, Amazon is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
+                'A: OK, added Amazon and Jake. Sorry, Amazon is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
                 'U: replace to Maya',
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
@@ -296,6 +296,28 @@ suite('MVSListControl e2e tests', () => {
                 'U: Yes',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
                 'A: Great.',
+            ]);
+        });
+
+        test.skip('remove items from list of items', async () => {
+            const requestHandler = new ControlHandler(new ContactSelectorManager());
+            await testE2E(requestHandler, [
+                'U: send to Mary and Maya ',
+                TestInput.of(
+                    MultiValueControlIntent.of('ContactSelector', {
+                        ContactSelector: ['Mary', 'Maya'],
+                        action: 'send',
+                    }),
+                ),
+                'A: OK, added Mary and Maya.',
+                'U: remove Maya',
+                TestInput.of(
+                    MultiValueControlIntent.of('ContactSelector', {
+                        ContactSelector: 'Maya',
+                        action: 'remove',
+                    }),
+                ),
+                'A: ',
             ]);
         });
     });

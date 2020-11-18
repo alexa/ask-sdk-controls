@@ -18,7 +18,9 @@ import {
     InvalidValuePayload,
     LiteralContentPayload,
     ProblematicInputValuePayload,
+    ValueAddedPayload,
     ValueChangedPayload,
+    ValueRemovedPayload,
     ValueSetPayload,
 } from './PayloadTypes';
 import { SystemAct } from './SystemAct';
@@ -501,5 +503,31 @@ export class LiteralContentAct extends ContentAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(this.payload.promptFragment);
         controlResponseBuilder.addRepromptFragment(this.payload.repromptFragment!);
+    }
+}
+
+export class ValueAddedAct<T> extends ContentAct {
+    public readonly payload: ValueAddedPayload<T>;
+
+    constructor(control: Control, payload: ValueAddedPayload<T>) {
+        super(control);
+        this.payload = payload;
+    }
+
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        controlResponseBuilder.addPromptFragment(`OK, added ${this.payload.value}.`);
+    }
+}
+
+export class ValueRemovedAct<T> extends ContentAct {
+    public readonly payload: ValueRemovedPayload<T>;
+
+    constructor(control: Control, payload: ValueRemovedPayload<T>) {
+        super(control);
+        this.payload = payload;
+    }
+
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        controlResponseBuilder.addPromptFragment(`OK, removed ${this.payload.value}.`);
     }
 }

@@ -27,6 +27,36 @@ export interface ValueSetPayload<T> {
 }
 
 /**
+ * Payload for ValueAddeddAct
+ */
+export interface ValueAddedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
+ * Payload for ValueRemovedAct
+ */
+export interface ValueRemovedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
  * Payload for ValueChangedAct
  */
 export interface ValueChangedPayload<T> {

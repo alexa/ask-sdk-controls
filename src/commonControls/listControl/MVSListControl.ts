@@ -40,9 +40,11 @@ import { ControlResponseBuilder } from '../../responseGeneration/ControlResponse
 import {
     InvalidValueAct,
     UnusableInputValueAct,
+    ValueAddedAct,
     ValueChangedAct,
     ValueConfirmedAct,
     ValueDisconfirmedAct,
+    ValueRemovedAct,
     ValueSetAct,
 } from '../../systemActs/ContentActs';
 import {
@@ -358,6 +360,8 @@ export class MVSListControlPromptProps {
     valueDisconfirmed?:
         | StringOrList
         | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
+    valueAdded?: StringOrList | ((act: ValueAddedAct<any>, input: ControlInput) => StringOrList);
+    valueRemoved?: StringOrList | ((act: ValueRemovedAct<any>, input: ControlInput) => StringOrList);
 }
 
 /**
@@ -521,6 +525,12 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
                         value: act.payload.renderedValue,
                     }),
+                valueAdded: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD', { value: act.payload.renderedValue }),
+                valueRemoved: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE', {
+                        value: act.payload.renderedValue,
+                    }),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
@@ -553,6 +563,12 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     }),
                 valueChanged: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
+                        value: act.payload.renderedValue,
+                    }),
+                valueAdded: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD', { value: act.payload.renderedValue }),
+                valueRemoved: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE', {
                         value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -661,7 +677,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         } else {
             const valueIds = this.state.value!.map(({ id }) => id);
             resultBuilder.addAct(
-                new ValueSetAct(this, {
+                new ValueAddedAct(this, {
                     value: valueIds,
                     renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
                 }),
@@ -1256,6 +1272,14 @@ export class MVSListControl extends Control implements InteractionModelContribut
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
             );
+        } else if (act instanceof ValueAddedAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueAdded, input));
+            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueAdded, input));
+        } else if (act instanceof ValueRemovedAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueRemoved, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueRemoved, input),
+            );
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
@@ -1310,6 +1334,5 @@ export class MVSListControl extends Control implements InteractionModelContribut
     getTargetIds() {
         return this.props.interactionModel.targets;
     }
-
     // TODO: feature: use slot elicitation when requesting.
 }
