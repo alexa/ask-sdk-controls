@@ -250,7 +250,7 @@ suite('MVSListControl e2e tests', () => {
                         action: 'replace',
                     }),
                 ),
-                'A: OK, Maya. Sorry, Jake is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
+                'A: OK, I changed it to Maya. Sorry, Jake is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
                 'U: change to Mary and Dave',
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
@@ -258,7 +258,7 @@ suite('MVSListControl e2e tests', () => {
                         action: $.Action.Change,
                     }),
                 ),
-                'A: OK, Mary and Dave.',
+                'A: OK, I changed it to Mary and Dave.',
             ]);
         });
 
@@ -299,7 +299,7 @@ suite('MVSListControl e2e tests', () => {
             ]);
         });
 
-        test.skip('remove items from list of items', async () => {
+        test('remove items from list and set to new values', async () => {
             const requestHandler = new ControlHandler(new ContactSelectorManager());
             await testE2E(requestHandler, [
                 'U: send to Mary and Maya ',
@@ -314,10 +314,34 @@ suite('MVSListControl e2e tests', () => {
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
                         ContactSelector: 'Maya',
-                        action: 'remove',
+                        action: $.Action.Remove,
                     }),
                 ),
-                'A: ',
+                'A: OK, removed Maya.',
+                'U: remove Maya',
+                TestInput.of(
+                    MultiValueControlIntent.of('ContactSelector', {
+                        ContactSelector: 'Maya',
+                        action: $.Action.Remove,
+                    }),
+                ),
+                'A: Sorry, Maya is not a valid choice because The value does not exist on state. What value do you want to remove? Some suggestions are Maya, Mary or Dave.',
+                'U: remove Mary',
+                TestInput.of(
+                    MultiValueControlIntent.of('ContactSelector', {
+                        ContactSelector: 'Mary',
+                        action: $.Action.Remove,
+                    }),
+                ),
+                'A: OK, removed Mary.',
+                'U: set it to Joe and Dave',
+                TestInput.of(
+                    MultiValueControlIntent.of('ContactSelector', {
+                        ContactSelector: ['Joe', 'Dave'],
+                        action: $.Action.Set,
+                    }),
+                ),
+                'A: OK, Joe and Dave.',
             ]);
         });
     });

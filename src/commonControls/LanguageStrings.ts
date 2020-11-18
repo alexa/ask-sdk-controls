@@ -132,11 +132,15 @@ export const defaultI18nResources: Resource = {
                 'What is your selection? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE:
                 'What should I change it to? Some suggestions are {{suggestions}}.',
+            LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+            // Re
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
+            LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE: 'Sorry, {{value}} is not a valid choice.',
             LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
                 'Sorry, {{value}} is not a valid choice because {{reason}}.',
@@ -145,6 +149,8 @@ export const defaultI18nResources: Resource = {
                 'What is your selection? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE:
                 'What should I change it to? Some suggestions are {{suggestions}}.',
+            LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',

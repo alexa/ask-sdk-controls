@@ -11,10 +11,9 @@
  * permissions and limitations under the License.
  */
 
-import { getSupportedInterfaces } from 'ask-sdk-core';
-import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
+import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
-import _, { stubFalse, trimEnd } from 'lodash';
+import _ from 'lodash';
 import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
 import { ControlAPL } from '../../controls/ControlAPL';
@@ -22,16 +21,13 @@ import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
-import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
+import { GeneralControlIntent } from '../../intents/GeneralControlIntent';
 import {
     MultiValueControlIntent,
     unpackMultiValueControlIntent,
 } from '../../intents/MultiValueControlIntent';
-import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../../intents/SingleValueControlIntent';
+import { OrdinalControlIntent } from '../../intents/OrdinalControlIntent';
+import { SingleValueControlIntent } from '../../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
@@ -51,6 +47,7 @@ import {
     ConfirmValueAct,
     InitiativeAct,
     RequestChangedValueByListAct,
+    RequestRemovedValueByListAct,
     RequestValueByListAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
@@ -58,8 +55,7 @@ import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
-import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
-import { ListControlAPLPropsBuiltIns } from './ListControlAPL';
+import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 
 const log = new Logger('AskSdkControls:MVSListControl');
 
@@ -194,7 +190,7 @@ export interface MVSListControlActionProps {
      *
      * Default: ['builtin_set']
      */
-    setAll?: string[];
+    set?: string[];
 
     /**
      * Action slot value IDs that are associated with the "change value" capability.
@@ -348,13 +344,13 @@ export class MVSListControlPromptProps {
     valueSet?: StringOrList | ((act: ValueSetAct<any>, input: ControlInput) => StringOrList);
     valueChanged?: StringOrList | ((act: ValueChangedAct<any>, input: ControlInput) => StringOrList);
     invalidValue?: StringOrList | ((act: InvalidValueAct<any>, input: ControlInput) => StringOrList);
-    unusableInputValue?:
-        | StringOrList
-        | ((act: UnusableInputValueAct<string>, input: ControlInput) => StringOrList);
     requestValue?: StringOrList | ((act: RequestValueByListAct, input: ControlInput) => StringOrList);
     requestChangedValue?:
         | StringOrList
         | ((act: RequestChangedValueByListAct, input: ControlInput) => StringOrList);
+    requestRemovedValue?:
+        | StringOrList
+        | ((act: RequestRemovedValueByListAct, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<any>, input: ControlInput) => StringOrList);
     valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<any>, input: ControlInput) => StringOrList);
     valueDisconfirmed?:
@@ -465,7 +461,6 @@ export class MVSListControlState implements ControlState {
 export class MVSListControl extends Control implements InteractionModelContributor {
     state: MVSListControlState = new MVSListControlState();
 
-    private rawProps: MVSListControlProps;
     private props: DeepRequired<MVSListControlProps>;
     private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
     private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
@@ -481,7 +476,6 @@ export class MVSListControl extends Control implements InteractionModelContribut
             );
         }
 
-        this.rawProps = props;
         this.props = MVSListControl.mergeWithDefaultProps(props);
     }
 
@@ -501,7 +495,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             confirmationRequired: false,
             interactionModel: {
                 actions: {
-                    setAll: [$.Action.Set],
+                    set: [$.Action.Set],
                     change: [$.Action.Change],
                     remove: [$.Action.Remove, $.Action.Delete, $.Action.Ignore],
                     add: [$.Action.Select, $.Action.Add],
@@ -540,13 +534,16 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     }
                     return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
-                unusableInputValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_PROMPT_UNUSABLE_INPUT_VALUE'),
                 requestValue: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE', {
                         suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                     }),
                 requestChangedValue: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
+                    }),
+                requestRemovedValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE', {
                         suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                     }),
             },
@@ -580,13 +577,16 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     }
                     return i18next.t('LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE');
                 },
-                unusableInputValue: (act) => i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_UNUSABLE_INPUT_VALUE'),
                 requestValue: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE', {
                         suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                     }),
                 requestChangedValue: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE', {
+                        suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
+                    }),
+                requestRemovedValue: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE', {
                         suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                     }),
             },
@@ -606,6 +606,8 @@ export class MVSListControl extends Control implements InteractionModelContribut
         const builtInCanHandle: boolean =
             this.isAddProductWithValue(input) ||
             this.isChangeWithValue(input) ||
+            this.isRemoveWithValue(input) ||
+            this.isSetWithValue(input) ||
             this.isConfirmationAffirmed(input) ||
             this.isConfirmationDisaffirmed(input) ||
             this.isBareValue(input);
@@ -668,10 +670,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: valueIds,
-                    renderedValue:
-                        this.state.value !== undefined
-                            ? ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and')
-                            : '',
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
                 }),
             );
         } else {
@@ -716,8 +715,6 @@ export class MVSListControl extends Control implements InteractionModelContribut
             const deleteValue = this.state.lastInitiative.valueId as string;
             const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
             values.splice(removeIndex, 1);
-
-            this.state.lastInitiative = undefined;
             // Add the new values to state with confirmation set to false
             slotValues.forEach((slotObject) => {
                 this.addValue({
@@ -728,7 +725,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             });
         }
 
-        if (this.isConfirmationRequired(input) !== false) {
+        if (this.isConfirmationRequired(input) === true) {
             this.state.lastInitiative = {
                 actName: ConfirmValueAct.name,
                 valueId: valueIds,
@@ -740,6 +737,110 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 }),
             );
         } else {
+            const previousValue: string[] = [this.state.lastInitiative!.valueId as string];
+            resultBuilder.addAct(
+                new ValueChangedAct<string[]>(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    previousValue,
+                    renderedPreviousValue: ListFormatting.format(
+                        this.props.valueRenderer(previousValue, input),
+                    ),
+                }),
+            );
+        }
+        this.state.lastInitiative = undefined;
+        return;
+    }
+
+    private isRemoveWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.valueStrDefined(values));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.remove));
+            this.handleFunc = this.handleRemoveWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleRemoveWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const slotValues = InputUtil.getMultiValueResolution(input);
+        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
+        const stateValues: MVSListStateValue[] = this.state.value!;
+        const deletedValues = [];
+        for (const value of valueIds) {
+            const removeIndex = stateValues.map((value) => value.id).indexOf(value);
+            if (removeIndex === -1) {
+                resultBuilder.addAct(
+                    new InvalidValueAct<string>(this, {
+                        value,
+                        renderedValue: ListFormatting.format(this.props.valueRenderer([value], input)),
+                        renderedReason: 'The value does not exist on state',
+                    }),
+                );
+                this.askElicitationQuestion(input, resultBuilder, $.Action.Remove);
+                return;
+            }
+            deletedValues.push(value);
+            stateValues.splice(removeIndex, 1);
+        }
+        resultBuilder.addAct(
+            new ValueRemovedAct(this, {
+                value: deletedValues,
+                renderedValue: ListFormatting.format(this.props.valueRenderer(deletedValues, input), 'and'),
+            }),
+        );
+    }
+
+    private isSetWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.valueStrDefined(values));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
+            this.handleFunc = this.handleSetWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const slotValues = InputUtil.getMultiValueResolution(input);
+        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
+        if (this.isConfirmationRequired(input) === true) {
+            this.state.lastInitiative = {
+                actName: ConfirmValueAct.name,
+                valueId: valueIds,
+            };
+            resultBuilder.addAct(
+                new ConfirmValueAct(this, {
+                    value: valueIds,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                }),
+            );
+        } else {
+            this.clear();
+            slotValues.forEach((slotObject) => {
+                this.addValue({
+                    id: slotObject.slotValue as string,
+                    confirmed: false,
+                    erMatch: slotObject.isEntityResolutionMatch as boolean,
+                });
+            });
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: valueIds,
@@ -747,7 +848,6 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 }),
             );
         }
-        return;
     }
 
     private isConfirmationAffirmed(input: ControlInput): boolean {
@@ -762,34 +862,18 @@ export class MVSListControl extends Control implements InteractionModelContribut
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        const valueId = this.state.lastInitiative!.valueId;
+        const valueId = this.state.lastInitiative!.valueId as string[];
         if (valueId !== undefined) {
-            if (Array.isArray(valueId)) {
-                valueId.forEach((value) => {
-                    this.state.value!.find(({ id }) => id === value)!.confirmed = true;
-                });
-                this.state.lastInitiative = undefined;
-                resultBuilder.addAct(
-                    new ValueConfirmedAct(this, {
-                        value: valueId,
-                        renderedValue: ListFormatting.format(this.props.valueRenderer(valueId, input), 'and'),
-                    }),
-                );
-            } else {
-                this.state.value!.find(({ id }) => id === valueId)!.confirmed = true;
-
-                this.state.lastInitiative = undefined;
-
-                resultBuilder.addAct(
-                    new ValueConfirmedAct(this, {
-                        value: valueId,
-                        renderedValue: ListFormatting.format(
-                            this.props.valueRenderer([valueId], input),
-                            'and',
-                        ),
-                    }),
-                );
-            }
+            valueId.forEach((value) => {
+                this.state.value!.find(({ id }) => id === value)!.confirmed = true;
+            });
+            this.state.lastInitiative = undefined;
+            resultBuilder.addAct(
+                new ValueConfirmedAct(this, {
+                    value: valueId,
+                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueId, input), 'and'),
+                }),
+            );
         }
         return;
     }
@@ -805,7 +889,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         }
     }
 
-    private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private handleConfirmationDisaffirmed(): void {
         const values = this.state.lastInitiative!.valueId;
         // If values to be confirmed are more than one. Confirm them individually.
         if (values.length === 1) {
@@ -878,7 +962,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             );
         } else {
             resultBuilder.addAct(
-                new ValueSetAct(this, {
+                new ValueAddedAct(this, {
                     value: valueIds,
                     renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
                 }),
@@ -904,13 +988,13 @@ export class MVSListControl extends Control implements InteractionModelContribut
      * @param erMatch - Whether the value is an ID defined for `this.slotType`
      * in the interaction model
      */
-    setValue(value: string | string[], erMatch: boolean | boolean[] = true) {
-        //this.state.previousValue = this.state.value;
-        if (this.state.value === undefined) {
-            this.state.value = [];
-            // this.state.erMatch = [];
-        }
-    }
+    // setValue() {
+    //     //this.state.previousValue = this.state.value;
+    //     if (this.state.value === undefined) {
+    //         this.state.value = [];
+    //         // this.state.erMatch = [];
+    //     }
+    // }
 
     addValue(value: MVSListStateValue) {
         if (this.state.value !== undefined) {
@@ -979,15 +1063,11 @@ export class MVSListControl extends Control implements InteractionModelContribut
             actName: ConfirmValueAct.name,
             valueId: valueIds,
         };
-        this.addInitiativeAct(
+        resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: valueIds,
-                renderedValue:
-                    this.state.value !== undefined
-                        ? ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and')
-                        : '',
+                renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
             }),
-            resultBuilder,
         );
     }
 
@@ -1042,75 +1122,6 @@ export class MVSListControl extends Control implements InteractionModelContribut
         this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
     }
 
-    validateAndAddActs(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-        elicitationAction: string,
-    ): void {
-        const validationResult = this.validate(input);
-        if (validationResult === true) {
-            if (elicitationAction === $.Action.Change) {
-                // if elicitationAction == 'change', then the previousValue must be defined.
-                if (this.state.previousValue !== undefined) {
-                    resultBuilder.addAct(
-                        new ValueChangedAct<string>(this, {
-                            previousValue: this.state.previousValue.join(', '),
-                            renderedPreviousValue: ListFormatting.format(
-                                this.props.valueRenderer(
-                                    this.state.value!.map(({ id }) => id),
-                                    input,
-                                ),
-                                'and',
-                            ),
-                            value: this.state.value!.join(', '),
-                            renderedValue: ListFormatting.format(
-                                this.props.valueRenderer(
-                                    this.state.value!.map(({ id }) => id),
-                                    input,
-                                ),
-                                'and',
-                            ),
-                        }),
-                    );
-                } else {
-                    throw new Error(
-                        'ValueChangedAct should only be used if there is an actual previous value',
-                    );
-                }
-            } else {
-                resultBuilder.addAct(
-                    new ValueSetAct(this, {
-                        value: this.state.value,
-                        renderedValue: ListFormatting.format(
-                            this.props.valueRenderer(
-                                this.state.value!.map(({ id }) => id),
-                                input,
-                            ),
-                        ),
-                    }),
-                );
-            }
-        } else {
-            // feedback
-            resultBuilder.addAct(
-                new InvalidValueAct<string>(this, {
-                    value: 'dummy',
-                    renderedValue: ListFormatting.format(
-                        this.props.valueRenderer(
-                            this.state.value!.map(({ id }) => id),
-                            input,
-                        ),
-                        'and',
-                    ),
-                    reasonCode: '2131', //validationResult.reasonCode,
-                    renderedReason: 'dummy', //validationResult.renderedReason,
-                }),
-            );
-            this.askElicitationQuestion(input, resultBuilder, elicitationAction);
-        }
-        return;
-    }
-
     private validate(input: ControlInput) {
         const listOfValidationFunc: SlotValidationFunction[] =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
@@ -1142,22 +1153,21 @@ export class MVSListControl extends Control implements InteractionModelContribut
         }
 
         const choicesFromActivePage = this.getChoicesFromActivePage(allChoices);
-        const value = this.state.lastInitiative!.valueId;
-        const currentValue = Array.isArray(value) ? value[0] : value;
         switch (elicitationAction) {
             case $.Action.Set:
-                this.addInitiativeAct(
+                resultBuilder.addAct(
                     new RequestValueByListAct(this, {
                         choicesFromActivePage,
                         allChoices,
                         renderedChoicesFromActivePage: this.props.valueRenderer(choicesFromActivePage, input),
                         renderedAllChoices: this.props.valueRenderer(allChoices, input),
                     }),
-                    resultBuilder,
                 );
                 return;
-            case $.Action.Change:
-                this.addInitiativeAct(
+            case $.Action.Change: {
+                const value = this.state.lastInitiative!.valueId;
+                const currentValue = Array.isArray(value) ? value[0] : value;
+                resultBuilder.addAct(
                     new RequestChangedValueByListAct(this, {
                         currentValue,
                         renderedValue: ListFormatting.format(
@@ -1169,17 +1179,22 @@ export class MVSListControl extends Control implements InteractionModelContribut
                         renderedChoicesFromActivePage: this.props.valueRenderer(choicesFromActivePage, input),
                         renderedAllChoices: this.props.valueRenderer(allChoices, input),
                     }),
-                    resultBuilder,
+                );
+                return;
+            }
+            case $.Action.Remove:
+                resultBuilder.addAct(
+                    new RequestRemovedValueByListAct(this, {
+                        choicesFromActivePage,
+                        allChoices,
+                        renderedChoicesFromActivePage: this.props.valueRenderer(choicesFromActivePage, input),
+                        renderedAllChoices: this.props.valueRenderer(allChoices, input),
+                    }),
                 );
                 return;
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
         }
-    }
-
-    addInitiativeAct(initiativeAct: InitiativeAct, resultBuilder: ControlResultBuilder) {
-        this.state.activeInitiativeActName = initiativeAct.constructor.name;
-        resultBuilder.addAct(initiativeAct);
     }
 
     // tsDoc - see ControlStateDiagramming
@@ -1252,13 +1267,21 @@ export class MVSListControl extends Control implements InteractionModelContribut
             //     );
             //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
             // }
-        } else if (act instanceof UnusableInputValueAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input),
-            );
+        } else if (act instanceof RequestRemovedValueByListAct) {
+            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestRemovedValue, input);
+            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestRemovedValue, input);
+
+            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
+            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
+
+            // if (
+            //     this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+            //     getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+            // ) {
+            //     const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
+            //     const dataSource = this.evaluateAPLProp(act, input, this.props.apl.requestValue.dataSource);
+            //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+            // }
         } else if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
             builder.addRepromptFragment(
@@ -1306,7 +1329,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addControlIntent(
-            new SingleValueControlIntent(
+            new MultiValueControlIntent(
                 this.props.slotType,
                 this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
             ),
@@ -1322,7 +1345,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             );
         }
 
-        if (this.props.interactionModel.actions.setAll.includes($.Action.Select)) {
+        if (this.props.interactionModel.actions.set.includes($.Action.Select)) {
             generator.addValuesToSlotType(
                 SharedSlotType.ACTION,
                 i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_ACTION_SELECT', { returnObjects: true }),

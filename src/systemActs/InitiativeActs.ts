@@ -19,6 +19,7 @@ import {
     LiteralContentPayload,
     RequestChangedValueByListPayload,
     RequestChangedValuePayload,
+    RequestRemovedValueByListActPayload,
     RequestValueByListPayload,
     RequestValuePayload,
     ValueSetPayload,
@@ -173,6 +174,27 @@ export class RequestChangedValueByListAct extends InitiativeAct {
         } else {
             throw new Error(
                 `Cannot directly render RequestChangeValueByList as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+            );
+        }
+    }
+}
+
+export class RequestRemovedValueByListAct extends InitiativeAct {
+    payload: RequestRemovedValueByListActPayload;
+
+    constructor(control: Control, payload: RequestRemovedValueByListActPayload) {
+        super(control);
+        this.payload = payload;
+    }
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
+            controlResponseBuilder.addPromptFragment(
+                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+            );
+        } else {
+            throw new Error(
+                `Cannot directly render RequestRemovedValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
                     `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
             );
         }

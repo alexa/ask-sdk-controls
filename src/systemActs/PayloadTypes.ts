@@ -144,6 +144,18 @@ export interface RequestChangedValueByListPayload {
 }
 
 /**
+ * Payload for RequestRemovedValueByListAct
+ */
+export interface RequestRemovedValueByListActPayload {
+    choicesFromActivePage: string[];
+    allChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAllChoices: string[];
+    renderedTarget?: string;
+    renderedChoices?: string;
+}
+
+/**
  * Payload for LiteralInitiativeAct
  */
 export interface LiteralContentPayload {
