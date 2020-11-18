@@ -27,7 +27,6 @@ import {
     unpackMultiValueControlIntent,
 } from '../../intents/MultiValueControlIntent';
 import { OrdinalControlIntent } from '../../intents/OrdinalControlIntent';
-import { SingleValueControlIntent } from '../../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
@@ -35,7 +34,6 @@ import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InvalidValueAct,
-    UnusableInputValueAct,
     ValueAddedAct,
     ValueChangedAct,
     ValueConfirmedAct,
@@ -45,7 +43,6 @@ import {
 } from '../../systemActs/ContentActs';
 import {
     ConfirmValueAct,
-    InitiativeAct,
     RequestChangedValueByListAct,
     RequestRemovedValueByListAct,
     RequestValueByListAct,
@@ -411,7 +408,6 @@ export class MVSListControlState implements ControlState {
      */
     elicitationAction?: string;
 
-    // TODO: refactor. tracking the requestAct itself is likely simpler.
     /**
      * Index of the page of items most recently spoken.
      */
@@ -660,9 +656,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         });
 
         if (this.isConfirmationRequired(input) !== false) {
-            const valueIds = this.state
-                .value!.filter(({ confirmed }) => confirmed === false)
-                .map(({ id }) => id);
+            const valueIds = this.getSlotIdsToConfirm();
             this.state.lastInitiative = {
                 actName: ConfirmValueAct.name,
                 valueId: valueIds,
@@ -670,15 +664,15 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         } else {
-            const valueIds = this.state.value!.map(({ id }) => id);
+            const valueIds = this.getSlotIds();
             resultBuilder.addAct(
                 new ValueAddedAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         }
@@ -733,7 +727,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         } else {
@@ -741,11 +735,9 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ValueChangedAct<string[]>(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                     previousValue,
-                    renderedPreviousValue: ListFormatting.format(
-                        this.props.valueRenderer(previousValue, input),
-                    ),
+                    renderedPreviousValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         }
@@ -782,7 +774,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 resultBuilder.addAct(
                     new InvalidValueAct<string>(this, {
                         value,
-                        renderedValue: ListFormatting.format(this.props.valueRenderer([value], input)),
+                        renderedValue: this.evaluateRenderedValue(value, input),
                         renderedReason: 'The value does not exist on state',
                     }),
                 );
@@ -795,7 +787,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         resultBuilder.addAct(
             new ValueRemovedAct(this, {
                 value: deletedValues,
-                renderedValue: ListFormatting.format(this.props.valueRenderer(deletedValues, input), 'and'),
+                renderedValue: this.evaluateRenderedValue(deletedValues, input),
             }),
         );
     }
@@ -829,7 +821,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         } else {
@@ -844,7 +836,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         }
@@ -871,7 +863,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ValueConfirmedAct(this, {
                     value: valueId,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueId, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueId, input),
                 }),
             );
         }
@@ -957,14 +949,14 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         } else {
             resultBuilder.addAct(
                 new ValueAddedAct(this, {
                     value: valueIds,
-                    renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                    renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
         }
@@ -1048,14 +1040,14 @@ export class MVSListControl extends Control implements InteractionModelContribut
     private isSlotValuesConfirmed(): boolean {
         const values = this.state.value;
         if (values !== undefined) {
-            const valuesToBeConfirmed = values.filter(({ confirmed }) => confirmed === false);
+            const valuesToBeConfirmed = this.getSlotIdsToConfirm();
             return valuesToBeConfirmed.length === 0;
         }
         return true;
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        const valueIds = this.state.value!.filter(({ confirmed }) => confirmed === false).map(({ id }) => id);
+        const valueIds = this.getSlotIdsToConfirm();
         if (this.state.lastInitiative === undefined) {
             valueIds.splice(1);
         }
@@ -1066,7 +1058,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: valueIds,
-                renderedValue: ListFormatting.format(this.props.valueRenderer(valueIds, input), 'and'),
+                renderedValue: this.evaluateRenderedValue(valueIds, input),
             }),
         );
     }
@@ -1098,10 +1090,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
             resultBuilder.addAct(
                 new InvalidValueAct<string>(this, {
                     value: validationResult.invalidValue,
-                    renderedValue: ListFormatting.format(
-                        this.props.valueRenderer([validationResult.invalidValue], input),
-                        'and',
-                    ),
+                    renderedValue: this.evaluateRenderedValue(validationResult.invalidValue, input),
                     reasonCode: validationResult.reasonCode,
                     renderedReason: validationResult.renderedReason,
                 }),
@@ -1170,10 +1159,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 resultBuilder.addAct(
                     new RequestChangedValueByListAct(this, {
                         currentValue,
-                        renderedValue: ListFormatting.format(
-                            this.props.valueRenderer([currentValue], input),
-                            'and',
-                        ),
+                        renderedValue: this.evaluateRenderedValue(currentValue, input),
                         choicesFromActivePage,
                         allChoices,
                         renderedChoicesFromActivePage: this.props.valueRenderer(choicesFromActivePage, input),
@@ -1358,4 +1344,17 @@ export class MVSListControl extends Control implements InteractionModelContribut
         return this.props.interactionModel.targets;
     }
     // TODO: feature: use slot elicitation when requesting.
+
+    private evaluateRenderedValue(value: string | string[], input: ControlInput): string {
+        const renderedValue = Array.isArray(value) ? value : [value];
+        return ListFormatting.format(this.props.valueRenderer(renderedValue, input), 'and');
+    }
+
+    private getSlotIds(): string[] {
+        return this.state.value!.map(({ id }) => id);
+    }
+
+    private getSlotIdsToConfirm(): string[] {
+        return this.state.value!.filter(({ confirmed }) => confirmed === false).map(({ id }) => id);
+    }
 }

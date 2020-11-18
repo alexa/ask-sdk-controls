@@ -62,7 +62,7 @@ suite('MVSListControl e2e tests', () => {
     function contactSelectorControl(confirmationRequired: boolean = false): MVSListControl {
         return new MVSListControl({
             id: 'contact',
-            validation: validateProducts,
+            validation: validateContacts,
             listItemIDs: getContacts,
             slotType: 'ContactSelector',
             interactionModel: {
@@ -83,7 +83,7 @@ suite('MVSListControl e2e tests', () => {
         return ['Maya', 'Mary', 'Dave', 'Joe'];
     }
 
-    function validateProducts(state: MVSListControlState): true | MVSValidationResult {
+    function validateContacts(state: MVSListControlState): true | MVSValidationResult {
         for (const contact of state.value!) {
             if (getContacts().includes(contact.id) !== true) {
                 return {
