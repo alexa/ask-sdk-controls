@@ -24,6 +24,7 @@ import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import {
     MultiValueControlIntent,
+    MultiValueSlot,
     unpackMultiValueControlIntent,
 } from '../../intents/MultiValueControlIntent';
 import { OrdinalControlIntent } from '../../intents/OrdinalControlIntent';
@@ -664,37 +665,8 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private handleAddWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const slotValues = InputUtil.getMultiValueResolution(input);
-
-        slotValues.forEach((slotObject) => {
-            this.addValue({
-                id: slotObject.slotValue as string,
-                confirmed: false,
-                erMatch: slotObject.isEntityResolutionMatch as boolean,
-            });
-        });
-
-        if (this.isConfirmationRequired(input) !== false) {
-            const valueIds = this.getSlotIdsToConfirm();
-            this.state.lastInitiative = {
-                actName: ConfirmValueAct.name,
-                valueId: valueIds,
-            };
-            resultBuilder.addAct(
-                new ConfirmValueAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        } else {
-            const valueIds = this.getSlotIds();
-            resultBuilder.addAct(
-                new ValueAddedAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        }
-        return;
+        this.addSlotValues(slotValues);
+        this.evaluateAndAddActs(input, resultBuilder, $.Action.Add);
     }
 
     private isChangeWithValue(input: ControlInput): boolean {
@@ -717,49 +689,9 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
-        if (
-            this.state.lastInitiative !== undefined &&
-            this.state.lastInitiative.actName === InvalidValueAct.name
-        ) {
-            // delete the invalid value from state
-            const values: MVSListStateValue[] = this.state.value!;
-            const deleteValue = this.state.lastInitiative.valueId as string;
-            const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
-            values.splice(removeIndex, 1);
-            // Add the new values to state with confirmation set to false
-            slotValues.forEach((slotObject) => {
-                this.addValue({
-                    id: slotObject.slotValue as string,
-                    confirmed: false,
-                    erMatch: slotObject.isEntityResolutionMatch as boolean,
-                });
-            });
-        }
-
-        if (this.isConfirmationRequired(input) === true) {
-            this.state.lastInitiative = {
-                actName: ConfirmValueAct.name,
-                valueId: valueIds,
-            };
-            resultBuilder.addAct(
-                new ConfirmValueAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        } else {
-            const previousValue: string[] = [this.state.lastInitiative!.valueId as string];
-            resultBuilder.addAct(
-                new ValueChangedAct<string[]>(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                    previousValue,
-                    renderedPreviousValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        }
-        this.state.lastInitiative = undefined;
+        this.updateValueOnLastInitiative();
+        this.addSlotValues(slotValues);
+        this.evaluateAndAddActs(input, resultBuilder, $.Action.Change);
         return;
     }
 
@@ -830,34 +762,9 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
-        if (this.isConfirmationRequired(input) === true) {
-            this.state.lastInitiative = {
-                actName: ConfirmValueAct.name,
-                valueId: valueIds,
-            };
-            resultBuilder.addAct(
-                new ConfirmValueAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        } else {
-            this.clear();
-            slotValues.forEach((slotObject) => {
-                this.addValue({
-                    id: slotObject.slotValue as string,
-                    confirmed: false,
-                    erMatch: slotObject.isEntityResolutionMatch as boolean,
-                });
-            });
-            resultBuilder.addAct(
-                new ValueSetAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
-        }
+        this.clear();
+        this.addSlotValues(slotValues);
+        this.evaluateAndAddActs(input, resultBuilder, $.Action.Set);
     }
 
     private isConfirmationAffirmed(input: ControlInput): boolean {
@@ -936,30 +843,19 @@ export class MVSListControl extends Control implements InteractionModelContribut
 
     private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        const valueIds = slotValues.map(({ slotValue }) => slotValue as string);
-        if (
-            this.state.lastInitiative !== undefined &&
-            (this.state.lastInitiative.actName === InvalidValueAct.name ||
-                this.state.lastInitiative.actName === ConfirmValueAct.name)
-        ) {
-            // delete the changed value from state
-            const values: MVSListStateValue[] = this.state.value!;
-            const deleteValue = Array.isArray(this.state.lastInitiative.valueId)
-                ? this.state.lastInitiative.valueId[0]
-                : this.state.lastInitiative.valueId;
-            const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
-            values.splice(removeIndex, 1);
-        }
-        // Add the new values to state with confirmation set to false
-        slotValues.forEach((slotObject) => {
-            this.addValue({
-                id: slotObject.slotValue as string,
-                confirmed: false,
-                erMatch: slotObject.isEntityResolutionMatch as boolean,
-            });
-        });
+        this.updateValueOnLastInitiative();
+        this.addSlotValues(slotValues);
+        this.evaluateAndAddActs(input, resultBuilder, $.Action.Add);
+        return;
+    }
 
-        if (this.isConfirmationRequired(input) !== false) {
+    private evaluateAndAddActs(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ) {
+        if (this.isConfirmationRequired(input) === true) {
+            const valueIds = this.getSlotIdsToConfirm();
             this.state.lastInitiative = {
                 actName: ConfirmValueAct.name,
                 valueId: valueIds,
@@ -970,15 +866,75 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     renderedValue: this.evaluateRenderedValue(valueIds, input),
                 }),
             );
-        } else {
-            resultBuilder.addAct(
-                new ValueAddedAct(this, {
-                    value: valueIds,
-                    renderedValue: this.evaluateRenderedValue(valueIds, input),
-                }),
-            );
+            return;
         }
-        return;
+
+        const valueIds = this.getSlotIds();
+
+        switch (elicitationAction) {
+            case $.Action.Add:
+                resultBuilder.addAct(
+                    new ValueAddedAct(this, {
+                        value: valueIds,
+                        renderedValue: this.evaluateRenderedValue(valueIds, input),
+                    }),
+                );
+                this.state.lastInitiative = undefined;
+                return;
+            case $.Action.Change: {
+                const previousValue: string[] = [this.state.lastInitiative!.valueId as string];
+                resultBuilder.addAct(
+                    new ValueChangedAct(this, {
+                        value: valueIds,
+                        renderedValue: this.evaluateRenderedValue(valueIds, input),
+                        previousValue,
+                        renderedPreviousValue: this.evaluateRenderedValue(valueIds, input),
+                    }),
+                );
+                this.state.lastInitiative = undefined;
+                return;
+            }
+            case $.Action.Set:
+                resultBuilder.addAct(
+                    new ValueSetAct(this, {
+                        value: valueIds,
+                        renderedValue: this.evaluateRenderedValue(valueIds, input),
+                    }),
+                );
+                this.state.lastInitiative = undefined;
+                return;
+            default:
+                throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
+        }
+    }
+
+    private addSlotValues(values: MultiValueSlot[]): void {
+        // Add the new values to state with confirmation set to false
+        values.forEach((value) => {
+            this.addValue({
+                id: value.slotValue as string,
+                confirmed: false,
+                erMatch: value.isEntityResolutionMatch as boolean,
+            });
+        });
+    }
+
+    private updateValueOnLastInitiative() {
+        if (
+            this.state.lastInitiative !== undefined &&
+            (this.state.lastInitiative.actName === InvalidValueAct.name ||
+                this.state.lastInitiative.actName === ConfirmValueAct.name) // disaffirm feedback with values use-case
+        ) {
+            // delete the changed value from state
+            const values: MVSListStateValue[] = this.state.value!;
+            const deleteValueList = Array.isArray(this.state.lastInitiative.valueId)
+                ? this.state.lastInitiative.valueId
+                : [this.state.lastInitiative.valueId];
+            deleteValueList.forEach((deleteValue) => {
+                const removeIndex = values.map((value) => value.id).indexOf(deleteValue);
+                values.splice(removeIndex, 1);
+            });
+        }
     }
 
     private isClearValue(input: ControlInput): boolean {

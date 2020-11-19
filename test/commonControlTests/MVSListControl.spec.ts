@@ -251,7 +251,7 @@ suite('MVSListControl e2e tests', () => {
                         action: 'replace',
                     }),
                 ),
-                'A: OK, I changed it to Maya. Sorry, Jake is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
+                'A: OK, I changed it to Jake and Maya. Sorry, Jake is not a valid choice because Input name is not part of your contact list. What should I change it to? Some suggestions are Maya, Mary or Dave.',
                 'U: change to Mary and Dave',
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
@@ -259,7 +259,7 @@ suite('MVSListControl e2e tests', () => {
                         action: $.Action.Change,
                     }),
                 ),
-                'A: OK, I changed it to Mary and Dave.',
+                'A: OK, I changed it to Maya, Mary and Dave.',
             ]);
         });
 
@@ -277,18 +277,18 @@ suite('MVSListControl e2e tests', () => {
                 'U: Nope',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: Do you want to add Amazon?',
-                'U: No Mary and Joe',
+                'U: No Mary and Joe', // no with values are assumed to delete Invalid/Confirm Act values and replace them
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
                         ContactSelector: ['Mary', 'Joe'],
                         feedback: $.Feedback.Disaffirm,
                     }),
                 ),
-                'A: Do you want to add Mary and Joe?',
+                'A: Do you want to add Jake, Mary and Joe?',
                 'U: Nah',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: Do you want to add Jake?',
-                'U: Nah',
+                'U: Nope',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: Do you want to add Mary?',
                 'U: Yeah',
