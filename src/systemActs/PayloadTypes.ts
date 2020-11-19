@@ -57,6 +57,21 @@ export interface ValueRemovedPayload<T> {
 }
 
 /**
+ * Payload for ValueClearedAct
+ */
+export interface ValueClearedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
  * Payload for ValueChangedAct
  */
 export interface ValueChangedPayload<T> {
@@ -147,10 +162,10 @@ export interface RequestChangedValueByListPayload {
  * Payload for RequestRemovedValueByListAct
  */
 export interface RequestRemovedValueByListActPayload {
-    choicesFromActivePage: string[];
-    allChoices: string[];
+    availableChoicesFromActivePage: string[];
+    availableChoices: string[];
     renderedChoicesFromActivePage: string[];
-    renderedAllChoices: string[];
+    renderedAvailableChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }

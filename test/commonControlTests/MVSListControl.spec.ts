@@ -21,6 +21,7 @@ import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
+import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
 import { MultiValueControlIntent } from '../../src/intents/MultiValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
@@ -325,7 +326,7 @@ suite('MVSListControl e2e tests', () => {
                         action: $.Action.Remove,
                     }),
                 ),
-                'A: Sorry, Maya is not a valid choice because The value does not exist on state. What value do you want to remove? Some suggestions are Maya, Mary or Dave.',
+                'A: Sorry, Maya is not a valid choice because The value does not exist on state. What value do you want to remove? Some suggestions are Mary.',
                 'U: remove Mary',
                 TestInput.of(
                     MultiValueControlIntent.of('ContactSelector', {
@@ -342,6 +343,9 @@ suite('MVSListControl e2e tests', () => {
                     }),
                 ),
                 'A: OK, Joe and Dave.',
+                'U: clear it',
+                TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
+                'A: OK, removed all Joe and Dave. What is your selection? Some suggestions are Maya, Mary or Dave.',
             ]);
         });
     });

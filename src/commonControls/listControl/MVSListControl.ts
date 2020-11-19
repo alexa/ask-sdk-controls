@@ -21,7 +21,7 @@ import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
-import { GeneralControlIntent } from '../../intents/GeneralControlIntent';
+import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import {
     MultiValueControlIntent,
     unpackMultiValueControlIntent,
@@ -36,6 +36,7 @@ import {
     InvalidValueAct,
     ValueAddedAct,
     ValueChangedAct,
+    ValueClearedAct,
     ValueConfirmedAct,
     ValueDisconfirmedAct,
     ValueRemovedAct,
@@ -210,6 +211,11 @@ export interface MVSListControlActionProps {
      * Default ['builtin_add', 'builtin_select']
      */
     add?: string[];
+
+    /**
+     * Action slot value IDs that are associated with the "clear/empty value/s" capability.
+     */
+    clear?: string[];
 }
 
 /**
@@ -355,6 +361,7 @@ export class MVSListControlPromptProps {
         | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
     valueAdded?: StringOrList | ((act: ValueAddedAct<any>, input: ControlInput) => StringOrList);
     valueRemoved?: StringOrList | ((act: ValueRemovedAct<any>, input: ControlInput) => StringOrList);
+    valueCleared?: StringOrList | ((act: ValueClearedAct<any>, input: ControlInput) => StringOrList);
 }
 
 /**
@@ -495,6 +502,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     change: [$.Action.Change],
                     remove: [$.Action.Remove, $.Action.Delete, $.Action.Ignore],
                     add: [$.Action.Select, $.Action.Add],
+                    clear: [$.Action.Clear],
                 },
                 targets: [$.Target.Choice, $.Target.It],
                 slotValueConflictExtensions: {
@@ -519,6 +527,10 @@ export class MVSListControl extends Control implements InteractionModelContribut
                     i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD', { value: act.payload.renderedValue }),
                 valueRemoved: (act) =>
                     i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE', {
+                        value: act.payload.renderedValue,
+                    }),
+                valueCleared: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED', {
                         value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -559,9 +571,15 @@ export class MVSListControl extends Control implements InteractionModelContribut
                         value: act.payload.renderedValue,
                     }),
                 valueAdded: (act) =>
-                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD', { value: act.payload.renderedValue }),
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD', {
+                        value: act.payload.renderedValue,
+                    }),
                 valueRemoved: (act) =>
-                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE', {
+                    i18next.t('LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE', {
+                        value: act.payload.renderedValue,
+                    }),
+                valueCleared: (act) =>
+                    i18next.t('LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED', {
                         value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -589,7 +607,6 @@ export class MVSListControl extends Control implements InteractionModelContribut
             inputHandling: {
                 customHandlingFuncs: [],
             },
-            //valueRenderer: (value: string[], input) => value.join(', ').replace(/, ([^,]*)$/, ' and $1'),
             valueRenderer: (value, input) => value,
         };
 
@@ -606,7 +623,8 @@ export class MVSListControl extends Control implements InteractionModelContribut
             this.isSetWithValue(input) ||
             this.isConfirmationAffirmed(input) ||
             this.isConfirmationDisaffirmed(input) ||
-            this.isBareValue(input);
+            this.isBareValue(input) ||
+            this.isClearValue(input);
 
         _logIfBothTrue(customCanHandle, builtInCanHandle);
         return customCanHandle || builtInCanHandle;
@@ -963,6 +981,34 @@ export class MVSListControl extends Control implements InteractionModelContribut
         return;
     }
 
+    private isClearValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.clear));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            this.handleFunc = this.handleClearValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleClearValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const valueIds = this.getSlotIds();
+        this.clear();
+        resultBuilder.addAct(
+            new ValueClearedAct(this, {
+                value: valueIds,
+                renderedValue: this.evaluateRenderedValue(valueIds, input),
+            }),
+        );
+        return;
+    }
+
     private isConfirmationRequired(input: ControlInput) {
         if (typeof this.props.confirmationRequired === 'function') {
             return this.props.confirmationRequired(input);
@@ -1168,16 +1214,22 @@ export class MVSListControl extends Control implements InteractionModelContribut
                 );
                 return;
             }
-            case $.Action.Remove:
+            case $.Action.Remove: {
+                const availableChoices = this.getSlotIds();
+                const availableChoicesFromActivePage = this.getChoicesFromActivePage(availableChoices);
                 resultBuilder.addAct(
                     new RequestRemovedValueByListAct(this, {
-                        choicesFromActivePage,
-                        allChoices,
-                        renderedChoicesFromActivePage: this.props.valueRenderer(choicesFromActivePage, input),
-                        renderedAllChoices: this.props.valueRenderer(allChoices, input),
+                        availableChoicesFromActivePage,
+                        availableChoices,
+                        renderedChoicesFromActivePage: this.props.valueRenderer(
+                            availableChoicesFromActivePage,
+                            input,
+                        ),
+                        renderedAvailableChoices: this.props.valueRenderer(availableChoices, input),
                     }),
                 );
                 return;
+            }
             default:
                 throw new Error(`Unhandled. Unknown elicitationAction: ${elicitationAction}`);
         }
@@ -1284,6 +1336,11 @@ export class MVSListControl extends Control implements InteractionModelContribut
         } else if (act instanceof ValueAddedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueAdded, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueAdded, input));
+        } else if (act instanceof ValueClearedAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueCleared, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueCleared, input),
+            );
         } else if (act instanceof ValueRemovedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueRemoved, input));
             builder.addRepromptFragment(

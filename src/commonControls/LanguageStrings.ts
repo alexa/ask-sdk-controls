@@ -124,6 +124,7 @@ export const defaultI18nResources: Resource = {
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD: 'OK, added {{value}}.',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, removed all {{value}}.',
             LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE: 'Sorry, {{value}} is not a valid choice.',
             LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
                 'Sorry, {{value}} is not a valid choice because {{reason}}.',
@@ -137,10 +138,12 @@ export const defaultI18nResources: Resource = {
             LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
-            // Re
+            // RePrompts
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
+            LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, removed all {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE: 'Sorry, {{value}} is not a valid choice.',
             LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
                 'Sorry, {{value}} is not a valid choice because {{reason}}.',

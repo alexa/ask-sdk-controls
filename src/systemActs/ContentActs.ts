@@ -20,6 +20,7 @@ import {
     ProblematicInputValuePayload,
     ValueAddedPayload,
     ValueChangedPayload,
+    ValueClearedPayload,
     ValueRemovedPayload,
     ValueSetPayload,
 } from './PayloadTypes';
@@ -529,5 +530,18 @@ export class ValueRemovedAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(`OK, removed ${this.payload.value}.`);
+    }
+}
+
+export class ValueClearedAct<T> extends ContentAct {
+    public readonly payload: ValueClearedPayload<T>;
+
+    constructor(control: Control, payload: ValueRemovedPayload<T>) {
+        super(control);
+        this.payload = payload;
+    }
+
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        controlResponseBuilder.addPromptFragment(`OK, removed all ${this.payload.value}.`);
     }
 }

@@ -36,6 +36,7 @@ export namespace Strings {
         Delete = 'builtin_delete',
         Ignore = 'builtin_ignore',
         Replace = 'builtin_replace',
+        Clear = 'builtin_clear',
     }
 
     /**
