@@ -51,7 +51,7 @@ export interface IControlManager {
      */
     createControlTree(): IControl;
 
-    reestablishControlStates(rootControl: IControl, stateMap: {[key: string]: any}): void;
+    reestablishControlStates(rootControl: IControl, stateMap: { [key: string]: any }): void;
 
     /**
      * Builds the response.
