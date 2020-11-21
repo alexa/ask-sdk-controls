@@ -11,12 +11,12 @@
  * permissions and limitations under the License.
  */
 
+import _ from 'lodash';
 import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
 import { Logger } from '../logging/Logger';
 import { _extractStateFromControlTree } from '../runtime/ControlHandler';
-
 const log = new Logger('AskSdkControls:SerializationValidator');
 
 /**
@@ -39,9 +39,10 @@ export function validateSerializedState(
     controlManager.reestablishControlStates(rebuiltTopControl, deserializedState);
 
     // and then re-serialize to complete the round trip
-    const roundTrippedUISerialized = JSON.stringify(_extractStateFromControlTree(rebuiltTopControl), null, 2);
+    const roundTrippedState = _extractStateFromControlTree(rebuiltTopControl);
+    const roundTrippedUISerialized = JSON.stringify(roundTrippedState, null, 2);
 
-    if (serializedState !== roundTrippedUISerialized) {
+    if (!_.isEqual(deserializedState, roundTrippedState)) {
         log.info(
             'serializedState did not survive the simulated round trip (deserialization into controlTree and re-serialization).',
         );

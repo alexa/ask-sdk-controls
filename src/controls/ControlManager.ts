@@ -159,7 +159,7 @@ export abstract class ControlManager implements IControlManager {
      * - This approach keeps the props and state of controls separate and keeps
      *   the common cases as simple as possible.
      */
-    reestablishControlStates(rootControl: IControl, stateMap: {[key: string]: any}): void {
+    reestablishControlStates(rootControl: IControl, stateMap: { [key: string]: any }): void {
         rootControl.reestablishState(stateMap[rootControl.id], stateMap);
     }
 
