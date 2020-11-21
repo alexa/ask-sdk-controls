@@ -36,7 +36,7 @@ export function validateSerializedState(
     // perform deserialization
     const deserializedState = JSON.parse(serializedState);
     const rebuiltTopControl: IControl = controlManager.createControlTree();
-    controlManager.reestablishControlStates(rebuiltTopControl, input.handlerInput);
+    controlManager.reestablishControlStates(rebuiltTopControl, deserializedState);
 
     // and then re-serialize to complete the round trip
     const roundTrippedUISerialized = JSON.stringify(_extractStateFromControlTree(rebuiltTopControl), null, 2);

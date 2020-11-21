@@ -89,10 +89,10 @@ export class ControlHandler implements RequestHandler {
             retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
         this.additionalSessionContext.turnNumber += 1;
 
-        // build the control tree  (note this will be only the static part of
-        // the tree in dynamic-tree scenarios)
+        // rebuild the control tree
         this.rootControl = this.controlManager.createControlTree();
-        this.controlManager.reestablishControlStates(this.rootControl, handlerInput);
+        const stateMap = this.controlManager.loadControlStateMap(handlerInput);
+        this.controlManager.reestablishControlStates(this.rootControl, stateMap);
 
         // create the input object for use in the main processing.
         const controlsMap = ControlHandler.createControlMap(this.rootControl, {});
