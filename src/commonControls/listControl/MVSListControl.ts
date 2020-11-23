@@ -810,7 +810,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         const values = this.state.lastInitiative!.valueId;
         // If values to be confirmed are more than one. Confirm them individually.
         if (values.length === 1) {
-            const deleteValue = this.state.lastInitiative!.valueId as string;
+            const deleteValue = this.state.lastInitiative!.valueId;
             const removeIndex = this.state.value!.map((value) => value.id).indexOf(deleteValue[0]);
             this.state.value!.splice(removeIndex, 1);
         }
