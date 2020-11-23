@@ -618,7 +618,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
     async canHandle(input: ControlInput): Promise<boolean> {
         const customCanHandle = await evaluateCustomHandleFuncs(this, input);
         const builtInCanHandle: boolean =
-            this.isAddProductWithValue(input) ||
+            this.isAddWithValue(input) ||
             this.isChangeWithValue(input) ||
             this.isRemoveWithValue(input) ||
             this.isSetWithValue(input) ||
@@ -645,7 +645,7 @@ export class MVSListControl extends Control implements InteractionModelContribut
         }
     }
 
-    private isAddProductWithValue(input: ControlInput): boolean {
+    private isAddWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
