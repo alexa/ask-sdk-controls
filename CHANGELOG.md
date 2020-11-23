@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/alexa/ask-sdk-controls/compare/v0.3.0...v0.4.0) (2020-11-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* change to IControlManager.reestablishControlStates signature
+* minor changes to exported functions and names
+* validation function types altered.
+
+### Features
+
+* clean up package exports ([9fbc6da](https://github.com/alexa/ask-sdk-controls/commit/9fbc6dad10130c6dfe282573742d0589a397df88))
+
+
+### Bug Fixes
+
+* improve robustness of serializationValidator ([d9db314](https://github.com/alexa/ask-sdk-controls/commit/d9db314b7a8c036fbba3c9f55789e0f29ea4722b))
+* improves validations API ([1209f23](https://github.com/alexa/ask-sdk-controls/commit/1209f23048c68b7bf95c7ad058ad8322af001190))
+* no longer invoke controlManager.loadState/saveState in SerializationValidator ([03afb43](https://github.com/alexa/ask-sdk-controls/commit/03afb43b52f7e171719cc5c2489713096414a673))
+
+
+### Docs
+
+* improve the jsDocs regarding Control.isReady and Control.canTakeInitiative ([6216dcd](https://github.com/alexa/ask-sdk-controls/commit/6216dcda27fe720b82f8abfb4c9a45106b11ead0))
+
 ## [0.3.0](https://github.com/alexa/ask-sdk-controls/compare/v0.2.4...v0.3.0) (2020-10-21)
 
 
