@@ -12,7 +12,7 @@
  */
 
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
-import { LastInitiativeState } from '../commonControls/listControl/MVSListControl';
+import { LastInitiativeState } from '../commonControls/MultiValueListControl/MultiValueListControl';
 import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';

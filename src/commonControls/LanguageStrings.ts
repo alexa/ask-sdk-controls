@@ -174,6 +174,65 @@ export const defaultI18nResources: Resource = {
                 },
             },
 
+            // MultiValueListControl Runtime
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'OK, {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD: 'OK, added {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, removed all {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE:
+                'Sorry, {{value}} is not a valid choice.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
+                'Sorry, {{value}} is not a valid choice because {{reason}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_UNUSABLE_INPUT_VALUE:
+                "Sorry, I'm not sure how to do that.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE:
+                'What is your selection? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE:
+                'What should I change it to? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+            // RePrompts
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, removed all {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE:
+                'Sorry, {{value}} is not a valid choice.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
+                'Sorry, {{value}} is not a valid choice because {{reason}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_UNUSABLE_INPUT_VALUE:
+                "Sorry, I'm not sure how to do that.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE:
+                'What is your selection? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE:
+                'What should I change it to? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
+            // ListControl BuildTime
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_SLOT_VALUES_TARGET_CHOICE: {
+                id: $.Target.Choice,
+                name: {
+                    value: 'choice',
+                    synonyms: ['my choice', 'selection', 'my selection'],
+                },
+            },
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_SLOT_VALUES_ACTION_SELECT: {
+                id: $.Action.Select,
+                name: {
+                    value: 'select',
+                    synonyms: ['select', 'choose', 'take', 'pick'],
+                },
+            },
+
             // DateRangeControl Runtime
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET: 'Got it. The start date is {{value}}.',
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_CHANGED:

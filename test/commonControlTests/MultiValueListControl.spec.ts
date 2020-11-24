@@ -13,10 +13,10 @@
 
 import { suite, test } from 'mocha';
 import {
-    MVSListControl,
-    MVSListControlState,
-    MVSValidationResult,
-} from '../../src/commonControls/listControl/MVSListControl';
+    MultiValueListControl,
+    MultiValueListControlState,
+    MultiValueValidationResult,
+} from '../../src/commonControls/MultiValueListControl/MultiValueListControl';
 import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
@@ -29,10 +29,10 @@ import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport
 
 waitForDebugger();
 
-suite('MVSListControl e2e tests', () => {
+suite('MultiValueListControl e2e tests', () => {
     class CategorySuiteManager extends ControlManager {
         createControlTree(): Control {
-            const categoryControl = new MVSListControl({
+            const categoryControl = new MultiValueListControl({
                 id: 'apple',
                 validation: validateProducts,
                 listItemIDs: getProductList,
@@ -44,7 +44,7 @@ suite('MVSListControl e2e tests', () => {
                 return ['AirPods', 'iWatch', 'iPhone', 'iPad', 'MacBook'];
             }
 
-            function validateProducts(state: MVSListControlState): true | MVSValidationResult {
+            function validateProducts(state: MultiValueListControlState): true | MultiValueValidationResult {
                 for (const product of state.value!) {
                     if (getProductList().includes(product.id) !== true) {
                         return {
@@ -60,8 +60,8 @@ suite('MVSListControl e2e tests', () => {
         }
     }
 
-    function contactSelectorControl(confirmationRequired: boolean = false): MVSListControl {
-        return new MVSListControl({
+    function contactSelectorControl(confirmationRequired: boolean = false): MultiValueListControl {
+        return new MultiValueListControl({
             id: 'contact',
             validation: validateContacts,
             listItemIDs: getContacts,
@@ -84,7 +84,7 @@ suite('MVSListControl e2e tests', () => {
         return ['Maya', 'Mary', 'Dave', 'Joe'];
     }
 
-    function validateContacts(state: MVSListControlState): true | MVSValidationResult {
+    function validateContacts(state: MultiValueListControlState): true | MultiValueValidationResult {
         for (const contact of state.value!) {
             if (getContacts().includes(contact.id) !== true) {
                 return {
