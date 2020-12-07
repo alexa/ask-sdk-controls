@@ -13,7 +13,7 @@
 
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { NumberControl, NumberControlState } from '../../src/commonControls/NumberControl';
+import { NumberControl, NumberControlState } from '../../src/commonControls/numberControl/NumberControl';
 import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
@@ -59,6 +59,61 @@ suite('NumberControl e2e tests', () => {
                 (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState).value,
             ).eq(16);
         });
+
+        test('APL event, no confirmation, no validation required', async () => {
+            const requestHandler = new ControlHandler(new NumberControlManager());
+            await testE2E(requestHandler, [
+                'U: ',
+                TestInput.of(GeneralControlIntent.of({})),
+                'A: What number?',
+                'U: ',
+                TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 15]),
+                'A: Ok. Value set to 15.',
+            ]);
+            expect(
+                (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState).value,
+            ).eq(15);
+        });
+
+        test('Corrected value given via screen on confirmation request', async () => {
+            const requestHandler = new ControlHandler(new NumberControlManager());
+            await testE2E(requestHandler, [
+                'U: ',
+                TestInput.of(GeneralControlIntent.of({})),
+                'A: What number?',
+                'U: Sixteen',
+                TestInput.of(
+                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                ),
+                'A: Was that 16?',
+                'U: ',
+                TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 60]),
+                'A: Ok. Value set to 60.',
+            ]);
+            expect(
+                (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState).value,
+            ).eq(60);
+        });
+
+        test('Confirm value via screen on confirmation request', async () => {
+            const requestHandler = new ControlHandler(new NumberControlManager());
+            await testE2E(requestHandler, [
+                'U: ',
+                TestInput.of(GeneralControlIntent.of({})),
+                'A: What number?',
+                'U: Sixteen',
+                TestInput.of(
+                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                ),
+                'A: Was that 16?',
+                'U: ',
+                TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 16]),
+                'A: Ok. Value set to 16.',
+            ]);
+            expect(
+                (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState).value,
+            ).eq(16);
+        });
     });
 
     suite(
@@ -93,6 +148,46 @@ suite('NumberControl e2e tests', () => {
                     ),
                     "A: Sorry but that's not a valid choice because the value must be even. What number?",
                     'U: Sixteen.',
+                    TestInput.of(
+                        SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                    ),
+                    'A: Ok. Value set to 16.',
+                ]);
+                expect(
+                    (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState)
+                        .value,
+                ).eq(16);
+            });
+
+            test('first number via screen not valid, second number via screen valid', async () => {
+                const requestHandler = new ControlHandler(new NumberControlManager());
+                await testE2E(requestHandler, [
+                    'U: ',
+                    TestInput.of(GeneralControlIntent.of({})),
+                    'A: What number?',
+                    'U: ',
+                    TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 15]),
+                    "A: Sorry but that's not a valid choice because the value must be even. What number?",
+                    'U: ',
+                    TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 16]),
+                    'A: Ok. Value set to 16.',
+                ]);
+                expect(
+                    (requestHandler.getSerializableControlStates()[TEST_CONTROL_ID] as NumberControlState)
+                        .value,
+                ).eq(16);
+            });
+
+            test('first number via screen not valid, second number via voice valid', async () => {
+                const requestHandler = new ControlHandler(new NumberControlManager());
+                await testE2E(requestHandler, [
+                    'U: ',
+                    TestInput.of(GeneralControlIntent.of({})),
+                    'A: What number?',
+                    'U: ',
+                    TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 15]),
+                    "A: Sorry but that's not a valid choice because the value must be even. What number?",
+                    'U: 16',
                     TestInput.of(
                         SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
                     ),

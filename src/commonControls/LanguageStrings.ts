@@ -79,6 +79,8 @@ export const defaultI18nResources: Resource = {
                 'Sorry you disagreed but with the same number.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_CONFIRMATION:
                 'Sorry the previous value is {{previousValue}}, but you confirmed to a different number.',
+            NUMBER_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Enter a number...',
+            NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE: "Sorry but '{{value}}' is not a valid choice.",
 
             // ValueControl Runtime
             VALUE_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'OK, {{value}}.',

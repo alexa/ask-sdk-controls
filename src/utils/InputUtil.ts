@@ -111,11 +111,26 @@ export namespace InputUtil {
      * Test if the input is an Alexa.Presentation.APL.UserEvent with a first
      * argument equal to the provided control ID.
      * @param input - Input
+     * @param controlId - the expected control ID
      */
     export function isAPLUserEventWithMatchingControlId(input: ControlInput, controlId: string): boolean {
         return (
             isAPLUserEventWithArgs(input) &&
             (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![0] === controlId
+        );
+    }
+
+    /**
+     * Test if the input is an Alexa.Presentation.APL.UserEvent with a first
+     * argument equal to the provided control ID and total argument length equal to the provided length.
+     * @param input - Input
+     * @param controlId - the expected control ID
+     * @param argLength - the expected argument length
+     */
+    export function isAPLUserEventWithMatchingControlIdAndArgLength(input: ControlInput, controlId: string, argLength: number): boolean {
+        return (
+            isAPLUserEventWithMatchingControlId(input, controlId) &&
+            (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments!.length === argLength
         );
     }
 
