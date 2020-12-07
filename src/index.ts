@@ -66,7 +66,7 @@ export {
     NumberControlPromptsProps,
     NumberControlProps,
     NumberControlState,
-} from './commonControls/NumberControl';
+} from './commonControls/numberControl/NumberControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControlBuiltIns';
 export * from './commonControls/questionnaireControl/QuestionnaireControlStructs';
