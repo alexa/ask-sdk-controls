@@ -18,6 +18,20 @@ import { Logger } from '../logging/Logger';
 
 const log = new Logger('AskSdkControls:ControlUtils');
 
+/*
+ * //    TODO: tighten up the contract.. what props are supported, precisely.
+ *       probably also good to factor into gatherFuncs() and evaluateFuncs()
+ */
+
+/**
+ * Evaluate the custom handlers
+ *
+ * Custom handlers can be defined in two places:
+ *  1. `props.inputHandling.customHandlingFuncs`, and
+ *  2. `props.apl.customHandlingFuncs`
+ * @param control - control
+ * @param input - input
+ */
 export async function evaluateCustomHandleFuncs(control: IControl, input: ControlInput) {
     const customHandleFuncs: Array<{
         canHandle: (input: ControlInput) => boolean | Promise<boolean>;

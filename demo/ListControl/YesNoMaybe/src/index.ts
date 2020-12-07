@@ -4,7 +4,7 @@ import { ListControl } from '../../../../src/commonControls/listControl/ListCont
 import { Control } from '../../../../src/controls/Control';
 import { ControlManager } from '../../../../src/controls/ControlManager';
 import { ControlHandler } from '../../../../src/runtime/ControlHandler';
-import { IntentNameToValueMapper } from '../../../../src/utils/IntentUtils';
+import { defaultIntentToValueMapper  } from '../../../../src/utils/IntentUtils';
 import { DemoRootControl } from '../../../Common/src/DemoRootControl';
 import { filteredYesNoMaybeSlotType, yesNoMaybeSlotType } from './interactionModelTypes';
 
@@ -29,7 +29,7 @@ export namespace ListDemo1 {
                         targets: [Strings.Target.It, Strings.Target.Choice],
                         slotValueConflictExtensions: {
                             filteredSlotType: filteredYesNoMaybeSlotType.name!,
-                            intentToValueMapper: (intent) => IntentNameToValueMapper(intent, ['yes', 'no']),
+                            intentToValueMapper: (intent) => defaultIntentToValueMapper(intent),
                         },
                     },
                     prompts: {

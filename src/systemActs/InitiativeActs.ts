@@ -58,15 +58,31 @@ export abstract class InitiativeAct extends SystemAct {
 }
 
 /**
+ * The APL document is providing the initiative by offering input widgets.
+ *
+ * Use this act if, and only if,
+ * 1. a control received touch input
+ * 2. the APL document has input widgets and the user clearly knows they should press something
+ * 3. it is desirable to avoid disrupting the user with voice while they interact with the
+ *    screen.
+ */
+export class ActiveAPLInitiativeAct extends InitiativeAct {
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {}
+}
+
+/**
  * Asks the user to provide a value.
  *
- * Default rendering (en-US): "What value for (renderedTarget)?"
+ * Default rendering (en-US): "What value for (renderedTarget)?" for both prompt & reprompt
  *
  * Usage:
  *  * If the system already has a value from the user it may be preferable to issue a `RequestChangedValueAct`
  *    which is more specific to that case.
  *  * Typically issued when a Control gains the initiative for the first time and requests a value for the first time.
  */
+//TODO:i18n /or/ remove default render function.  The framework acts are not really
+//expected to be used this way.  Rather, we expect the Control.render() methods to do the
+//rendering.  Offering default rendering for the act on its own seems like over-engineering.
 export class RequestValueAct extends InitiativeAct {
     payload: RequestValuePayload;
 
@@ -89,10 +105,13 @@ export class RequestValueAct extends InitiativeAct {
 /**
  * Asks the user to provide a new/updated value.
  *
- * Default rendering (en-US): "What is the new value for (renderedTarget)?"
+ * Default rendering (en-US): "What is the new value for (renderedTarget)?" for both
+ * prompt & reprompt
  *
  * Usage:
  *  * Typically issued in response to the user saying they want to change a value, e.g. "U: Please change the event date."
+ *
+ * TODO: i18n
  */
 export class RequestChangedValueAct extends InitiativeAct {
     payload: RequestChangedValuePayload;
@@ -104,6 +123,9 @@ export class RequestChangedValueAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
             controlResponseBuilder.addPromptFragment(
+                `What is the new value for ${this.payload.renderedTarget}.`,
+            );
+            controlResponseBuilder.addRepromptFragment(
                 `What is the new value for ${this.payload.renderedTarget}.`,
             );
         } else {
@@ -118,13 +140,15 @@ export class RequestChangedValueAct extends InitiativeAct {
 /**
  * Asks the user to provide a value by speaking and showing items in the form of a list.
  *
- * Default rendering (en-US): "What value for (renderedTarget)? Choices include (renderedChoices)."
+ * Default rendering (en-US): "What value for (renderedTarget)? Choices include
+ * (renderedChoices)." for both prompt & reprompt
  *
  * Usage:
  *  * Typically issued when a Control gains the initiative for the first time and requests a value for the first time.
  *  * If the system already has a value from the user it may be preferable to issue a `RequestChangedValueAct`
  *    which is more specific to that case.
  */
+//TODO:i18n
 export class RequestValueByListAct extends InitiativeAct {
     payload: RequestValueByListPayload;
 
@@ -135,6 +159,9 @@ export class RequestValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
             controlResponseBuilder.addPromptFragment(
+                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+            );
+            controlResponseBuilder.addRepromptFragment(
                 `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
             );
         } else {
@@ -149,13 +176,15 @@ export class RequestValueByListAct extends InitiativeAct {
 /**
  * Asks the user to provide a new/updated value by speaking and showing items in the form of a list.
  *
- * Default rendering (en-US): "What is the new value for (renderedTarget)? Choices include (renderedChoices)."
+ * Default rendering (en-US): "What is the new value for (renderedTarget)? Choices include
+ * (renderedChoices)." for both prompt & reprompt
  *
  * Usage:
  *  * Typically issued when a Control gains the initiative for the first time and requests a value for the first time.
  *  * If the system already has a value from the user it may be preferable to issue a `RequestChangedValueAct`
  *    which is more specific to that case.
  */
+//TODO:i18n
 export class RequestChangedValueByListAct extends InitiativeAct {
     payload: RequestChangedValueByListPayload;
 
@@ -166,6 +195,11 @@ export class RequestChangedValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
             controlResponseBuilder.addPromptFragment(
+                `What is the new value for ${
+                    this.payload.renderedTarget
+                }? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`,
+            );
+            controlResponseBuilder.addRepromptFragment(
                 `What is the new value for ${
                     this.payload.renderedTarget
                 }? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`,
@@ -182,10 +216,9 @@ export class RequestChangedValueByListAct extends InitiativeAct {
 /**
  * An initiative act that asks the user if a value is correct.
  *
- * Defaults:
- *  * The repromptFragment defaults to be identical to promptFragment.
- *
+ * Default rendering (en-US): "Was that [value]?" for both prompt & reprompt
  */
+//TODO:i18n
 export class ConfirmValueAct<T> extends InitiativeAct {
     payload: ValueSetPayload<T>;
 
@@ -195,14 +228,14 @@ export class ConfirmValueAct<T> extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(`Was that ${this.payload.value}?`);
+        controlResponseBuilder.addPromptFragment(`Was that ${this.payload.value}?`);
     }
 }
 
 /**
  * An initiative act that defines literal prompt and reprompt fragments.
  *
- * Defaults:
- *  * The repromptFragment defaults to be identical to promptFragment.
+ * Default rendering: "[this.payload.promptFragment]?" for both prompt & reprompt
  *
  * Usage:
  *  * Use LiteralInitiativeAct only in simple situations where it would be annoying
@@ -229,11 +262,9 @@ export class LiteralInitiativeAct extends InitiativeAct {
 /**
  * An initiative act that suggests a specific value with a asks yes/no question.
  *
- * Defaults:
- *  * The repromptFragment defaults to be identical to promptFragment.
- *
- *
+ * Default (en-US): "Did you perhaps mean [this.payload.value]?" for both prompt and reprompt
  */
+//TODO:i18n
 export class SuggestValueAct<T> extends InitiativeAct {
     payload: ValueSetPayload<T>;
 
@@ -244,5 +275,6 @@ export class SuggestValueAct<T> extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         // TODO: bug: change the message to i18n
         controlResponseBuilder.addPromptFragment(`Did you perhaps mean ${this.payload.value}?`);
+        controlResponseBuilder.addRepromptFragment(`Did you perhaps mean ${this.payload.value}?`);
     }
 }

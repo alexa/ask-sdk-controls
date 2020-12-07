@@ -12,7 +12,7 @@
  */
 
 import { HandlerInput, RequestHandler, UserAgentManager } from 'ask-sdk-core';
-import { Response } from 'ask-sdk-model';
+import fs from 'fs';
 import _ from 'lodash';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
@@ -196,6 +196,15 @@ export class ControlHandler implements RequestHandler {
             if (this.validateStateRoundtrip) {
                 validateSerializedState(stateToSaveJson, this.controlManager, this.controlInput);
             }
+
+            //write out response for debugging
+            if (process.env.ASK_SDK_CONTROLS_LOG_RESPONSE_FILEPATH !== undefined) {
+                fs.writeFileSync(
+                    process.env.ASK_SDK_CONTROLS_LOG_RESPONSE_FILEPATH,
+                    JSON.stringify(response, null, 2),
+                );
+            }
+
             return response;
         } catch (error) {
             if (this.controlManager.handleInternalError) {

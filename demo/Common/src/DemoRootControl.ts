@@ -10,7 +10,9 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import { IntentRequest, interfaces } from 'ask-sdk-model';
 import {
+    AmazonIntent,
     ContainerControl,
     ContainerControlProps,
     ContentAct,
@@ -18,6 +20,7 @@ import {
     ControlResponseBuilder,
     ControlResultBuilder,
     InputUtil,
+    LiteralContentAct,
 } from '../../../src';
 
 /**
@@ -56,7 +59,12 @@ export class DemoRootControl extends ContainerControl {
         }
 
         // otherwise delegate to children
-        return this.canHandleByChild(input);
+        if (await this.canHandleByChild(input)) {
+            return true;
+        }
+
+        this.handleFunc = this.handleFallbackEtc;
+        return true;
     }
 
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
@@ -73,5 +81,25 @@ export class DemoRootControl extends ContainerControl {
 
     async handleSessionEnded(input: ControlInput, resultBuilder: ControlResultBuilder) {
         //nothing.
+    }
+
+    async handleFallbackEtc(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        let requestDescription;
+        if (InputUtil.isIntent(input)) {
+            requestDescription = (input.request as IntentRequest).intent.name;
+        } else if (input.request.type === 'Alexa.Presentation.APL.UserEvent') {
+            requestDescription = '';
+            const event = input.request as interfaces.alexa.presentation.apl.UserEvent;
+            const args = (event.arguments ?? []).join(', ');
+            requestDescription = `APL UserEvent with params ${args}`;
+        } else {
+            requestDescription = 'Input of unknown type';
+        }
+
+        resultBuilder.addAct(
+            new LiteralContentAct(this, {
+                promptFragment: `${requestDescription} was not handled by any control.`,
+            }),
+        );
     }
 }

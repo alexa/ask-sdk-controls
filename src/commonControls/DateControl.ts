@@ -26,7 +26,7 @@ import {
     unpackSingleValueControlIntent,
 } from '../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData, SharedSlotType } from '../interactionModelGeneration/ModelTypes';
+import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import {
@@ -161,7 +161,7 @@ export interface DateControlInteractionModelProps {
      * Default: ['builtin_date', 'builtin_it']
      *
      * Usage:
-     * - If this prop is defined, it replaces the default; it is not additive
+     * - If this prop is defined, it replaces the default; it is not additive to
      *   the defaults.  To add an additional target to the defaults, copy the
      *   defaults and amend.
      * - A control can be associated with many target-slot-values, eg ['date',
@@ -339,8 +339,11 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private rawProps: DateControlProps;
     private props: DeepRequired<DateControlProps>;
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
-    private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
+    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    private initiativeFunc?: (
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) => void | Promise<void>;
 
     constructor(props: DateControlProps) {
         super(props.id);
@@ -456,10 +459,13 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleSetWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
         return;
     }
 
@@ -506,10 +512,13 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleChangeWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
         return;
     }
 
@@ -544,7 +553,7 @@ export class DateControl extends Control implements InteractionModelContributor 
      * If we aren't asking a question it is assumed the user meant 'set value'.
      * @param input - Input
      */
-    private isBareValue(input: ControlInput): any {
+    private isBareValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
             const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
@@ -561,14 +570,14 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
         return;
     }
 
-    private isConfirmationAffirmed(input: ControlInput): any {
+    private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
@@ -590,7 +599,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         );
     }
 
-    private isConfirmationDisaffirmed(input: ControlInput): any {
+    private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
             okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
@@ -622,30 +631,30 @@ export class DateControl extends Control implements InteractionModelContributor 
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
-        this.handleFunc(input, resultBuilder);
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
-            this.takeInitiative(input, resultBuilder);
+        await this.handleFunc(input, resultBuilder);
+        if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
+            await this.takeInitiative(input, resultBuilder);
         }
     }
 
     // tsDoc - see Control
-    canTakeInitiative(input: ControlInput): boolean {
+    async canTakeInitiative(input: ControlInput): Promise<boolean> {
         return (
             this.wantsToConfirmValue(input) ||
-            this.wantsToFixInvalidValue(input) ||
+            (await this.wantsToFixInvalidValue(input)) ||
             this.wantsToElicitValue(input)
         );
     }
 
     // tsDoc - see Control
-    takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.initiativeFunc === undefined) {
             const errorMsg =
                 'DateControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
-        this.initiativeFunc(input, resultBuilder);
+        await this.initiativeFunc(input, resultBuilder);
         return;
     }
 
@@ -685,13 +694,13 @@ export class DateControl extends Control implements InteractionModelContributor 
         }
     }
 
-    validateAndAddActs(
+    async validateAndAddActs(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
-    ): void {
+    ): Promise<void> {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationFailure = this.validate(input);
+        const validationResult: true | ValidationFailure = await this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -754,23 +763,23 @@ export class DateControl extends Control implements InteractionModelContributor 
         );
     }
 
-    private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true) {
+    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
+        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
         return false;
     }
 
-    private fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
     }
 
-    private validate(input: ControlInput): true | ValidationFailure {
+    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
         const listOfValidationFunc: Array<StateValidationFunction<DateControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `DateControl.validate(): validation failed. Reason: ${JSON.stringify(
@@ -860,17 +869,10 @@ export class DateControl extends Control implements InteractionModelContributor 
         generator.addControlIntent(new SingleValueControlIntent(AmazonBuiltInSlotType.DATE), imData);
         generator.addYesAndNoIntents();
 
-        if (this.props.interactionModel.targets.includes('date')) {
-            generator.addValuesToSlotType(
-                SharedSlotType.TARGET,
-                i18next.t('DATE_CONTROL_DEFAULT_SLOT_VALUES_TARGET_DATE', { returnObjects: true }),
-            );
+        for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
+            generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
         }
-    }
-
-    // tsDoc - see InteractionModelContributor
-    getTargetIds(): string[] {
-        return this.props.interactionModel.targets;
+        generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
     }
 }
 

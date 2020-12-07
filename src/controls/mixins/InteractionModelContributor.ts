@@ -19,17 +19,6 @@ import { ModelData } from '../../interactionModelGeneration/ModelTypes';
  */
 export interface InteractionModelContributor {
     /**
-     * A list of Slot Value IDs for the "Target" slot type.
-     *
-     * Framework behavior:
-     * - The Interaction Model generator will check that the slot value IDs
-     *   exist in the Target Type and add them if missing. The added
-     *   slot value definition will not have any synonyms defined - these must
-     *   be added manually.
-     */
-    getTargetIds(): string[];
-
-    /**
      * Updates the interaction model.
      *
      * Usage:
@@ -54,5 +43,5 @@ export interface InteractionModelContributor {
  * interface.
  */
 export function implementsInteractionModelContributor(arg: any): arg is InteractionModelContributor {
-    return typeof arg.getTargetIds === 'function' && typeof arg.updateInteractionModel === 'function';
+    return typeof arg.updateInteractionModel === 'function';
 }

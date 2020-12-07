@@ -67,7 +67,14 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
      *
      * @param controlManager - Control manager
      */
+    //TODO: better name.
     buildCoreModelForControls(controlManager: ControlManager): ControlInteractionModelGenerator {
+        // add all the standard slotTypes and their values
+        const imData: ModelData = _generateModelData();
+        this.addOrMergeSlotTypes(...imData.slotTypes);
+
+        // add/verify the control-specific intents and ensure that all necessary
+        // slotValues are present.
         controlManager.buildInteractionModel(this);
         ensureDialogModel(this, this.intents);
         return this;
@@ -76,8 +83,6 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
     // tsDoc - see InteractionModelGenerator
     build(): InteractionModelData {
         const interactionModelData: InteractionModelData = super.build();
-        validateTargetSlots(interactionModelData, this.targetSlotIds);
-
         return interactionModelData;
     }
 
@@ -103,26 +108,39 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
         const actualIntent = generateActualIntent(controlIntent, controlIMData);
         this.addIntents(actualIntent);
 
-        actualIntent.slots?.map((slot) => {
-            presentSlotTypesSet.add(slot.name!);
-        });
-
-        // Loop all SharedSlotTypes
-        // if it present in the set, add slotTypes to IM
-        for (const slotTypeName of Object.values(SharedSlotType)) {
-            // The slotType get from ControlIntent is just a skeleton without values
-            // The complete definition should be found in controlIMData
-            if (presentSlotTypesSet.has(slotTypeName)) {
-                const slotTypes = controlIMData.slotTypes.find((slotType) => slotType.name === slotTypeName);
-                if (!slotTypes) {
-                    throw new Error(
-                        `SlotType ${slotTypeName} doesn't have values registered in the ModelData.`,
-                    );
-                }
-                this.addOrMergeSlotTypes(slotTypes);
-            }
-        }
         return this;
+    }
+
+    ensureSlotIsDefined(controlId: string, slotType: string) {
+        if (!this.isSlotDefined(slotType)) {
+            throw new Error(
+                `Control id=${controlId} requires slot type ${slotType} but it does not exist.  If it is a custom slot add it to the interaction model before calling imGen.buildCoreModelForControls()`,
+            );
+        }
+    }
+
+    ensureSlotIsNoneOrDefined(controlId: string, slotType: string) {
+        if (slotType === 'none') {
+            return;
+        }
+        this.ensureSlotIsDefined(controlId, slotType);
+    }
+
+    ensureSlotValueIDsAreDefined(controlId: string, slotType: string, slotValueIds: string[]) {
+        for (const slotValueId of slotValueIds) {
+            this.ensureSlotValueIdIsDefined(controlId, slotType, slotValueId);
+        }
+    }
+
+    ensureSlotValueIdIsDefined(controlId: string, slotType: string, slotValue: string) {
+        if (!this.isSlotDefined(slotType)) {
+            throw new Error(`Control id=${controlId} requires slot type ${slotType} but it does not exist.`);
+        }
+        if (!this.isSlotValueIsDefined(slotType, slotValue)) {
+            throw new Error(
+                `Control ${controlId} requires slot type ${slotType} to contain value ${slotValue} but it does not exist. If it is a custom value add it to the interaction model before calling imGen.buildCoreModelForControls()`,
+            );
+        }
     }
 }
 
@@ -175,11 +193,15 @@ function handleValueControlIntent(controlIntent: SingleValueControlIntent, contr
     const filteredSlotTypeReplacement: string = `{${filteredSlotType}}`;
     intent.samples = intent.samples || [];
     samples.map((sample) => {
-        intent.samples!.push(
-            sample
-                .replace('[[valueSlotType]]', slotTypeReplacement)
-                .replace('[[filteredValueSlotType]]', filteredSlotTypeReplacement),
-        );
+        if (filteredSlotType === 'none' && sample.includes('[[filteredValueSlotType]]')) {
+            return;
+        } else {
+            intent.samples!.push(
+                sample
+                    .replace('[[valueSlotType]]', slotTypeReplacement)
+                    .replace('[[filteredValueSlotType]]', filteredSlotTypeReplacement),
+            );
+        }
     });
     return intent;
 }

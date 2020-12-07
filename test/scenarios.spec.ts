@@ -258,8 +258,12 @@ suite('== Custom Handler function scenarios ==', () => {
                 },
                 inputHandling: {
                     customHandlingFuncs: [
-                        { canHandle: isSetDateEvent, handle: handleSetDateEvent },
-                        { canHandle: isSetValue, handle: handleSetValue },
+                        {
+                            name: 'custom::setDateEvent',
+                            canHandle: isSetDateEvent,
+                            handle: handleSetDateEvent,
+                        },
+                        { name: 'custom::setValue', canHandle: isSetValue, handle: handleSetValue },
                     ],
                 },
             });
@@ -369,23 +373,23 @@ suite('== Custom APL Props ==', () => {
                 return InputUtil.isAPLUserEventWithMatchingSourceId(input, 'HouseTextButton');
             }
 
-            function handleButtonSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
+            async function handleButtonSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
                 const houseId = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![0];
                 houseControl.setValue(houseId, true);
-                houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
+                await houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
             }
 
             function isHouseSelected(input: ControlInput) {
                 return InputUtil.isIntent(input, 'HouseSelectionIntent');
             }
 
-            function handleHouseSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
+            async function handleHouseSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
                 if (getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']) {
                     const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
                     if (intent.slotResolutions.value !== undefined) {
                         const listSelectedValue = intent.slotResolutions.value;
                         houseControl.setValue(listSelectedValue.slotValue);
-                        houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
+                        await houseControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
                     }
                 }
             }

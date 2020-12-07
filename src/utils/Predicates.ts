@@ -44,7 +44,7 @@ export class GuardFailed extends Error {
  * Purpose:
  * * This helps to write predicate functions as a linear chain of individual tests.
  */
-export function okIf(predicate: boolean) {
+export function okIf(predicate: boolean): asserts predicate {
     if (!predicate) {
         throw new GuardFailed('okIf failed. predicate===false.');
     }
@@ -77,4 +77,12 @@ export function falseIfGuardFailed(err: Error): false {
         return false;
     }
     throw err; // otherwise rethrow
+}
+
+// different style than falseIfGuardFailed
+// better comprehension, but results in 2-lines of boilerplate rather than one.
+export function verifyErrorIsGuardFailure(err: Error): void {
+    if (!(err instanceof GuardFailed)) {
+        throw err;
+    }
 }

@@ -16,10 +16,14 @@ import { SystemAct } from '../systemActs/SystemAct';
 import { ControlState } from './Control';
 
 export interface ControlAPL<TAct extends SystemAct, TState extends ControlState> {
+    //TODO: act isn't relevant.  control would be more useful. as would input.
+    //      Change to  (control, input) => doc
     document?: { [key: string]: any } | ((act: TAct, state: TState) => { [key: string]: any });
 
+    //TODO: as above
     dataSource?: { [key: string]: any } | ((act: TAct, state: TState) => { [key: string]: any });
 
+    //TODO: this is getting too complex.  need a more obvious/organized approach to input mapping.
     customHandlingFuncs?: Array<{
         canHandle: (input: ControlInput) => boolean | Promise<boolean>;
         handle: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;

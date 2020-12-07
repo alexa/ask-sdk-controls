@@ -238,7 +238,7 @@ export class SingleValueControlIntent extends BaseControlIntent {
             },
         ];
 
-        if (this.filteredValueSlotType !== this.valueSlotType) {
+        if (this.filteredValueSlotType !== this.valueSlotType && this.filteredValueSlotType !== 'none') {
             slots.push({
                 name: `${this.filteredValueSlotType}`,
                 type: `${this.filteredValueSlotType}`,

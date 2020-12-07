@@ -173,7 +173,7 @@ export interface NumberControlInteractionModelProps {
      * Default: ['builtin_it']
      *
      * Usage:
-     * - If this prop is defined, it replaces the default; it is not additive
+     * - If this prop is defined, it replaces the default; it is not additive to
      *   the defaults.  To add an additional target to the defaults, copy the
      *   defaults and amend.
      * - A control can be associated with many target-slot-values, eg ['date',
@@ -289,8 +289,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private rawProps: NumberControlProps;
     private props: DeepRequired<NumberControlProps>;
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
-    private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
+    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    private initiativeFunc?: (
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) => void | Promise<void>;
 
     constructor(props: NumberControlProps) {
         super(props.id);
@@ -429,31 +432,31 @@ export class NumberControl extends Control implements InteractionModelContributo
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
-        this.handleFunc(input, resultBuilder);
+        await this.handleFunc(input, resultBuilder);
 
-        if (!resultBuilder.hasInitiativeAct() && this.canTakeInitiative(input)) {
+        if (!resultBuilder.hasInitiativeAct() && (await this.canTakeInitiative(input))) {
             return this.takeInitiative(input, resultBuilder);
         }
     }
 
     // tsDoc - see Control
-    canTakeInitiative(input: ControlInput): boolean {
+    async canTakeInitiative(input: ControlInput): Promise<boolean> {
         return (
             this.wantsToElicitValue(input) ||
-            this.wantsToFixInvalidValue(input) ||
+            (await this.wantsToFixInvalidValue(input)) ||
             this.wantsToConfirmValue(input)
         );
     }
 
     // tsDoc - see Control
-    takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         if (this.initiativeFunc === undefined) {
             const errorMsg =
                 'NumberControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
-        this.initiativeFunc(input, resultBuilder);
+        await this.initiativeFunc(input, resultBuilder);
     }
 
     // tsDoc - see Control
@@ -527,17 +530,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         generator.addControlIntent(new SingleValueControlIntent(AmazonBuiltInSlotType.NUMBER), imData);
         generator.addYesAndNoIntents();
 
-        if (this.props.interactionModel.targets.includes($.Target.Number)) {
-            generator.addValuesToSlotType(
-                SharedSlotType.TARGET,
-                i18next.t('NUMBER_CONTROL_DEFAULT_SLOT_VALUES_TARGET_NUMBER', { returnObjects: true }),
-            );
+        for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
+            generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
         }
-    }
-
-    // tsDoc - see InteractionModelContributor
-    getTargetIds(): string[] {
-        return this.props.interactionModel.targets;
+        generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
     }
 
     /**
@@ -601,13 +597,13 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
-    private handleLastQuestionEmptyAndValueExisting(
+    private async handleLastQuestionEmptyAndValueExisting(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
+    ): Promise<void> {
         const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
+        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
 
     private canHandleForExistingStateValue(input: ControlInput): boolean {
@@ -703,10 +699,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private handleFeedbackNoAndWithoutValueWhenConfirmingValue(
+    private async handleFeedbackNoAndWithoutValueWhenConfirmingValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
+    ): Promise<void> {
         this.state.activeInitiativeAct = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
@@ -715,7 +711,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                     this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
-        this.commonHandlerWhenValueRejected(input, resultBuilder);
+        await this.commonHandlerWhenValueRejected(input, resultBuilder);
     }
 
     private isFeedbackNoAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
@@ -741,10 +737,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private handleFeedbackNoAndValueNotChangedWhenConfirmingValue(
+    private async handleFeedbackNoAndValueNotChangedWhenConfirmingValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
+    ): Promise<void> {
         this.state.activeInitiativeAct = undefined;
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
@@ -754,7 +750,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 reasonCode: 'DisconfirmedWithSameValue',
             }),
         );
-        this.commonHandlerWhenValueRejected(input, resultBuilder);
+        await this.commonHandlerWhenValueRejected(input, resultBuilder);
     }
 
     private isFeedbackNoAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
@@ -781,13 +777,13 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private handleFeedbackNoAndValueChangedWhenConfirmingValue(
+    private async handleFeedbackNoAndValueChangedWhenConfirmingValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
+    ): Promise<void> {
         const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
+        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
 
     private isFeedbackYesAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
@@ -972,13 +968,13 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private handleFeedbackUndefinedAndValueChangedWhenConfirmingValue(
+    private async handleFeedbackUndefinedAndValueChangedWhenConfirmingValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
+    ): Promise<void> {
         const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
         this.setValue(valueStr);
-        this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
+        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
 
     private isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input: ControlInput): boolean {
@@ -1011,12 +1007,12 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
-    commonHandlerWhenValueChanged(
+    async commonHandlerWhenValueChanged(
         action: string,
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
-    ): void {
-        const validationResult = this.validateNumber(input);
+    ): Promise<void> {
+        const validationResult = await this.validateNumber(input);
         if (validationResult !== true) {
             this.state.rejectedValues.push(this.state.value!);
             resultBuilder.addAct(
@@ -1061,13 +1057,16 @@ export class NumberControl extends Control implements InteractionModelContributo
      * the following: U: No, {change} the value please A: What value do you want
      * to {change} to?
      */
-    private commonHandlerWhenValueRejected(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async commonHandlerWhenValueRejected(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         this.state.rejectedValues.push(this.state.value!);
         const ambiguousPartner = this.getAmbiguousPartner(this.state.value!);
         if (ambiguousPartner !== undefined && !this.state.rejectedValues.includes(ambiguousPartner)) {
             const previousValue = this.state.value;
             this.state.value = ambiguousPartner;
-            const validationResult = this.validateNumber(input);
+            const validationResult = await this.validateNumber(input);
             if (validationResult === true) {
                 // this is to confirm from users for the suggestedValue
                 this.state.activeInitiativeAct = 'ConfirmValueAct';
@@ -1101,11 +1100,11 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder.addAct(new RequestValueAct(this));
     }
 
-    private wantsToFixInvalidValue(input: ControlInput): boolean {
+    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
         if (!this.evaluateBooleanProp(this.props.required, input) || this.state.value === undefined) {
             return false;
         }
-        const validationResult: true | ValidationFailure = this.validateNumber(input);
+        const validationResult: true | ValidationFailure = await this.validateNumber(input);
         if (validationResult === true) {
             return false;
         }
@@ -1151,11 +1150,11 @@ export class NumberControl extends Control implements InteractionModelContributo
         );
     }
 
-    private validateNumber(input: ControlInput): true | ValidationFailure {
+    private async validateNumber(input: ControlInput): Promise<true | ValidationFailure> {
         const listOfValidationFunc: Array<StateValidationFunction<NumberControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: boolean | ValidationFailure = validationFunction(this.state, input);
+            const validationResult: boolean | ValidationFailure = await validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `NumberControl.validate(): validation failed. Reason: ${JSON.stringify(

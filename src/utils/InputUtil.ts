@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
+import { Intent, IntentRequest, interfaces, Request } from 'ask-sdk-model';
 import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';
@@ -138,6 +138,14 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the feedback is defined
+     * @param feedback - Feedback slot value ID
+     */
+    export function feedbackIsDefined(feedback: string | undefined): boolean {
+        return feedback !== undefined;
+    }
+
+    /**
      * Test if the feedback is undefined
      * @param feedback - Feedback slot value ID
      */
@@ -199,6 +207,14 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the feedback is defined.
+     * @param target - Target slot value ID
+     */
+    export function targetIsDefined(target: string | undefined): boolean {
+        return target !== undefined;
+    }
+
+    /**
      * Test if the feedback is undefined.
      * @param target - Target slot value ID
      */
@@ -229,8 +245,12 @@ export namespace InputUtil {
      * @param valueType - ValueType slot value ID
      * @param expectedValueType - ValueType slot value ID to match against
      */
-    export function valueTypeMatch(valueType: string | undefined, expectedValueType: string): boolean {
-        return valueType !== undefined && valueType === expectedValueType;
+    export function valueTypeMatch(
+        valueType: string | undefined,
+        expectedValueType: string | string[],
+    ): boolean {
+        const expectedTypes = Array.isArray(expectedValueType) ? expectedValueType : [expectedValueType];
+        return valueType !== undefined && expectedValueType.includes(valueType);
     }
 
     /**

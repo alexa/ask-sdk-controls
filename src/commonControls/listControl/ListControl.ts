@@ -10,7 +10,6 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
 import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
@@ -30,7 +29,7 @@ import {
     unpackSingleValueControlIntent,
 } from '../../intents/SingleValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
+import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
@@ -53,6 +52,7 @@ import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
+import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
 import { ListControlAPLPropsBuiltIns } from './ListControlAPL';
 
@@ -94,7 +94,7 @@ export interface ListControlProps extends ControlProps {
     /**
      * List of slot-value IDs that will be presented to the user as a list.
      */
-    listItemIDs: string[] | ((input: ControlInput) => string[]);
+    listItemIDs: string[] | ((input: ControlInput) => string[]); // TODO: change to choices? simpler & match up with act payloads.
 
     /**
      * The maximum number of items spoken per turn.
@@ -112,6 +112,8 @@ export interface ListControlProps extends ControlProps {
 
     /**
      * Whether the Control has to obtain explicit confirmation of the value.
+     *
+     * Default: false
      *
      * If `true`:
      *  - the Control will take initiative to explicitly confirm the value with a yes/no
@@ -194,7 +196,7 @@ export class ListControlInteractionModelProps {
      * Default: `['builtin_it']`
      *
      * Usage:
-     * - If this prop is defined, it replaces the default; it is not additive
+     * - If this prop is defined, it replaces the default; it is not additive to
      *   the defaults.  To add an additional target to the defaults, copy the
      *   defaults and amend.
      * - A control can be associated with many target-slot-values, eg ['date',
@@ -248,6 +250,8 @@ export class ListControlInteractionModelProps {
      */
     actions?: ListControlActionProps;
 
+    //TODO: move these into interactionModel props / interactionModel.advanced
+
     /***
      * Additional properties to resolve utterance conflicts caused by the
      * configured slot type.
@@ -272,14 +276,13 @@ export class ListControlInteractionModelProps {
          * - if the list is managing a SlotType `ExtendedBoolean` with values
          *   `yes | no | maybe`, create and register a filtered SlotType
          *   `ExtendedBooleanFiltered` that has only the `maybe` value.
-         * - during interaction model generation, the risky utterance shapes
-         *   will used `ExtendedBooleanFiltered` whereas non-risky utterance shapes
-         *   will use `ExtendedBoolean`.
          */
         filteredSlotType: string;
 
         /**
          * Function that maps an intent to a valueId for props.slotValue.
+         *
+         * Default: IntentUtils.defaultIntentToValueMapper
          *
          * Purpose:
          * * Some simple utterances intended for this control will be
@@ -419,8 +422,11 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private rawProps: ListControlProps;
     private props: DeepRequired<ListControlProps>;
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
-    private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
+    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    private initiativeFunc?: (
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) => void | Promise<void>;
 
     constructor(props: ListControlProps) {
         super(props.id);
@@ -459,7 +465,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 targets: [$.Target.Choice, $.Target.It],
                 slotValueConflictExtensions: {
                     filteredSlotType: props.slotType,
-                    intentToValueMapper: () => undefined,
+                    intentToValueMapper: defaultIntentToValueMapper,
                 },
             },
             prompts: {
@@ -568,7 +574,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
 
         await this.handleFunc(input, resultBuilder);
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
+        if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
     }
@@ -591,10 +597,13 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
+    private async handleSetWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
         return;
     }
 
@@ -626,7 +635,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType)); // TODO: GENERAL BUG: don't all handlers need to accept valueType == slotType | filteredSlotType.
             okIf(InputUtil.valueStrDefined(valueStr));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
@@ -637,10 +646,13 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleChangeWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
         return;
     }
 
@@ -688,10 +700,10 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
         return;
     }
 
@@ -705,6 +717,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 intent,
             );
             okIf(mappedValue !== undefined);
+            okIf(this.getChoicesList(input).includes(mappedValue));
             this.handleFunc = this.handleMappedBareValue;
             return true;
         } catch (e) {
@@ -712,13 +725,16 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
     }
 
-    private handleMappedBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleMappedBareValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const intent = (input.request as IntentRequest).intent;
         const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
             intent,
         );
         this.setValue(mappedValue!, true);
-        this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set); // default to set if user just provided value un-elicited.
+        await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set); // default to set if user just provided value un-elicited.
         return;
     }
 
@@ -883,10 +899,10 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     // tsDoc - see Control
-    canTakeInitiative(input: ControlInput): boolean {
+    async canTakeInitiative(input: ControlInput): Promise<boolean> {
         return (
             this.wantsToConfirmValue(input) ||
-            this.wantsToFixInvalidValue(input) ||
+            (await this.wantsToFixInvalidValue(input)) ||
             this.wantsToElicitValue(input)
         );
     }
@@ -899,7 +915,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
-        this.initiativeFunc(input, resultBuilder);
+        await this.initiativeFunc(input, resultBuilder);
         return;
     }
 
@@ -925,16 +941,16 @@ export class ListControl extends Control implements InteractionModelContributor 
         );
     }
 
-    private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true) {
+    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
+        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
         return false;
     }
 
-    private fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
     }
 
     private wantsToElicitValue(input: ControlInput): boolean {
@@ -949,12 +965,12 @@ export class ListControl extends Control implements InteractionModelContributor 
         this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
     }
 
-    validateAndAddActs(
+    async validateAndAddActs(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
-    ): void {
-        const validationResult: true | ValidationFailure = this.validate(input);
+    ): Promise<void> {
+        const validationResult: true | ValidationFailure = await this.validate(input);
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -995,11 +1011,12 @@ export class ListControl extends Control implements InteractionModelContributor 
         return;
     }
 
-    private validate(input: ControlInput): true | ValidationFailure {
+    //TODO: delete in favor of common evaluateValidationProp
+    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
         const listOfValidationFunc: Array<StateValidationFunction<ListControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `ListControl.validate(): validation failed. Reason: ${JSON.stringify(
@@ -1190,25 +1207,17 @@ export class ListControl extends Control implements InteractionModelContributor 
         generator.addControlIntent(new OrdinalControlIntent(), imData);
         generator.addYesAndNoIntents();
 
-        if (this.props.interactionModel.targets.includes($.Target.Choice)) {
-            generator.addValuesToSlotType(
-                SharedSlotType.TARGET,
-                i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_TARGET_CHOICE', { returnObjects: true }),
-            );
-        }
+        generator.ensureSlotIsDefined(this.id, this.props.slotType);
+        generator.ensureSlotIsDefined(
+            this.id,
+            this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
+        );
 
-        if (this.props.interactionModel.actions.set.includes($.Action.Select)) {
-            generator.addValuesToSlotType(
-                SharedSlotType.ACTION,
-                i18next.t('LIST_CONTROL_DEFAULT_SLOT_VALUES_ACTION_SELECT', { returnObjects: true }),
-            );
+        for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
+            generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
         }
+        generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
     }
 
-    // tsDoc - see InteractionModelContributor
-    getTargetIds() {
-        return this.props.interactionModel.targets;
-    }
-
-    // TODO: feature: use slot elicitation when requesting.
+    // TODO: feature: consider using slot elicitation when requesting.
 }
