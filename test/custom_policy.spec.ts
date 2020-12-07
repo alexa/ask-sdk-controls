@@ -28,7 +28,7 @@ import { RequestValueAct } from '../src/systemActs/InitiativeActs';
 import { SystemAct } from '../src/systemActs/SystemAct';
 import { ContainerControl } from '../src/controls/ContainerControl';
 import { ValueControl } from '../src/commonControls/ValueControl';
-import { NumberControl } from '../src/commonControls/NumberControl';
+import { NumberControl } from '../src/commonControls/numberControl/NumberControl';
 
 /**
  * Demonstrate standard ControlState object but with different Controls to handle them

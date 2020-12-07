@@ -66,7 +66,7 @@ export {
     NumberControlPromptsProps,
     NumberControlProps,
     NumberControlState,
-} from './commonControls/NumberControl';
+} from './commonControls/numberControl/NumberControl';
 export {
     ValueControl,
     ValueControlActionProps,

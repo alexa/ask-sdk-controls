@@ -87,6 +87,7 @@ export const defaultI18nResources: Resource = {
                 'Sorry you disagreed but with the same number.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_CONFIRMATION:
                 'Sorry the previous value is {{previousValue}}, but you confirmed to a different number.',
+            NUMBER_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Enter a number...',
 
             // NumberControl BuildTime
             NUMBER_CONTROL_DEFAULT_SLOT_VALUES_TARGET_NUMBER: {

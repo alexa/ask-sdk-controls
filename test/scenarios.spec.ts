@@ -29,7 +29,7 @@ import {
     SkillInvoker,
     wrapRequestHandlerAsSkill,
 } from '../src';
-import { NumberControl } from '../src/commonControls/NumberControl';
+import { NumberControl } from '../src/commonControls/numberControl/NumberControl';
 import { ValueControl } from '../src/commonControls/ValueControl';
 import { Strings as $ } from '../src/constants/Strings';
 import { ContainerControl } from '../src/controls/ContainerControl';
@@ -54,6 +54,7 @@ import {
 } from '../src/utils/testSupport/TestingUtils';
 import { GameStrings as $$ } from './game_strings';
 import { ListControlAPLPropsBuiltIns } from '../src/commonControls/listControl/ListControlAPL';
+import { NumberControlAPLPropsBuiltIns } from '../src/commonControls/numberControl/NumberControlAPL';
 
 waitForDebugger();
 
@@ -334,7 +335,7 @@ suite('== Custom Handler function scenarios ==', () => {
     });
 });
 
-suite('== Custom APL Props ==', () => {
+suite('== Custom List APL Props ==', () => {
     class ListSelector extends ControlManager {
         createControlTree(): Control {
             const topControl = new ContainerControl({ id: 'root' });
@@ -450,6 +451,98 @@ suite('== Custom APL Props ==', () => {
         expect(response.directive?.length).eq(1);
         expect(response.prompt).eq(
             'Sorry, Wizard House: Muggle is not a valid choice because houseControl validation Failed. What is your selection? Some suggestions are Wizard House: Gryffindor, Wizard House: Ravenclaw or Wizard House: Slytherin.',
+        );
+        expect(dataSource).deep.equals(expectedDataSource);
+    });
+});
+
+suite('== Custom Number APL Props ==', () => {
+    class NumberSelector extends ControlManager {
+        createControlTree(): Control {
+            const topControl = new ContainerControl({ id: 'root' });
+
+            // NumberControl
+            const numberControl = new NumberControl({
+                id: 'numItems',
+                validation: [
+                    (state) => state.value! % 2 === 0 || { renderedReason: 'the value must be even' },
+                ],
+                apl: {
+                    validationFailedMessage: 'The value must be even.',
+                    requestValue: {
+                        customHandlingFuncs: [{ canHandle: isNumberSelected, handle: handleNumberSelection }],
+                    },
+                },
+            });
+
+            function isNumberSelected(input: ControlInput) {
+                return InputUtil.isIntent(input, 'NumberSelectionIntent');
+            }
+
+            function handleNumberSelection(input: ControlInput, resultBuilder: ControlResultBuilder) {
+                if (getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']) {
+                    const intent = SimplifiedIntent.fromIntent((input.request as IntentRequest).intent);
+                    if (intent.slotResolutions.value !== undefined) {
+                        const listSelectedValue = intent.slotResolutions.value;
+                        numberControl.setValue(listSelectedValue.slotValue);
+                    }
+                }
+            }
+            topControl.addChild(numberControl);
+            return topControl;
+        }
+    }
+
+    test('APL custom handlers are invoked.', async () => {
+        // Note: this test demonstrates calling customHandlingFuncs if defined on a control
+
+        const rootControl = new NumberSelector().createControlTree();
+        const input = TestInput.of(
+            IntentBuilder.of('NumberSelectionIntent', {
+                value: '4',
+            }),
+        );
+        const result = new ControlResultBuilder(undefined!);
+        await rootControl.canHandle(input);
+        await rootControl.handle(input, result);
+        const numberControlState = findControlInTreeById(rootControl, 'numItems');
+        expect(numberControlState.state.value).eq(4);
+    });
+
+    test('APL dataSource sends custom validationFailedMessage.', async () => {
+        // Note: this test demonstrates the validationFailedMessage is correctly passed in the dataSource along with isValidValue
+
+        const requestHandler = new ControlHandler(new NumberSelector());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const testUserEvent: UserEvent = {
+            type: 'Alexa.Presentation.APL.UserEvent',
+            requestId: 'amzn1.echo-api.request.1',
+            timestamp: '2019-10-04T18:48:22Z',
+            locale: 'en-US',
+            arguments: ['numItems', 3],
+            components: {},
+            source: {
+                type: 'EditText',
+                id: 'editTextNumber',
+            },
+            token: 'token',
+        };
+        const expectedDataSource = {
+            numPadData: {
+                controlId: 'numItems',
+                headerTitle: 'Enter a number...',
+                isValidValue: false,
+                validationFailedMessage: 'The value must be even.',
+            },
+        };
+        const response = await skill.invoke(TestInput.userEvent(testUserEvent));
+        expect(response.directive?.length).eq(2);
+        expect((response as any).directive[0].type).eq('Dialog.ElicitSlot');
+        expect((response as any).directive[0].slotToElicit).eq('AMAZON.NUMBER');
+        const dataSource = (response as any).directive[1].datasources;
+
+        expect(response.prompt).eq(
+            "Sorry but that's not a valid choice because the value must be even. What number?",
         );
         expect(dataSource).deep.equals(expectedDataSource);
     });
