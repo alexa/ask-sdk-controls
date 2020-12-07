@@ -127,7 +127,7 @@ suite('InteractionModel Generator tests', () => {
                     .build();
             } catch (e) {
                 expect(e.message).equal(
-                    `Intent ${testIntentWithSameName.name} is defined more than once and the definitions are not identical.`,
+                    `Intent ${testIntentWithSameName.name} is defined more than once but the definitions are not identical.`,
                 );
 
                 return;

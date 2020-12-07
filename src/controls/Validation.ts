@@ -22,7 +22,7 @@ import { ControlInput } from './ControlInput';
 export type StateValidationFunction<TState> = (
     state: TState,
     input: ControlInput,
-) => true | ValidationFailure;
+) => true | ValidationFailure | Promise<true | ValidationFailure>;
 
 /**
  * Describes a validation failure.
@@ -55,3 +55,26 @@ export type ValidationFailure = {
      */
     renderedReason?: string;
 };
+
+/**
+ * Helper to evaluate a prop that accepts one or more StateValidationFunction<TState> functions.
+ * @param validationProp - either a single StateValidationFunction<TState> or an array of
+ * the same.
+ * @param state - The control's state object.
+ * @param input - ControlInput.
+ */
+export async function evaluateValidationProp<TState>(
+    validationProp: StateValidationFunction<TState> | Array<StateValidationFunction<TState>>,
+    state: TState,
+    input: ControlInput,
+): Promise<true | ValidationFailure> {
+    const listOfValidationFunc: Array<StateValidationFunction<TState>> =
+        typeof validationProp === 'function' ? [validationProp] : validationProp;
+    for (const validationFunction of listOfValidationFunc) {
+        const validationResult: true | ValidationFailure = await validationFunction(state, input);
+        if (validationResult !== true) {
+            return validationResult;
+        }
+    }
+    return true;
+}

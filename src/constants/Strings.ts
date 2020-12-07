@@ -30,6 +30,11 @@ export namespace Strings {
         Set = 'builtin_set',
         Change = 'builtin_change',
         Select = 'builtin_select',
+        Start = 'builtin_start',
+        Restart = 'builtin_restart',
+        Resume = 'builtin_resume',
+        GoBack = 'builtin_goBack',
+        Complete = 'builtin_complete',
         None = 'builtin_none',
     }
 
@@ -38,13 +43,16 @@ export namespace Strings {
      */
     export enum Target {
         It = 'builtin_it',
+        Start = 'builtin_start',
+        End = 'builtin_end',
+        Choice = 'builtin_choice',
+        // eslint-disable-next-line id-blacklist
+        Number = 'builtin_number',
         Date = 'builtin_date',
         StartDate = 'builtin_start_date',
         EndDate = 'builtin_end_date',
         DateRange = 'builtin_date_range',
-        Choice = 'builtin_choice',
-        // eslint-disable-next-line id-blacklist
-        Number = 'builtin_number',
+        Questionnaire = 'builtin_questionnaire',
     }
 
     export const Conjunction = 'builtin_conjunction';

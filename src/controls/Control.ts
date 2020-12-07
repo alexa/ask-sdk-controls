@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import { Intent } from 'ask-sdk-model';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { randomlyPick } from '../utils/ArrayUtils';
@@ -46,14 +47,26 @@ export interface ControlState {
     value?: any; //TODO: make mandatory to tighten the convention.
 }
 
+export interface ControlInputHandler {
+    name: string;
+    canHandle: (this: Control, input: ControlInput) => boolean | Promise<boolean>;
+    handle: (this: Control, input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+}
+
+export interface ControlInitiativeHandler {
+    name: string;
+    canTakeInitiative(input: ControlInput): boolean | Promise<boolean>;
+    takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void | Promise<void>;
+}
+
 /**
  * Base type for the customHandling Functions of a Control
  */
 export interface ControlInputHandlingProps {
-    customHandlingFuncs?: Array<{
-        canHandle: (input: ControlInput) => boolean | Promise<boolean>;
-        handle: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
-    }>;
+    /**
+     * Custom handling functions
+     */
+    customHandlingFuncs?: ControlInputHandler[];
 }
 
 /**
@@ -291,6 +304,14 @@ export abstract class Control implements IControl {
             return stringOrList;
         }
         return randomlyPick<string>(stringOrList);
+    }
+
+    evaluatePromptShortForm(
+        propValue: string | ((input: ControlInput) => string),
+        input: ControlInput,
+    ): string {
+        const val = typeof propValue === 'function' ? propValue.call(this, input) : propValue;
+        return val;
     }
 
     /**

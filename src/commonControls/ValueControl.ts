@@ -169,7 +169,7 @@ export class ValueControlInteractionModelProps {
      * Default: ['builtin_it']
      *
      * Usage:
-     * - If this prop is defined, it replaces the default; it is not additive
+     * - If this prop is defined, it replaces the default; it is not additive to
      *   the defaults.  To add an additional target to the defaults, copy the
      *   defaults and amend.
      * - A control can be associated with many target-slot-values, eg ['date',
@@ -292,8 +292,11 @@ export class ValueControl extends Control implements InteractionModelContributor
 
     private rawProps: ValueControlProps;
     private props: DeepRequired<ValueControlProps>;
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
-    private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
+    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    private initiativeFunc?: (
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) => void | Promise<void>;
 
     constructor(props: ValueControlProps) {
         super(props.id);
@@ -421,9 +424,9 @@ export class ValueControl extends Control implements InteractionModelContributor
             throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
         }
 
-        this.handleFunc(input, resultBuilder);
+        await this.handleFunc(input, resultBuilder);
 
-        if (resultBuilder.hasInitiativeAct() !== true && this.canTakeInitiative(input) === true) {
+        if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
     }
@@ -459,10 +462,13 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      * @param resultBuilder - ResultBuilder
      */
-    private handleSetWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
+    private async handleSetWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
         return;
     }
 
@@ -531,10 +537,13 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      * @param resultBuilder - Result builder
      */
-    private handleChangeWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleChangeWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
         return;
     }
 
@@ -582,7 +591,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      *    meant "set \{value\}".
      * @param input - Input
      */
-    private isBareValue(input: ControlInput): any {
+    private isBareValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
@@ -606,10 +615,10 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      * @param resultBuilder - Result builder
      */
-    private handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private async handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         const { valueStr, erMatch } = InputUtil.getValueResolution(input);
         this.setValue(valueStr, erMatch);
-        this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
+        await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
         return;
     }
 
@@ -622,7 +631,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      *
      * @param input - Input
      */
-    private isConfirmationAffirmed(input: ControlInput): any {
+    private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             /* TODO: feature: also handle "yes, {value}" for both expected and
              * unexpected values
@@ -663,7 +672,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      *
      * @param input - Input
      */
-    private isConfirmationDisaffirmed(input: ControlInput): any {
+    private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             /* TODO: feature: also handle "no, {value}" for both expected and
              * unexpected values
@@ -718,10 +727,10 @@ export class ValueControl extends Control implements InteractionModelContributor
     }
 
     // tsDoc - see Control
-    canTakeInitiative(input: ControlInput): boolean {
+    async canTakeInitiative(input: ControlInput): Promise<boolean> {
         return (
             this.wantsToConfirmValue(input) ||
-            this.wantsToFixInvalidValue(input) ||
+            (await this.wantsToFixInvalidValue(input)) ||
             this.wantsToElicitValue(input)
         );
     }
@@ -734,7 +743,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
-        this.initiativeFunc(input, resultBuilder);
+        await this.initiativeFunc(input, resultBuilder);
         return;
     }
 
@@ -746,13 +755,13 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param elicitationAction - The type of elicitation question that has been
      * asked.
      */
-    private validateAndAddActs(
+    private async validateAndAddActs(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
-    ): void {
+    ): Promise<void> {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationFailure = this.validate(input);
+        const validationResult: true | ValidationFailure = await this.validate(input);
         if (typeof validationResult === 'boolean') {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -798,11 +807,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      *
      * @param input - Input.
      */
-    private validate(input: ControlInput): true | ValidationFailure {
+    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
         const listOfValidationFunc: Array<StateValidationFunction<ValueControlState>> =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = validationFunction(this.state, input);
+            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
             if (validationResult !== true) {
                 log.debug(
                     `ValueControl.validate(): validation failed. Reason: ${JSON.stringify(
@@ -856,8 +865,8 @@ export class ValueControl extends Control implements InteractionModelContributor
      *
      * @param input - Input
      */
-    private wantsToFixInvalidValue(input: ControlInput): boolean {
-        if (this.state.value !== undefined && this.validate(input) !== true) {
+    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
+        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -870,8 +879,8 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      * @param resultBuilder - Result builder
      */
-    private fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
     }
 
     /**
@@ -994,11 +1003,13 @@ export class ValueControl extends Control implements InteractionModelContributor
         generator.addControlIntent(new SingleValueControlIntent(this.props.slotType), imData);
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addYesAndNoIntents();
-    }
 
-    // tsDoc - see InteractionModelContributor
-    getTargetIds(): string[] {
-        return this.props.interactionModel.targets;
+        generator.ensureSlotIsDefined(this.id, this.props.slotType);
+
+        for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
+            generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
+        }
+        generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
     }
 }
 

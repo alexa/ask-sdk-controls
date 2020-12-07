@@ -20,7 +20,7 @@ import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
-import { IntentBuilder, IntentNameToValueMapper } from '../../src/utils/IntentUtils';
+import { IntentBuilder, defaultIntentToValueMapper } from '../../src/utils/IntentUtils';
 import { SkillInvoker } from '../../src/utils/testSupport/SkillInvoker';
 import { testE2E, TestInput, testTurn, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
@@ -156,7 +156,7 @@ suite('ListControl e2e tests', () => {
                 interactionModel: {
                     slotValueConflictExtensions: {
                         filteredSlotType: 'Maybe',
-                        intentToValueMapper: (intent) => IntentNameToValueMapper(intent, ['yes', 'no']),
+                        intentToValueMapper: (intent) => defaultIntentToValueMapper(intent), //TODO: make this the default on ListControl.
                     },
                 },
                 prompts: {
