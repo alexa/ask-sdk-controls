@@ -51,7 +51,7 @@ export interface Question {
      *
      * - This prompt should be a complete sentence with leading uppercase and trailing question-mark.
      */
-    prompt: StringOrList | ((this: QuestionnaireControl, input: ControlInput) => StringOrList);
+    prompt: StringOrList | ((control: QuestionnaireControl, input: ControlInput) => StringOrList);
 
     /**
      * Short-form rendering of the question for use in prompts.
@@ -68,12 +68,12 @@ export interface Question {
      * ```
      *
      */
-    promptShortForm: string | ((this: QuestionnaireControl, input: ControlInput) => string);
+    promptShortForm: string | ((control: QuestionnaireControl, input: ControlInput) => string);
 
     /**
      * Rendered form of the question for use on screen.
      */
-    visualLabel: string | ((this: QuestionnaireControl, input: ControlInput) => string);
+    visualLabel: string | ((control: QuestionnaireControl, input: ControlInput) => string);
 }
 
 export interface Choice {

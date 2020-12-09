@@ -20,7 +20,7 @@ import SlotType = v1.skill.interactionModel.SlotType;
 import TypeValue = v1.skill.interactionModel.TypeValue;
 import Intent = v1.skill.interactionModel.Intent;
 
-const log = new Logger('HelloWorld:InteractionModel');
+const log = new Logger('QuestionnaireControlDemo:InteractionModel');
 
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()

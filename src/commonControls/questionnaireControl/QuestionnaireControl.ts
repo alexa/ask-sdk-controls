@@ -67,10 +67,16 @@ import {
 // TODO: experiment with updateData / updateDynamicList rather than pushing whole new
 // document.  --- can we just push the dataSource again?
 
+//TODO: Not handled yet: providing a value & feedback of affirm/disaffirm that are not in sync.
+//TODO: Not tested yet: feedback values other than affirm/disaffirm
+//TODO: review tsDocs
+//TODO: test flows on headless.
+
 /**
- * Future feature ideas:
+ * Future feature idea:
  *  - pre-configured yes/no questionnaireControl
  *  - pre-configured yes/no/maybe questionnaireControl
+ *  - pre-configured Likert questionnaireControl (1-5 scale)
  */
 
 const log = new Logger('AskSdkControls:QuestionnaireControl');
@@ -89,7 +95,7 @@ export interface QuestionnaireControlProps extends ControlProps {
      */
     questionnaireData:
         | QuestionnaireContent
-        | ((this: QuestionnaireControl, input: ControlInput) => QuestionnaireContent);
+        | ((control: QuestionnaireControl, input: ControlInput) => QuestionnaireContent);
 
     /**
      * Determines if the Control must obtain a value.
@@ -98,7 +104,7 @@ export interface QuestionnaireControlProps extends ControlProps {
      *  - the Control report isReady() = false if no value has been obtained.
      *  - the control will take the initiative when given the opportunity.
      */
-    required?: boolean | ((this: QuestionnaireControl, input: ControlInput) => boolean);
+    required?: boolean | ((control: QuestionnaireControl, input: ControlInput) => boolean);
 
     /**
      * Determine if the questionnaire is considered valid, i.e. has no input errors and
@@ -123,11 +129,11 @@ export interface QuestionnaireControlProps extends ControlProps {
      */
     inputHandling?: QuestionnaireControlInputHandlingProps;
 
-    // /**
-    //  * Props to configure dialog policy.
-    //  */
+    /**
+     * Props to configure dialog policy.
+     */
     dialog?: {
-        confirmationRequired?: boolean | ((this: QuestionnaireControl, input: ControlInput) => boolean);
+        confirmationRequired?: boolean | ((control: QuestionnaireControl, input: ControlInput) => boolean);
     };
 
     /**
@@ -349,64 +355,25 @@ export interface QuestionnaireControlInputHandlingProps extends ControlInputHand
  * `this.renderAct()`.
  */
 export class QuestionnaireControlPromptProps {
-    askQuestionAct?:
-        | StringOrList
-        | ((this: QuestionnaireControl, act: AskQuestionAct, input: ControlInput) => StringOrList);
-    questionAnsweredAct?:
-        | StringOrList
-        | ((this: QuestionnaireControl, act: QuestionAnsweredAct, input: ControlInput) => StringOrList);
+    askQuestionAct?: StringOrList | ((act: AskQuestionAct, input: ControlInput) => StringOrList);
+    questionAnsweredAct?: StringOrList | ((act: QuestionAnsweredAct, input: ControlInput) => StringOrList);
 
-    questionnaireCompleted?:
-        | StringOrList
-        | ((this: QuestionnaireControl, act: CompletedAct, input: ControlInput) => StringOrList);
+    questionnaireCompleted?: StringOrList | ((act: CompletedAct, input: ControlInput) => StringOrList);
 
     questionnaireCompletionRejected?:
         | StringOrList
-        | ((
-              this: QuestionnaireControl,
-              act: QuestionnaireCompletionRejectedAct,
-              input: ControlInput,
-          ) => StringOrList);
+        | ((act: QuestionnaireCompletionRejectedAct, input: ControlInput) => StringOrList);
 
     acknowledgeNotCompleteAct?:
         | StringOrList
-        | ((
-              this: QuestionnaireControl,
-              act: QuestionnaireCompletionRejectedAct,
-              input: ControlInput,
-          ) => StringOrList);
+        | ((act: QuestionnaireCompletionRejectedAct, input: ControlInput) => StringOrList);
 
-    askIfComplete?:
-        | StringOrList
-        | ((this: QuestionnaireControl, act: AskIfCompleteAct, input: ControlInput) => StringOrList);
+    askIfComplete?: StringOrList | ((act: AskIfCompleteAct, input: ControlInput) => StringOrList);
 
-    askIfCompleteTerse?:
-        | StringOrList
-        | ((this: QuestionnaireControl, act: AskIfCompleteTerseAct, input: ControlInput) => StringOrList);
-
-    // valueSet?: StringOrList | ((act: ValueSetAct<any>, input: ControlInput) => StringOrList);
-    // valueChanged?: StringOrList | ((act: ValueChangedAct<any>, input: ControlInput) => StringOrList);
-    // invalidValue?: StringOrList | ((act: InvalidValueAct<any>, input: ControlInput) => StringOrList);
-    // unusableInputValue?:
-    //     | StringOrList
-    //     | ((act: UnusableInputValueAct<string>, input: ControlInput) => StringOrList);
-    // requestValue?: StringOrList | ((act: RequestValueByListAct, input: ControlInput) => StringOrList);
-    // requestChangedValue?:
-    //     | StringOrList
-    //     | ((act: RequestChangedValueByListAct, input: ControlInput) => StringOrList);
-    // confirmValue?: StringOrList | ((act: ConfirmValueAct<any>, input: ControlInput) => StringOrList);
-    // valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<any>, input: ControlInput) => StringOrList);
-    // valueDisconfirmed?:
-    //     | StringOrList
-    //     | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
+    askIfCompleteTerse?: StringOrList | ((act: AskIfCompleteTerseAct, input: ControlInput) => StringOrList);
 }
 
-//Strong types for all the components of props.. makes it possible to type all the utility
-//methods correctly.
-
-//Note: we pass control to make it easier for lambda-syntax props (as 'this' isn't wired
-//correctly for lambda-style props)
-//TODO: standardize on a func-prop pattern.  likely set `this` as the control AND pass the control as param.
+//TODO: centralize these types.
 export type AplContent = { document: any; dataSource: any };
 export type AplContentFunc = (control: QuestionnaireControl, input: ControlInput) => AplContent;
 export type AplPropNewStyle = AplContent | AplContentFunc;
@@ -422,10 +389,10 @@ export class QuestionnaireControlAPLProps {
      */
     enabled?: boolean | ((input: ControlInput) => boolean);
 
+    /**
+     * Custom APL to show all questions while asking one in particular.
+     */
     askQuestion: AplPropNewStyle;
-
-    // requestValue?: AplPropNewStyle;
-    // requestChangedValue?: AplPropNewStyle;
 }
 
 export type QuestionnaireUserAnswers = {
@@ -470,9 +437,10 @@ export class QuestionnaireControlState implements ControlState {
     userDisconfirmedCompletion: boolean;
 
     /**
-     * Did the user activate the control. If yes, treat it like required=true.
+     * Should we require an explicit completion.
+     * (e.g. after rejecting are you done, or re-activating the control)
      */
-    userExplicitlyActivated: boolean;
+    requiresExplicitCompletion: boolean;
 }
 
 /**
@@ -489,12 +457,16 @@ export class QuestionnaireControlState implements ControlState {
 export class QuestionnaireControl extends Control implements InteractionModelContributor {
     state: QuestionnaireControlState = new QuestionnaireControlState();
     inputWasAnswerByTouch: boolean = false;
+    activatedThisTurn: boolean = false;
 
     private rawProps: QuestionnaireControlProps;
     props: DeepRequired<QuestionnaireControlProps>;
 
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
-    private initiativeFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void;
+    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    private initiativeFunc?: (
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) => void | Promise<void>;
 
     constructor(props: QuestionnaireControlProps) {
         super(props.id);
@@ -534,7 +506,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             },
 
             dialog: {
-                confirmationRequired: true,
+                confirmationRequired: false,
             },
 
             // questionRenderer: (id: string) => id,
@@ -734,20 +706,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         }
 
         await this.handleFunc(input, resultBuilder);
-
         this.state.activeInitiative = undefined; // clear the initiative state so we don't get confused on subsequent turns.
-
-        //NOTE: this is a trial of _not_ adding initiative during handle.. but rather
-        //letting the initiative phase always run.
-        // if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
-        //     await this.takeInitiative(input, resultBuilder);
-        // }
-
-        const isDone = this.getFirstUnansweredQuestion(content) === undefined;
-        const confirmationRequired = this.evaluateBooleanProp(this.props.dialog.confirmationRequired, input);
-        if (isDone && !confirmationRequired) {
-            resultBuilder.addAct(new CompletedAct(this));
-        }
     }
 
     private isActivate(input: ControlInput): any {
@@ -776,8 +735,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     //  flags etc.
 
     private async handleActivate(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        this.setExplicitlyActivatedFlag();
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        if (!_.isEmpty(this.state.value)) {
+            this.state.requiresExplicitCompletion = true;
+        }
+        this.activatedThisTurn = true;
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         return;
     }
 
@@ -824,50 +786,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             }),
         );
 
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         return;
     }
 
-    // private isBareNoToAskedQuestion(input: ControlInput): boolean {
-    //     try {
-    //         okIf(this.state.activeInitiative?.actName === AskQuestionAct.name);
-    //         okIf(this.state.focusQuestionId !== undefined);
-    //         okIf(InputUtil.isBareNo(input));
-    //         return true;
-    //     } catch (e) {
-    //         return falseIfGuardFailed(e);
-    //     }
-    // }
-
-    // private handleBareNoToAskedQuestion(input: ControlInput, resultBuilder: ControlResultBuilder) {
-    //     const content = this.getQuestionnaireContent(input);
-    //     const question = this.getQuestionContentById(this.state.focusQuestionId!, input);
-    //     const negativeAnswer =
-    //         content.choiceForNoUtterance !== undefined && content.choiceForNoUtterance !== 'dummy'
-    //             ? content.choiceForNoUtterance
-    //             : content.choices[0].id;
-
-    //     const choiceIndex = this.getChoiceIndexById(content, negativeAnswer);
-    //     const questionIndex = this.getQuestionIndexById(content, this.state.focusQuestionId!);
-
-    //     this.updateAnswer(question.id, negativeAnswer, input, resultBuilder);
-    //     resultBuilder.addAct(
-    //         new QuestionAnsweredAct(this, {
-    //             questionId: question.id,
-    //             choiceId: negativeAnswer,
-    //             userAnsweredWithExplicitValue: false,
-    //             userMentionedQuestion: false,
-    //             renderedChoice: content.choices[choiceIndex].prompt,
-    //             renderedQuestion: content.questions[questionIndex].prompt,
-    //             renderedQuestionShortForm: content.questions[questionIndex].promptShortForm,
-    //         }),
-    //     );
-    //     this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
-    //     return;
-    // }
-
-    //Not handled yet: providing a value & feedback of affirm/disaffirm that are not in sync.
-    //Not handled yet: feedback values other than affirm/disaffirm
     private isSpecificAnswerToAskedQuestion(input: ControlInput): boolean {
         try {
             okIf(this.state.focusQuestionId !== undefined);
@@ -927,11 +850,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                     ),
                 }),
             );
+
+            this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
         } else {
             throw new Error('todo');
             //resultBuilder.addAct(new InvalidAnswerAct(this, {}));
         }
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         return;
     }
 
@@ -986,7 +911,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             }),
         );
 
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
+
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         return;
     }
 
@@ -1047,7 +974,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             }),
         );
 
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
+
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         return;
     }
 
@@ -1083,30 +1012,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const questionIndex = this.getQuestionIndexById(content, questionId);
         const choiceId = choiceIndex === -1 ? undefined : content.choices[choiceIndex].id;
         this.updateAnswer(questionId, choiceId, input, resultBuilder);
-        // if (choiceId) {
-        //     resultBuilder.addAct(
-        //         new QuestionAnsweredAct(this, {
-        //             questionId,
-        //             choiceId,
-        //             userAnsweredWithExplicitValue: false,
-        //             userMentionedQuestion: false,
-        //             renderedChoice: content.choices[choiceIndex].prompt,
-        //             renderedQuestion: content.questions[questionIndex].prompt,
-        //             renderedQuestionShortForm: content.questions[questionIndex].promptShortForm,
-        //         }),
-        //     );
-        // } else {
-        //     resultBuilder.addAct(
-        //         new AnswerClearedAct(this, {
-        //             questionId,
-        //             userMentionedQuestion: false,
-        //             renderedQuestion: content.questions[questionIndex].prompt,
-        //             renderedQuestionShortForm: content.questions[questionIndex].promptShortForm,
-        //         }),
-        //     );
-        // }
+        this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
 
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         this.inputWasAnswerByTouch = true;
         return;
     }
@@ -1180,7 +1088,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     private handleBareNoToCompletionQuestion(input: ControlInput, resultBuilder: ControlResultBuilder) {
         resultBuilder.addAct(new AcknowledgeNotCompleteAct(this));
 
-        this.clearCompletionFlag(); // user interacted with the and so the questionnaire should stick around
+        this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         this.state.userDisconfirmedCompletion = true; // so that we avoid pestering the user.
         return;
     }
@@ -1232,7 +1140,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             log.error(errorMsg);
             throw new Error(errorMsg);
         }
-        this.initiativeFunc(input, resultBuilder);
+        await this.initiativeFunc(input, resultBuilder);
         return;
     }
 
@@ -1243,7 +1151,12 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             const firstUnansweredQuestion = content.questions.find(
                 (q) => this.state.value[q.id] === undefined,
             );
-            return firstUnansweredQuestion !== undefined;
+
+            if (firstUnansweredQuestion !== undefined) {
+                return true;
+            }
+
+            return false;
         } catch (e) {
             verifyErrorIsGuardFailure(e);
             return false;
@@ -1254,7 +1167,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const content = this.getQuestionnaireContent(input);
         // const renderedContent = this.getRenderedQuestionnaireContent(input);
 
-        const firstUnansweredQuestion = content.questions.find((q) => this.state.value[q.id] === undefined);
+        // if all the questions have been answered, but we reactivated the control, ask
+        // the first question.
+        const firstUnansweredQuestion =
+            content.questions.find((q) => this.state.value[q.id] === undefined) ?? content.questions[0];
+
         this.state.focusQuestionId = firstUnansweredQuestion!.id;
 
         // const renderedQuestion = this.props.questionRenderer.call(this, this.state.focusQuestionId, input);
@@ -1268,6 +1185,14 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
               });
 
         resultBuilder.addAct(initiativeAct);
+
+        // We want to send a null response so that the microphone isn't opened and any
+        // out-of-order messages do not mess with the active prompt. idleState is the
+        // answer
+        if (this.inputWasAnswerByTouch) {
+            resultBuilder.enterIdleState();
+        }
+
         this.state.activeInitiative = { actName: initiativeAct.constructor.name };
     }
 
@@ -1275,7 +1200,10 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const content = this.getQuestionnaireContent(input);
         try {
             okIf(this.isActive(input));
-            okIf(this.evaluateBooleanProp(this.props.dialog.confirmationRequired, input));
+            okIf(
+                this.state.requiresExplicitCompletion ||
+                    this.evaluateBooleanPropNewStyle(this.props.dialog.confirmationRequired, input),
+            );
             const firstUnansweredQuestion = this.getFirstUnansweredQuestion(content);
             return firstUnansweredQuestion === undefined;
         } catch (e) {
@@ -1301,7 +1229,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
      */
     public getQuestionnaireContent(input: ControlInput): QuestionnaireContent {
         const propValue = this.props.questionnaireData;
-        const content = typeof propValue === 'function' ? propValue.call(this, input) : propValue;
+        const content = typeof propValue === 'function' ? propValue.call(this, this, input) : propValue;
 
         if (content.choices.length === 0) {
             throw new Error('props.questionnaireContent has no choices');
@@ -1389,62 +1317,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             );
         } else if (act instanceof ActiveAPLInitiativeAct) {
             builder.setDisplayUsed();
-        }
-
-        // } else if (act instanceof RequestChangedValueByListAct) {
-        //     const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
-        //     const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
-
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
-        //     builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
-
-        //     if (
-        //         this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-        //         getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-        //     ) {
-        //         const document = this.evaluateAPLProp(act, this.props.apl.requestChangedValue.document);
-        //         const dataSource = this.evaluateAPLProp(act, this.props.apl.requestChangedValue.dataSource);
-        //         builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-        //     }
-        // } else if (act instanceof UnusableInputValueAct) {
-        //     builder.addPromptFragment(
-        //         this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
-        //     );
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input),
-        //     );
-        // } else if (act instanceof InvalidValueAct) {
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
-        //     );
-        // } else if (act instanceof ValueSetAct) {
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
-        //     builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        // } else if (act instanceof ValueChangedAct) {
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
-        //     );
-        // } else if (act instanceof ConfirmValueAct) {
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
-        //     );
-        // } else if (act instanceof ValueConfirmedAct) {
-        //     builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input));
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
-        //     );
-        // } else if (act instanceof ValueDisconfirmedAct) {
-        //     builder.addPromptFragment(
-        //         this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
-        //     );
-        //     builder.addRepromptFragment(
-        //         this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input),
-        //     );
-        //}
-        else {
+        } else {
             this.throwUnhandledActError(act);
         }
     }
@@ -1538,9 +1411,8 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     private isActive(input: ControlInput) {
         // if we haven't started and required=false, then don't start.
         if (
-            this.state.value === {} &&
-            !this.state.userExplicitlyActivated &&
-            this.evaluateBooleanProp(this.props.required, input) === false
+            _.isEmpty(this.state.value) &&
+            this.evaluateBooleanPropNewStyle(this.props.required, input) === false
         ) {
             return false;
         }
@@ -1556,23 +1428,46 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
     // TODO: can probably refactor these back to inline.
     // as it is better to make higher-level 'capability functions' the public ones.
-    private setExplicitlyActivatedFlag() {
-        this.state.userExplicitlyActivated = true;
-    }
-
-    private clearExplicitlyActivatedFlag() {
-        this.state.userExplicitlyActivated = false;
-    }
 
     private setCompletionFlag() {
         this.state.userExplicitlyCompleted = true;
     }
 
-    private clearCompletionFlag() {
-        this.state.userExplicitlyCompleted = false;
-    }
-
     private getSlotTypes(): string[] {
         return [this.props.interactionModel.slotType, this.props.interactionModel.filteredSlotType];
+    }
+
+    addCompletionActIfImplicitlyComplete(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        const content = this.getQuestionnaireContent(input);
+        const allAnswersProvided = this.getFirstUnansweredQuestion(content) === undefined;
+        const confirmationRequired = this.evaluateBooleanPropNewStyle(
+            this.props.dialog.confirmationRequired,
+            input,
+        );
+        const requiresExplicitCompletion = this.state.requiresExplicitCompletion;
+        if (allAnswersProvided && !confirmationRequired && !requiresExplicitCompletion) {
+            resultBuilder.addAct(new CompletedAct(this));
+        }
+    }
+
+    /**
+     * Evaluate a boolean prop.
+     *
+     * @param propValue - Constant or function producing boolean
+     * @param input - The input object
+     */
+    evaluateBooleanPropNewStyle(
+        propValue: boolean | ((control: QuestionnaireControl, input: ControlInput) => boolean),
+        input: ControlInput,
+    ): boolean {
+        return typeof propValue === 'function' ? propValue.call(this, this, input) : propValue;
+    }
+
+    evaluatePromptShortForm(
+        propValue: string | ((control: QuestionnaireControl, input: ControlInput) => string),
+        input: ControlInput,
+    ): string {
+        const val = typeof propValue === 'function' ? propValue.call(this, this, input) : propValue;
+        return val;
     }
 }

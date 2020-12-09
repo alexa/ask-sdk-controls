@@ -336,6 +336,12 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         if (candidates.length === 0) {
             return undefined;
         }
+
+        const handlingControlMatch = findControlById(candidates, this.state.lastHandlingControl?.controlId);
+        if (handlingControlMatch !== undefined) {
+            return handlingControlMatch;
+        }
+
         const mruMatch = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
         return mruMatch ?? candidates[0];
     }
