@@ -306,14 +306,6 @@ export abstract class Control implements IControl {
         return randomlyPick<string>(stringOrList);
     }
 
-    evaluatePromptShortForm(
-        propValue: string | ((input: ControlInput) => string),
-        input: ControlInput,
-    ): string {
-        const val = typeof propValue === 'function' ? propValue.call(this, input) : propValue;
-        return val;
-    }
-
     /**
      * Evaluate a boolean prop.
      *

@@ -43,7 +43,7 @@ suite('all', () => {
 
         await testTurn(
             invoker,
-            'U: cat',
+            'U: persian',
             TestInput.of(SingleValueControlIntent.of('PetBreed', { PetBreed: 'persian' })),
             'A: OK, persian. What is your selection? Some suggestions are adopt, foster or sponsor.',
         );

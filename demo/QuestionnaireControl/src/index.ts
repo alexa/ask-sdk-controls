@@ -10,17 +10,6 @@ export namespace MultipleLists {
         createControlTree(): Control {
             const rootControl = new DemoRootControl({ id: 'root' });
 
-            // Call it MultiListControl?
-            //  list one is "what day": mon, tues, wed
-            //  list two is "how many?": a few, lots.
-
-            // Call it ManyListsControlWithSameChoices?... one 'list' but with lots of different questions associated.
-            //   -- must be short lists.
-            //   -- each list is an (id,targets) pair with associated
-            //   prompts/reprompt/aplMappers
-            //   Keep it as questionnaire for now and describe is as 'like a multi-list
-            //   but with many special aspects'/
-
             rootControl.addChild(
                 new QuestionnaireControl({
                     id: 'healthScreen',
@@ -34,7 +23,7 @@ export namespace MultipleLists {
                                 //TODO: support functions on prompt/label/shortForm
                                 prompt: 'Do you frequently have a headache?',
                                 visualLabel: 'Frequent headache?',
-                                promptShortForm: 'headache',
+                                promptShortForm: (control, input) => 'headache',
                             },
                             {
                                 id: 'cough',
@@ -60,8 +49,56 @@ export namespace MultipleLists {
                     },
                     interactionModel: {
                         slotType: 'YesNo', // TODO: allow multiple slotTypes? e.g. to support YesNo and Symptom.
-                        filteredSlotType: 'none',
+                        filteredSlotType: 'none',                        
                         targets: ['builtin_it', 'builtin_questionnaire','healthQuestionnaire'], // this should just be the control targets.  The question targets are in content.
+                    },
+                    dialog: {
+                        confirmationRequired: false,
+                    },
+                }),
+            );
+
+            rootControl.addChild(
+                new QuestionnaireControl({
+                    id: 'healthScreenPart2',
+
+                    questionnaireData: {
+                        questions: [
+                            {
+                                
+                                id: 'foot',
+                                targets: ['foot'],
+                                //TODO: support functions on prompt/label/shortForm
+                                prompt: 'Do you have a sore foot?',
+                                visualLabel: 'Sore foot?',
+                                promptShortForm: 'sore foot',
+                            },
+                            {
+                                id: 'back',
+                                targets: ['back'],
+                                prompt: 'Do you have a sore back?',
+                                visualLabel: 'Sore back?',
+                                promptShortForm: 'sore back',
+                            },
+                        ],
+                        choices: [
+                            {
+                                id: 'yes',
+                                //TODO: values: .. allow additional values. default to id
+                                aplColumnHeader: 'yes', //TODO: default to id
+                                prompt: 'yes', //TODO: default to id
+                            },
+                            {
+                                id: 'no',
+                                aplColumnHeader: 'no',
+                                prompt: 'no',
+                            },
+                        ], // TODO: should be consistent with ListControl. listItemIds vs choices.
+                    },
+                    interactionModel: {
+                        slotType: 'YesNo', // TODO: allow multiple slotTypes? e.g. to support YesNo and Symptom.
+                        filteredSlotType: 'none',
+                        targets: ['builtin_it', 'builtin_questionnaire'], // this should just be the control targets.  The question targets are in content.
                     },
                     dialog: {
                         confirmationRequired: false,

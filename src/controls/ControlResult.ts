@@ -113,6 +113,8 @@ export class ControlResultBuilder {
      *  * The session remains alive but the microphone is closed.
      *  * The user can interact with the skill but must use the wake-word.
      */
+    //TODO:review/document why this is here and not on ResponseBuilder.
+    //is it really intrinsic to the Result rather than the presentation??
     enterIdleState(): void {
         this.sessionBehavior = SessionBehavior.IDLE;
     }

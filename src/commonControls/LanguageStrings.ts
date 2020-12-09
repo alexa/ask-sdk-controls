@@ -642,7 +642,6 @@ export const defaultI18nResources: Resource = {
                                 'that is totally wrong',
                                 'that is wrong',
                                 'I do not have',
-                                'I do not have',
                                 "I don't have",
                                 'I do not',
                                 "I don't",
@@ -877,6 +876,7 @@ export const defaultI18nResources: Resource = {
                         name: {
                             value: 'complete',
                             synonyms: [
+                                'complete',
                                 'am done',
                                 'can be done',
                                 'am complete',
@@ -914,7 +914,7 @@ export const defaultI18nResources: Resource = {
                         id: $.Action.Start,
                         name: {
                             value: 'start',
-                            synonyms: ['commence', 'begin'],
+                            synonyms: ['start', 'commence', 'begin'],
                         },
                     },
                     {
