@@ -174,7 +174,7 @@ suite('QuestionnaireControl e2e tests', () => {
 
         const response2 = await testTurn(
             invoker,
-            'U: <Press "yes" for "have have headache">',
+            'U: <Press "yes" for "have headache">',
             TestInput.simpleUserEvent(['question', 'radioClick', 'headache', 0]),
             'A: ', // implicit completion should _not occur_
         );

@@ -1018,7 +1018,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const questionIndex = this.getQuestionIndexById(content, questionId);
         const choiceId = choiceIndex === -1 ? undefined : content.choices[choiceIndex].id;
         this.updateAnswer(questionId, choiceId, input, resultBuilder);
-        //we specifically do _not_ call addCompletionActIfImplicitlyComplete on answer by touch.
+        //we do _not_ call addCompletionActIfImplicitlyComplete on answer by touch because
+        //we require explicit completion on the screen, unlike voice where it is better to
+        //move right along.
 
         this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         this.inputWasAnswerByTouch = true;
@@ -1156,7 +1158,6 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     }
 
     private wantsToKeepAplInitiative(input: ControlInput): boolean {
-        const content = this.getQuestionnaireContent(input);
         try {
             okIf(this.inputWasAnswerByTouch);
             return true;
