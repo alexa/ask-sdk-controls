@@ -44,7 +44,7 @@ import { StringOrList } from '../../utils/BasicTypes';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
-import { okIf, verifyErrorIsGuardFailure } from '../../utils/Predicates';
+import { failIf, okIf, verifyErrorIsGuardFailure } from '../../utils/Predicates';
 import { QuestionnaireControlAPLPropsBuiltIns } from './QuestionnaireControlBuiltIns';
 import { Question, QuestionnaireContent } from './QuestionnaireControlStructs';
 import {
@@ -376,7 +376,7 @@ export class QuestionnaireControlPromptProps {
 //TODO: centralize these types.
 export type AplContent = { document: any; dataSource: any };
 export type AplContentFunc = (control: QuestionnaireControl, input: ControlInput) => AplContent;
-export type AplPropNewStyle = AplContent | AplContentFunc;
+export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
 
 /**
  * Props associated with the APL produced by QuestionnaireControl.
@@ -392,7 +392,7 @@ export class QuestionnaireControlAPLProps {
     /**
      * Custom APL to show all questions while asking one in particular.
      */
-    askQuestion: AplPropNewStyle;
+    askQuestion: AplDocumentPropNewStyle;
 }
 
 export type QuestionnaireUserAnswers = {
@@ -601,7 +601,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                 askIfComplete: i18next.t('QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE'),
                 askIfCompleteTerse: i18next.t('QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE_TERSE'),
             },
-            apl: QuestionnaireControlAPLPropsBuiltIns.Default,
+            apl: {
+                enabled: true,
+                askQuestion: QuestionnaireControlAPLPropsBuiltIns.defaultAskQuestion({
+                    title: undefined, // the default is wired up in defaultAskQuestion()
+                    submitButtonText: undefined, // the default is wired up in defaultAskQuestion()
+                }),
+            },
             inputHandling: {
                 intentToChoiceMapper: (intent) => defaultIntentToValueMapper(intent),
                 customHandlingFuncs: [],
@@ -853,7 +859,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
             this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
         } else {
-            throw new Error('todo');
+            throw new Error('todo'); //TODO. handle case of a value that doesn't match a legal answer.
             //resultBuilder.addAct(new InvalidAnswerAct(this, {}));
         }
         this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
@@ -1012,7 +1018,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const questionIndex = this.getQuestionIndexById(content, questionId);
         const choiceId = choiceIndex === -1 ? undefined : content.choices[choiceIndex].id;
         this.updateAnswer(questionId, choiceId, input, resultBuilder);
-        this.addCompletionActIfImplicitlyComplete(input, resultBuilder);
+        //we specifically do _not_ call addCompletionActIfImplicitlyComplete on answer by touch.
 
         this.state.userExplicitlyCompleted = false; // user interacted with the and so the questionnaire should stick around
         this.inputWasAnswerByTouch = true;
@@ -1104,6 +1110,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             canTakeInitiative: this.wantsToAskIfComplete,
             takeInitiative: this.askIfComplete,
         },
+        {
+            name: 'std::isInitiativeViaApl',
+            canTakeInitiative: this.wantsToKeepAplInitiative,
+            takeInitiative: this.keepAplInitiative,
+        },
     ];
 
     // tsDoc - see Control
@@ -1144,10 +1155,30 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         return;
     }
 
+    private wantsToKeepAplInitiative(input: ControlInput): boolean {
+        const content = this.getQuestionnaireContent(input);
+        try {
+            okIf(this.inputWasAnswerByTouch);
+            return true;
+        } catch (e) {
+            verifyErrorIsGuardFailure(e);
+            return false;
+        }
+    }
+
+    private keepAplInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const initiativeAct = new ActiveAPLInitiativeAct(this);
+        resultBuilder.addAct(initiativeAct);
+        resultBuilder.enterIdleState();
+        this.state.activeInitiative = { actName: initiativeAct.constructor.name };
+    }
+
     private wantsToAskLineItemQuestion(input: ControlInput): boolean {
         const content = this.getQuestionnaireContent(input);
         try {
             okIf(this.isActive(input));
+            failIf(this.inputWasAnswerByTouch);
+
             const firstUnansweredQuestion = content.questions.find(
                 (q) => this.state.value[q.id] === undefined,
             );
@@ -1176,23 +1207,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
         // const renderedQuestion = this.props.questionRenderer.call(this, this.state.focusQuestionId, input);
 
-        const initiativeAct = this.inputWasAnswerByTouch
-            ? new ActiveAPLInitiativeAct(this)
-            : new AskQuestionAct(this, {
-                  questionnaireContent: content,
-                  answers: this.state.value,
-                  questionId: this.state.focusQuestionId,
-              });
+        const initiativeAct = new AskQuestionAct(this, {
+            questionnaireContent: content,
+            answers: this.state.value,
+            questionId: this.state.focusQuestionId,
+        });
 
         resultBuilder.addAct(initiativeAct);
-
-        // We want to send a null response so that the microphone isn't opened and any
-        // out-of-order messages do not mess with the active prompt. idleState is the
-        // answer
-        if (this.inputWasAnswerByTouch) {
-            resultBuilder.enterIdleState();
-        }
-
         this.state.activeInitiative = { actName: initiativeAct.constructor.name };
     }
 
@@ -1248,7 +1269,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         return deepRequiredContent;
     }
 
-    private evaluateAPLPropNewStyle(prop: AplPropNewStyle, input: ControlInput): AplContent {
+    private evaluateAPLPropNewStyle(prop: AplDocumentPropNewStyle, input: ControlInput): AplContent {
         return typeof prop === 'function' ? (prop as AplContentFunc).call(this, this, input) : prop;
     }
 
@@ -1438,6 +1459,8 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     }
 
     addCompletionActIfImplicitlyComplete(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        assert(this.inputWasAnswerByTouch === false, 'Implicit completion should not happen after touch.');
+
         const content = this.getQuestionnaireContent(input);
         const allAnswersProvided = this.getFirstUnansweredQuestion(content) === undefined;
         const confirmationRequired = this.evaluateBooleanPropNewStyle(

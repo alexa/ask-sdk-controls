@@ -1,7 +1,3 @@
-import { ControlInput } from '../../controls/ControlInput';
-import { DeepRequired } from '../../utils/DeepRequired';
-import { QuestionnaireControl, QuestionnaireControlAPLProps } from './QuestionnaireControl';
-
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -14,6 +10,10 @@ import { QuestionnaireControl, QuestionnaireControlAPLProps } from './Questionna
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
+import i18next from 'i18next';
+import { ControlInput } from '../../controls/ControlInput';
+import { AplContent, QuestionnaireControl } from './QuestionnaireControl';
 
 export namespace QuestionnaireControlAPLPropsBuiltIns {
     export interface QuestionnaireChoice {
@@ -31,21 +31,40 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
         choices: QuestionnaireChoice[];
     }
 
-    /*
-     * For information about the TextListTemplate, see following doc:
-     * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
-     */
-    export const Default: DeepRequired<QuestionnaireControlAPLProps> = {
-        enabled: true,
+    export interface DefaultAskQuestionProps {
+        /**
+         * Default: 'Please answer the following..'
+         */
+        title?: string;
 
-        askQuestion: (control: QuestionnaireControl, input: ControlInput) => {
-            const aplContent = {
+        /**
+         * Default (en-*): 'Submit &gt;'
+         */
+        submitButtonText?: string;
+
+        /**
+         * Default: ''
+         */
+        subtitle?: string;
+
+        /**
+         * Whether debug information is displayed
+         *
+         * Default: false
+         */
+        debug?: boolean;
+    }
+
+    export function defaultAskQuestion(
+        props: DefaultAskQuestionProps,
+    ): (control: QuestionnaireControl, input: ControlInput) => AplContent {
+        return (control: QuestionnaireControl, input: ControlInput) => {
+            return {
                 document: questionnaireDocumentGenerator(control, input),
-                dataSource: questionnaireDataSourceGenerator(control, input),
+                dataSource: questionnaireDataSourceGenerator(control, input, props),
             };
-            return aplContent;
-        },
-    };
+        };
+    }
 
     /**
      * The APL dataSource to use when requesting a value
@@ -54,7 +73,11 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
-    export function questionnaireDataSourceGenerator(control: QuestionnaireControl, input: ControlInput) {
+    export function questionnaireDataSourceGenerator(
+        control: QuestionnaireControl,
+        input: ControlInput,
+        contentProps: DefaultAskQuestionProps,
+    ) {
         const content = control.getQuestionnaireContent(input);
 
         const questionItems = [];
@@ -73,12 +96,15 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                     controlId: control.id,
                     dataVersion: 1,
                     radioButtonSize: '85',
-                    //radioButtonColor: '',
                     buttonColumnWidth: '124',
-                    headerTitle: 'Please answer all that you can',
-                    headerSubtitle: null,
+                    headerTitle:
+                        contentProps.title ?? i18next.t('QUESTIONNAIRE_CONTROL_DEFAULT_APL_HEADER_TITLE'),
+                    headerSubtitle: contentProps.subtitle ?? '',
                     headerBackButton: false,
-                    nextButtonText: 'Complete >',
+                    nextButtonText:
+                        contentProps.submitButtonText ??
+                        i18next.t('QUESTIONNAIRE_CONTROL_DEFAULT_APL_SUBMIT_TEXT'),
+                    debug: contentProps.debug ?? false,
                 },
                 questionData: questionItems,
             },
@@ -115,6 +141,7 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                     items: {
                         type: 'AlexaRadioButton',
                         checked: '${idx == selectedIndex}',
+                        disabled: '${disableContent}',
                         theme: '${theme}',
                         accessibilityLabel: '${accessibilityLabel}',
                         radioButtonHeight: '${radioButtonHeight}',
@@ -237,18 +264,23 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
             },
             mainTemplate: {
                 parameters: ['wrapper'],
-                bind: [
-                    {
-                        name: 'debug',
-                        value: true,
-                        type: 'boolean',
-                    },
-                ],
                 item: {
                     id: 'root',
                     type: 'Container',
                     width: '100vw',
                     height: '100vh',
+                    bind: [
+                        {
+                            name: 'disableContent',
+                            value: false,
+                            type: 'boolean',
+                        },
+                        {
+                            name: 'enableWaitIndicator',
+                            value: false,
+                            type: 'boolean',
+                        },
+                    ],
                     items: [
                         {
                             type: 'AlexaBackground',
@@ -316,7 +348,7 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                             ],
                         },
                         {
-                            when: '${debug}',
+                            when: '${wrapper.general.debug}',
                             type: 'Text',
                             id: 'debugText',
                             text: 'debugInfo',
@@ -326,14 +358,49 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                         {
                             type: 'AlexaButton',
                             id: 'nextButton',
+                            disabled: '${disableContent}',
                             buttonText: '${wrapper.general.nextButtonText}',
                             position: 'absolute',
                             top: '10',
                             right: '10',
                             primaryAction: {
-                                type: 'SendEvent',
-                                arguments: ['${wrapper.general.controlId}', 'complete'],
+                                type: 'Sequential',
+                                commands: [
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'debugText',
+                                        property: 'text',
+                                        value: 'Complete',
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableContent',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: ['${wrapper.general.controlId}', 'complete'],
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'enableWaitIndicator',
+                                        value: true,
+                                        delay: 1370,
+                                    },
+                                ],
                             },
+                        },
+                        {
+                            type: 'AlexaProgressDots',
+                            position: 'absolute',
+                            display: "${enableWaitIndicator ? 'normal' : 'invisible'}",
+                            top: '50vh',
+                            right: '20dp',
+                            dotSize: '12dp',
+                            componentId: 'largeDotsId',
+                            spacing: '@spacingMedium',
                         },
                     ],
                 },

@@ -161,7 +161,9 @@ export const defaultI18nResources: Resource = {
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+
             QUESTIONNAIRE_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
+            QUESTIONNAIRE_CONTROL_DEFAULT_APL_SUBMIT_TEXT: 'Submit >',
 
             // DateRangeControl Runtime
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET: 'Got it. The start date is {{value}}.',

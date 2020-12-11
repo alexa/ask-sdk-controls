@@ -1,6 +1,7 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { Control } from '../../..//src/controls/Control';
 import { QuestionnaireControl } from '../../../src/commonControls/questionnaireControl/QuestionnaireControl';
+import { QuestionnaireControlAPLPropsBuiltIns } from '../../../src/commonControls/questionnaireControl/QuestionnaireControlBuiltIns';
 import { ControlManager } from '../../../src/controls/ControlManager';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
 import { DemoRootControl } from '../../Common/src/DemoRootControl';
@@ -17,7 +18,6 @@ export namespace MultipleLists {
                     questionnaireData: {
                         questions: [
                             {
-                                
                                 id: 'headache',
                                 targets: ['headache'],
                                 //TODO: support functions on prompt/label/shortForm
@@ -49,11 +49,17 @@ export namespace MultipleLists {
                     },
                     interactionModel: {
                         slotType: 'YesNo', // TODO: allow multiple slotTypes? e.g. to support YesNo and Symptom.
-                        filteredSlotType: 'none',                        
-                        targets: ['builtin_it', 'builtin_questionnaire','healthQuestionnaire'], // this should just be the control targets.  The question targets are in content.
+                        filteredSlotType: 'none',
+                        targets: ['builtin_it', 'builtin_questionnaire', 'healthQuestionnaire'], // this should just be the control targets.  The question targets are in content.
                     },
                     dialog: {
                         confirmationRequired: false,
+                    },
+                    apl: {
+                        askQuestion: QuestionnaireControlAPLPropsBuiltIns.defaultAskQuestion({
+                            title: "Do you have these symptoms?",
+                            submitButtonText: "Next >"
+                        }),
                     },
                 }),
             );
@@ -65,7 +71,6 @@ export namespace MultipleLists {
                     questionnaireData: {
                         questions: [
                             {
-                                
                                 id: 'foot',
                                 targets: ['foot'],
                                 //TODO: support functions on prompt/label/shortForm
