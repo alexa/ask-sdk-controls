@@ -33,7 +33,11 @@ waitForDebugger();
     - User ignores the prompt and directly answers a question of their choosing, via an
       alternate value. ie say "I often cough" rather than "yes to cough".
      - allow the value to come via preposition, cf via feedback.
+<<<<<<< HEAD
+    - test default content is present in APL (not necessarily the precise details. !undefined, !dummy, etc.)
+=======
    
+>>>>>>> develop
  */
 
 suite('QuestionnaireControl e2e tests', () => {
@@ -155,8 +159,8 @@ suite('QuestionnaireControl e2e tests', () => {
 
         const response = await testTurn(
             invoker,
-            'U: I cough all the time',
-            TestInput.simpleUserEvent(['question', 'radioClick', 'cough', 1]), //questionId='cough', answerIndex=1
+            'U: <Press "no" for "have cough">',
+            TestInput.simpleUserEvent(['question', 'radioClick', 'cough', 1]),
             'A: ',
         );
 
@@ -165,6 +169,22 @@ suite('QuestionnaireControl e2e tests', () => {
         expect(requestHandler.getSerializableControlStates().question.value).deep.equals({
             cough: {
                 choiceId: 'no',
+            },
+        });
+
+        const response2 = await testTurn(
+            invoker,
+            'U: <Press "yes" for "have headache">',
+            TestInput.simpleUserEvent(['question', 'radioClick', 'headache', 0]),
+            'A: ', // implicit completion should _not occur_
+        );
+
+        expect(requestHandler.getSerializableControlStates().question.value).deep.equals({
+            cough: {
+                choiceId: 'no',
+            },
+            headache: {
+                choiceId: 'yes',
             },
         });
     });
