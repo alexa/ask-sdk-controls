@@ -349,9 +349,6 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                         },
                         {
                             when: '${wrapper.general.debug}',
-                            type: 'Text',
-                            id: 'debugText',
-                            text: 'debugInfo',
                             position: 'absolute',
                             bottom: '0vh',
                         },
