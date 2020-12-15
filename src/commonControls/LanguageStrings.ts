@@ -961,13 +961,6 @@ export const defaultI18nResources: Resource = {
                         },
                     },
                     {
-                        id: $.Target.Choice,
-                        name: {
-                            value: 'choice',
-                            synonyms: ['my choice', 'selection', 'my selection'],
-                        },
-                    },
-                    {
                         id: $.Target.Date,
                         name: {
                             value: 'date',
