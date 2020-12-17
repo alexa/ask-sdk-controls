@@ -164,7 +164,7 @@ suite('QuestionnaireControl e2e tests', () => {
             'A: ',
         );
 
-        expect((response.directive = undefined)); // no APL after touch events.  It is already updated on client side.
+        expect(response.directive === undefined); // no APL after touch events.  It is already updated on client side.
 
         expect(requestHandler.getSerializableControlStates().question.value).deep.equals({
             cough: {
