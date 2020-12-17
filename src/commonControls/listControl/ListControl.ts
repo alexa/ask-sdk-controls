@@ -1208,7 +1208,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         generator.addYesAndNoIntents();
 
         generator.ensureSlotIsDefined(this.id, this.props.slotType);
-        generator.ensureSlotIsDefined(
+        generator.ensureSlotIsNoneOrDefined(
             this.id,
             this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
         );
