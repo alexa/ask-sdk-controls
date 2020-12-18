@@ -262,7 +262,7 @@ export abstract class ControlManager implements IControlManager {
      *
      * Default: loads from Session Attributes.
      */
-    loadControlStateMap(handlerInput: HandlerInput): { [key: string]: any } {
+    async loadControlStateMap(handlerInput: HandlerInput): Promise<{ [key: string]: any }> {
         return ControlManager.loadControlStateMapFromSessionAttributes(
             handlerInput,
             ControlManager.DEFAULT_CONTROL_STATE_ATTRIBUTE_KEY,
@@ -274,7 +274,7 @@ export abstract class ControlManager implements IControlManager {
      *
      * Default: saves to the Session Attributes.
      */
-    saveControlStateMap(state: any, handlerInput: HandlerInput): void {
+    async saveControlStateMap(state: any, handlerInput: HandlerInput): Promise<void> {
         ControlManager.saveControlStateToSessionAttributes(
             state,
             handlerInput,

@@ -75,10 +75,10 @@ export interface IControlManager {
     /**
      *
      */
-    loadControlStateMap(handlerInput: HandlerInput): { [key: string]: any };
+    loadControlStateMap(handlerInput: HandlerInput): Promise<{ [key: string]: any }>;
 
     /**
      *
      */
-    saveControlStateMap(state: any, handlerInput: HandlerInput): void;
+    saveControlStateMap(state: any, handlerInput: HandlerInput): Promise<void>;
 }
