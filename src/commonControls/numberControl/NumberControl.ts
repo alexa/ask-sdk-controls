@@ -682,7 +682,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private isScreenEvent(input: ControlInput) {
+    private isScreenEvent(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isAPLUserEventWithMatchingControlIdAndArgLength(input, this.id, 2));
             this.handleFunc = this.handleScreenEvent;

@@ -11,14 +11,13 @@
  * permissions and limitations under the License.
  */
 
-import { NumberDemo1 } from '.';
+import { BasicNumberDemo } from '.';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { Logger } from '../../../../src/logging/Logger';
 
+const log = new Logger('NumberControlDemo:InteractionModel');
 
-const log = new Logger('HelloWorld:InteractionModel');
-
-export namespace NumberDemo1IM {
+export namespace BasicNumberDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
         .withInvocationName('control demos')
         .addIntent({ name: 'AMAZON.StopIntent' })
@@ -29,19 +28,13 @@ export namespace NumberDemo1IM {
         .addIntent({ name: 'AMAZON.NoIntent' })
         .addIntent({ name: 'AMAZON.FallbackIntent' })
         .setModelConfiguration({ fallbackIntentSensitivity: { level: 'HIGH' } })
-
-        // Add a custom intent
-        .addIntent({
-            name: 'HelloIntent',
-            samples: ['Say hello', 'Say hi']
-        })
-        .buildCoreModelForControls(new NumberDemo1.DemoControlManager())
+        .buildCoreModelForControls(new BasicNumberDemo.DemoControlManager())
 }
 
 // If launched directly, build and write to a file
 if (require.main === module) {
     // Build and write
-    NumberDemo1IM.imGen.buildAndWrite('en-US-generated.json');
+    BasicNumberDemoIM.imGen.buildAndWrite('en-US-generated.json');
     console.log('Wrote ./en-US-generated.json');
 }
 
