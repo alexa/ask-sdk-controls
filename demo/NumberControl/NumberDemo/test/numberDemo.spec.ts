@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License").
@@ -11,6 +10,7 @@ import { expect } from 'chai';
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import {
     ControlHandler,
@@ -23,16 +23,14 @@ import {
     AmazonBuiltInSlotType,
     AmazonIntent
 } from '../../../../src';
-import { NumberDemo1 } from '../src';
-import { NumberDemo1IM } from '../src/buildInteractionModel';
+import { BasicNumberDemo } from '../src';
+import { BasicNumberDemoIM } from '../src/buildInteractionModel';
 
 waitForDebugger();
 
 suite('all', () => {
     test('Number Demo - IMGen', async () => {
-        const imData = NumberDemo1IM.imGen.build();
-        expect(imData.interactionModel?.languageModel?.intents?.find((x) => x.name === 'HelloIntent')).not
-            .undefined;
+        const imData = BasicNumberDemoIM.imGen.build();
 
         const numberValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(
             (x) => x.name === 'AMAZON_NUMBER_ValueControlIntent',
@@ -41,7 +39,7 @@ suite('all', () => {
     });
 
     test('Number Demo - give value, then confirm', async () => {
-        const requestHandler = new ControlHandler(new NumberDemo1.DemoControlManager());
+        const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
         await testTurn(
             invoker,
@@ -61,7 +59,7 @@ suite('all', () => {
     });
 
     test('Number Demo - 40 as value, no as disconfirmation, resolve ambiguity to 14', async () => {
-        const requestHandler = new ControlHandler(new NumberDemo1.DemoControlManager());
+        const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
         await testTurn(
             invoker,
@@ -88,7 +86,7 @@ suite('all', () => {
     });
 
     test('Number Demo - screen input, no confirmation', async () => {
-        const requestHandler = new ControlHandler(new NumberDemo1.DemoControlManager());
+        const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
         await testTurn(
             invoker,
@@ -106,7 +104,7 @@ suite('all', () => {
     });
 
     test('Number Demo - screen input, invalid, new value valid', async () => {
-        const requestHandler = new ControlHandler(new NumberDemo1.DemoControlManager());
+        const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
         await testTurn(
             invoker,
