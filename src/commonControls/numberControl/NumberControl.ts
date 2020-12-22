@@ -291,7 +291,7 @@ export class NumberControlAPLProps {
     /**
      * The message to show on screen if validation fails.
      */
-    validationFailedMessage?: string | ((value?: number | string) => string);
+    validationFailedMessage?: string | ((value?: number) => string);
 }
 
 /**
@@ -1323,7 +1323,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             : prop;
     }
 
-    private evaluateAPLValidationFailedMessage(value?: number | string): string {
+    private evaluateAPLValidationFailedMessage(value?: number): string {
         if (typeof this.props.apl.validationFailedMessage === 'function') {
             return this.props.apl.validationFailedMessage(value);
         }
