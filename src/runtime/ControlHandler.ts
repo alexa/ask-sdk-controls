@@ -75,7 +75,7 @@ export class ControlHandler implements RequestHandler {
         this.controlManager = controlManager;
     }
 
-    private prepare(handlerInput: HandlerInput): void {
+    private async prepare(handlerInput: HandlerInput): Promise<void> {
         if (this.preparedRequestId === handlerInput.requestEnvelope.request.requestId) {
             return; // don't prepare again for the same requestId.
         }
@@ -91,7 +91,7 @@ export class ControlHandler implements RequestHandler {
 
         // rebuild the control tree
         this.rootControl = this.controlManager.createControlTree();
-        const stateMap = this.controlManager.loadControlStateMap(handlerInput);
+        const stateMap = await this.controlManager.loadControlStateMap(handlerInput);
         this.controlManager.reestablishControlStates(this.rootControl, stateMap);
 
         // create the input object for use in the main processing.
@@ -126,7 +126,7 @@ export class ControlHandler implements RequestHandler {
      */
     async canHandle(handlerInput: HandlerInput): Promise<boolean> {
         try {
-            this.prepare(handlerInput);
+            await this.prepare(handlerInput);
             return this.rootControl!.canHandle(this.controlInput);
         } catch (error) {
             if (this.controlManager.handleInternalError) {
@@ -147,7 +147,7 @@ export class ControlHandler implements RequestHandler {
      */
     async handle(handlerInput: HandlerInput, processInput = true): Promise<IControlResponse> {
         try {
-            this.prepare(handlerInput);
+            await this.prepare(handlerInput);
 
             /*
              * Process the turn through the application.
@@ -176,7 +176,7 @@ export class ControlHandler implements RequestHandler {
             /* Note: we merge onto the prevailing state for the edge-case of multiple ControlHandlers in the skill that are active on different turns.
              *       merging avoid one controlHandler stomping on the state of the other.  Context is currently OK/good to be stomped on.
              */
-            const priorStateMap = this.controlManager.loadControlStateMap(handlerInput);
+            const priorStateMap = await this.controlManager.loadControlStateMap(handlerInput);
             const currentStateMap = this.getSerializableControlStates();
             const mergedStateMap = { ...priorStateMap, ...currentStateMap };
 
@@ -186,7 +186,7 @@ export class ControlHandler implements RequestHandler {
             const contextToSaveJson = JSON.stringify(this.additionalSessionContext, null, 2);
             log.info(`Saving context...\n${contextToSaveJson}`);
 
-            this.controlManager.saveControlStateMap(stateToSaveJson, handlerInput);
+            await this.controlManager.saveControlStateMap(stateToSaveJson, handlerInput);
 
             this.controlInput.handlerInput.attributesManager.getSessionAttributes()[
                 ControlHandler.attributeNameContext
