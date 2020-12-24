@@ -2459,7 +2459,7 @@ Use new translations at build time by updating the interaction model generator s
 2.     .buildCoreModelForControls(
 3.         new MyControlManager( {locale: 'es-ES', i18nResources: myResources }))
 4.     .withInvocationName('my invocation phrase')
-5.     .buildAndWrite('en-US-generated.json');
+5.     .buildAndWrite('es-ES-generated.json');
 6. console.log('done.');
 ```
 
