@@ -57,8 +57,8 @@ export namespace MultipleLists {
                     },
                     apl: {
                         askQuestion: QuestionnaireControlAPLPropsBuiltIns.defaultAskQuestion({
-                            title: "Do you have these symptoms?",
-                            submitButtonText: "Next >"
+                            title: 'Do you have these symptoms?',
+                            submitButtonText: 'Next >',
                         }),
                     },
                 }),

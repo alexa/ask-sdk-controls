@@ -22,7 +22,7 @@ import { OrdinalControlIntent } from '../intents/OrdinalControlIntent';
 import { SingleValueControlIntent } from '../intents/SingleValueControlIntent';
 import { Logger } from '../logging/Logger';
 import { InteractionModelGenerator } from './InteractionModelGenerator';
-import { IntentUtterances, ModelData, SharedSlotType } from './ModelTypes';
+import { IntentUtterances, ModelData } from './ModelTypes';
 
 import Intent = v1.skill.interactionModel.Intent;
 import DialogIntent = v1.skill.interactionModel.DialogIntents;
@@ -112,6 +112,12 @@ export class ControlInteractionModelGenerator extends InteractionModelGenerator 
     }
 
     ensureSlotIsDefined(controlId: string, slotType: string) {
+        // built-ins are allowed
+        if (slotType.startsWith('AMAZON')) {
+            return;
+        }
+
+        // otherwise slots must be explicitly defined.
         if (!this.isSlotDefined(slotType)) {
             throw new Error(
                 `Control id=${controlId} requires slot type ${slotType} but it does not exist.  If it is a custom slot add it to the interaction model before calling imGen.buildCoreModelForControls()`,
