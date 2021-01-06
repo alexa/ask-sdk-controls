@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import { ValueControl } from '../../src/commonControls/ValueControl';
 import { Strings as $ } from '../../src/constants/Strings';
@@ -19,6 +20,7 @@ import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
+import { assert } from '../../src/utils/AssertionUtils';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
 import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 
@@ -117,5 +119,13 @@ suite('ValueControl e2e tests', () => {
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
         ]);
+    });
+
+    test('ensure the slot elicitation details are legal. Specifically that the value-slot key is {slotType}', async () => {
+        const slotType = 'Org.SlotType';
+        const result = ValueControl.generateSlotElicitationDetails(slotType);
+        assert(result.intent.slots !== undefined);
+        expect(result.intent.slots[slotType]).not.undefined;
+        expect(result.intent.slots[slotType].name).equals(slotType);
     });
 });

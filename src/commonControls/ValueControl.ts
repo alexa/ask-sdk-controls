@@ -974,8 +974,8 @@ export class ValueControl extends Control implements InteractionModelContributor
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            const slotElicitation = generateSlotElicitation(this.props.slotType);
-            builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
+            const slotElicitationDetails = ValueControl.generateSlotElicitationDetails(this.props.slotType);
+            builder.addElicitSlotDirective(slotElicitationDetails.slotName, slotElicitationDetails.intent);
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
@@ -1011,34 +1011,36 @@ export class ValueControl extends Control implements InteractionModelContributor
         }
         generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
     }
-}
 
-/**
- * Creates an elicit-slot directive for the provided slotType.
- *
- * - The intent specified is a `{slotType}_ValueControlIntent`
- * - The slot specified is the `slotType` slot.
- *
- * @param slotType - Slot type
- */
-function generateSlotElicitation(slotType: string): { intent: Intent; slotName: string } {
-    const intent: Intent = {
-        // TODO: refactor: use SingleValueControlIntent.intentName
-        name: `${slotType}_ValueControlIntent`.replace('.', '_'),
-        slots: {
-            slotType: { name: slotType, value: '', confirmationStatus: 'NONE' },
-            feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
-            action: { name: 'action', value: '', confirmationStatus: 'NONE' },
-            target: { name: 'target', value: '', confirmationStatus: 'NONE' },
-            head: { name: 'head', value: '', confirmationStatus: 'NONE' },
-            tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
-            assign: { name: 'assign', value: '', confirmationStatus: 'NONE' },
-        },
-        confirmationStatus: 'NONE',
-    };
+    /**
+     * Creates an elicit-slot directive for the provided slotType.
+     *
+     * - The intent specified is a `{slotType}_ValueControlIntent`
+     * - The slot specified is the `slotType` slot.
+     *
+     * @param slotType - Slot type
+     *
+     * PublicForTesting
+     */
+    public static generateSlotElicitationDetails(slotType: string): { intent: Intent; slotName: string } {
+        const intent: Intent = {
+            // TODO: refactor: use SingleValueControlIntent.intentName
+            name: `${slotType}_ValueControlIntent`.replace('.', '_'),
+            slots: {
+                [slotType]: { name: slotType, value: '', confirmationStatus: 'NONE' },
+                feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
+                action: { name: 'action', value: '', confirmationStatus: 'NONE' },
+                target: { name: 'target', value: '', confirmationStatus: 'NONE' },
+                head: { name: 'head', value: '', confirmationStatus: 'NONE' },
+                tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
+                assign: { name: 'assign', value: '', confirmationStatus: 'NONE' },
+            },
+            confirmationStatus: 'NONE',
+        };
 
-    return {
-        intent,
-        slotName: slotType,
-    };
+        return {
+            intent,
+            slotName: slotType,
+        };
+    }
 }
