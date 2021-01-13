@@ -92,7 +92,7 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
             general: {
                 headerTitle:
                     contentProps.title ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
-                headerSubitle:
+                headerSubtitle:
                     contentProps.subtitle ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
                 controlId: control.id,
             },
