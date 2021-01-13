@@ -1,6 +1,4 @@
 import i18next from 'i18next';
-import { RequestChangedValueByListAct } from '../..';
-import { ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { AplContent, MultiValueListControl } from './MultiValueListControl';
 
@@ -25,7 +23,7 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
         title?: string;
 
         /**
-         * Default (en-*): 'Submit &gt;'
+         * Default (en-*): 'Done;'
          */
         submitButtonText?: string;
 
