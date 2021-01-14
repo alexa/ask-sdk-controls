@@ -19,7 +19,7 @@ import { MultiValueListDemoIM } from '../src/buildInteractionModel';
 import { MultiValueControlIntent } from '../../../src/intents/MultiValueControlIntent';
 waitForDebugger();
 
-suite('all', () => {
+suite('MultiValueListDemo', () => {
     test('AppleSuite MultiValueList Demo - IMGen', async () => {
         const imData = MultiValueListDemoIM.imGen.build();
         const appleSuiteMultiValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(

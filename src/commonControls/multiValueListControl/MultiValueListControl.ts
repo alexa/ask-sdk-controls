@@ -191,7 +191,7 @@ export type AplContentFunc = (control: MultiValueListControl, input: ControlInpu
 export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
 
 /**
- * Mapping of action slot values to the behaviors that this control supports.
+ * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
  * - This control will not handle an input if the action-slot is filled with an
@@ -379,7 +379,17 @@ export class MultiValueListControlAPLProps {
 }
 
 export type MultiValueListStateValue = {
+    /**
+     * Track the slot value.
+     */
     id: string;
+
+    /**
+     * Tracks whether the value is an Entity Resolution match.
+     *
+     * If `erMatch = true` the value is a slot value ID for the slot type `this.slotType`.
+     * If `erMatch = false` the value may be an arbitrary string.
+     */
     erMatch: boolean;
 };
 
@@ -400,22 +410,16 @@ export type LastInitiativeState = {
  */
 export class MultiValueListControlState implements ControlState {
     /**
-     * The value.
-     *
-     * If `erMatch = true` the value is a slot value ID for the slot type `this.slotType`.
-     * If `erMatch = false` the value may be an arbitrary string.
+     * The list of values as [ (id1, erMatch), (id2, erMatch) ]
      */
     value?: MultiValueListStateValue[];
-    /**
-     * Tracks whether the value is an Entity Resolution match.
-     */
 
     /**
      * Tracks the most recent elicitation action.
      *
      * Note: this isn't cleared immediate after user provides a value as the
      * value maybe be invalid and has to be re-elicited.  Use
-     * state.activeInitiate to test if the most recent turn was a direct elicitation.
+     * state.lastInitiative to test if the most recent turn was a direct elicitation.
      */
     elicitationAction?: string;
 
@@ -441,25 +445,24 @@ export class MultiValueListControlState implements ControlState {
 }
 
 /**
- * A Control that obtains a single value from the user by presenting a list of
+ * A Control that obtains multiple values from the user by presenting a list of
  * available options using voice and/or APL.
  *
  * The type of value to obtain is defined by `this.slotType`.
  *
  * Capabilities:
- * - Request a value
- * - Change a value
- * - Validate the value
- * - Confirm the value
+ * - Request a value or list of values
+ * - Remove a value or list of values
+ * - Validate the value/values
+ * - Confirm the values
  * - Speak the first few options
  * - Show all the options on APL enabled devices
  * - Selection of a value using a spoken ordinal, e.g. "The first one".
  * - Selection of a value using touch screen.
  *
  * Intents that can be handled:
- * - `GeneralControlIntent`: E.g. `"yes, update my name"`
- * - `{ValueType}_ValueControlIntent`: E.g. "no change it to Elvis".
- * - `AMAZON_ORDINAL_ValueControlIntent`: E.g. "no change it to Elvis".
+ * - `GeneralControlIntent`: E.g. `"no, clear all names"`
+ * - `{ValueType}_MultiValueControlIntent`: E.g. "add Elvis, May and Max".
  * - `AMAZON.YesIntent`, `AMAZON.NoIntent`
  *
  * APL events that can be handled:
@@ -470,8 +473,6 @@ export class MultiValueListControlState implements ControlState {
  */
 export class MultiValueListControl extends Control implements InteractionModelContributor {
     state: MultiValueListControlState = new MultiValueListControlState();
-    inputWasAnswerByTouch: boolean = false;
-    activatedThisTurn: boolean = false;
 
     private rawProps: MultiValueListControlProps;
     private props: DeepRequired<MultiValueListControlProps>;
@@ -516,7 +517,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             confirmationRequired: false,
             interactionModel: {
                 actions: {
-                    remove: [$.Action.Remove, $.Action.Delete, $.Action.Ignore],
+                    remove: [$.Action.Remove, $.Action.Ignore],
                     add: [$.Action.Select, $.Action.Add],
                     clear: [$.Action.Clear],
                 },
@@ -639,7 +640,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             },
             apl: {
                 enabled: true,
-                requestValue: MultiValueListControlAPLPropsBuiltIns.defaultSelectValue({
+                requestValue: MultiValueListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
                     valueRenderer: (choice, input) => choice, // TOOD: Pass the valueRenderer prop
                 }),
             },
@@ -760,7 +761,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        let values = this.generateSlotValues(slotValues);
+        let values = this.getSlotValues(slotValues);
         const validationResult = await this.validate(values, input);
         const valueIds: string[] = [];
 
@@ -813,7 +814,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private handleRemoveWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        const valueIds = this.generateSlotValues(slotValues);
+        const valueIds = this.getSlotValues(slotValues);
         const deletedValues = [];
         let invalidValues: string[] = [];
 
@@ -1355,7 +1356,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return [$.Feedback.Affirm, $.Feedback.Disaffirm];
     }
 
-    private generateSlotValues(values: MultiValueSlot[]): MultiValueListStateValue[] {
+    private getSlotValues(values: MultiValueSlot[]): MultiValueListStateValue[] {
         const valueIds: MultiValueListStateValue[] = [];
         values.forEach((value) => {
             valueIds.push({

@@ -16,7 +16,7 @@ import { AplContent, MultiValueListControl } from './MultiValueListControl';
  */
 
 export namespace MultiValueListControlAPLPropsBuiltIns {
-    export interface DefaultSelectValueProps {
+    export interface DefaultSelectValueAPLProps {
         /**
          * Default: 'Create your list'
          */
@@ -28,10 +28,19 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
         submitButtonText?: string;
 
         /**
-         * Default: 'Say an Item or touch it to add it your list'
+         * Default: 'Say an item or touch it to add it your list'
          */
         subtitle?: string;
 
+        /**
+         * Default: 'YOUR SELECTIONS'
+         */
+        selectionListTitle?: string;
+
+        /**
+         * Default: 'Swipe left to remove items'
+         */
+        selectionListSubtitle?: string;
         /**
          * Whether debug information is displayed
          *
@@ -48,8 +57,8 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
         valueRenderer: (choice: string, input: ControlInput) => string;
     }
 
-    export function defaultSelectValue(
-        props: DefaultSelectValueProps,
+    export function defaultSelectValueAPLContent(
+        props: DefaultSelectValueAPLProps,
     ): (control: MultiValueListControl, input: ControlInput) => AplContent {
         return (control: MultiValueListControl, input: ControlInput) => {
             return {
@@ -69,7 +78,7 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
     export function multiValueListDataSourceGenerator(
         control: MultiValueListControl,
         input: ControlInput,
-        contentProps: DefaultSelectValueProps,
+        contentProps: DefaultSelectValueAPLProps,
     ) {
         const listOfChoices = [];
         const selectedChoices = [];
@@ -94,6 +103,12 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                     contentProps.title ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
                 headerSubtitle:
                     contentProps.subtitle ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
+                selectionListTitle:
+                    contentProps.selectionListTitle ??
+                    i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
+                selectionListSubtitle:
+                    contentProps.selectionListSubtitle ??
+                    i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
                 controlId: control.id,
             },
             choices: {
@@ -106,9 +121,9 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
     }
 
     /**
-     * The APL document to use when requesting a value
+     * The APL document to use when selecting a value
      *
-     * Default: A TextListLayout document with scrollable and clickable list.
+     * Default: A dual-TextListLayout document one with scrollable and clickable list and another with swipeAction to remove items from list.
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
@@ -128,12 +143,18 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                 items: [
                     {
                         type: 'Container',
+                        width: '100%',
                         id: 'root',
                         bind: [
                             {
                                 name: 'debugText',
                                 type: 'string',
                                 value: 'debug...',
+                            },
+                            {
+                                name: 'disableScreen',
+                                type: 'boolean',
+                                value: false,
                             },
                             {
                                 name: 'showDebug',
@@ -157,10 +178,22 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                 buttonText: 'Done',
                                 id: 'actionComplete',
                                 primaryAction: {
-                                    type: 'SendEvent',
-                                    arguments: ['${payload.general.controlId}', 'Complete'],
+                                    type: 'Sequential',
+                                    commands: [
+                                        {
+                                            type: 'SendEvent',
+                                            arguments: ['${payload.general.controlId}', 'Complete'],
+                                        },
+                                        {
+                                            type: 'SetValue',
+                                            componentId: 'root',
+                                            property: 'disableScreen',
+                                            value: true,
+                                        },
+                                    ],
                                 },
-                                right: '10vw',
+                                right: '@marginHorizontal',
+                                top: "${@viewportProfile == @hubLandscapeSmall ? '1vw' : '2vw'}",
                                 position: 'absolute',
                             },
                             {
@@ -173,74 +206,156 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                             },
                             {
                                 type: 'Container',
-                                paddingLeft: '@spacingMedium',
+                                paddingRight: '@marginHorizontal',
+                                paddingTop: '@spacingSmall',
                                 direction: 'row',
+                                width: '100%',
+                                shrink: 1,
                                 items: [
                                     {
-                                        type: 'AlexaTextList',
-                                        width: '50vw',
+                                        type: 'Container',
+                                        width: '55%',
                                         height: '80vh',
-                                        touchForward: true,
-                                        headerBackButton: false,
-                                        primaryAction: {
-                                            type: 'Sequential',
-                                            commands: [
-                                                {
-                                                    type: 'SetValue',
-                                                    componentId: 'root',
-                                                    property: 'debugText',
-                                                    value: '${ordinal}',
-                                                },
-                                                {
-                                                    type: 'SendEvent',
-                                                    arguments: [
-                                                        '${payload.general.controlId}',
-                                                        'Select',
-                                                        '${ordinal}',
-                                                    ],
-                                                },
-                                            ],
-                                        },
-                                        listItems: '${payload.choices.listItems}',
+                                        items: [
+                                            {
+                                                type: 'Sequence',
+                                                scrollDirection: 'vertical',
+                                                data: '${payload.choices.listItems}',
+                                                width: '100%',
+                                                paddingLeft: '0',
+                                                numbered: true,
+                                                grow: 1,
+                                                items: [
+                                                    {
+                                                        type: 'Container',
+                                                        items: [
+                                                            {
+                                                                type: 'AlexaTextListItem',
+                                                                touchForward: true,
+                                                                primaryText: '${data.primaryText}',
+                                                                primaryAction: {
+                                                                    type: 'Sequential',
+                                                                    commands: [
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'debugText',
+                                                                            value: '${ordinal}',
+                                                                        },
+                                                                        {
+                                                                            type: 'SendEvent',
+                                                                            arguments: [
+                                                                                '${payload.general.controlId}',
+                                                                                'Select',
+                                                                                '${ordinal}',
+                                                                            ],
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                            },
+                                        ],
                                     },
                                     {
-                                        type: 'AlexaTextList',
-                                        touchForward: true,
-                                        headerTitle: 'Your selections',
-                                        headerSubtitle: 'Swipe to remove items',
-                                        hideOrdinal: true,
-                                        swipeDirection: 'left',
-                                        swipeActionIconBackground: 'red',
-                                        onSwipeDone: {
-                                            type: 'Sequential',
-                                            commands: [
-                                                {
-                                                    type: 'SetValue',
-                                                    componentId: 'root',
-                                                    property: 'debugText',
-                                                    value: '${ordinal}',
-                                                },
-                                                {
-                                                    type: 'SendEvent',
-                                                    arguments: [
-                                                        '${payload.general.controlId}',
-                                                        'Remove',
-                                                        '${ordinal}',
-                                                    ],
-                                                },
-                                            ],
-                                        },
-                                        listItems: '${payload.selections.listItems}',
-                                        theme: 'light',
-                                        backgroundColor: 'white',
-                                        width: '40vw',
-                                        height: '90vh',
+                                        type: 'Container',
+                                        width: '55%',
+                                        height: '80vh',
+                                        items: [
+                                            {
+                                                type: 'AlexaBackground',
+                                                backgroundColor: 'white',
+                                            },
+                                            {
+                                                type: 'Text',
+                                                style: 'textStyleMetadata',
+                                                color: 'black',
+                                                textAlign: 'center',
+                                                textAlignVertical: 'center',
+                                                maxLines: 1,
+                                                paddingTop: '@spacingXSmall',
+                                                text: '${payload.general.selectionListTitle}',
+                                            },
+                                            {
+                                                type: 'Text',
+                                                style: 'textStyleMetadataAlt',
+                                                color: 'black',
+                                                textAlign: 'center',
+                                                textAlignVertical: 'center',
+                                                maxLines: 1,
+                                                text: '${payload.general.selectionListSubtitle}',
+                                            },
+                                            {
+                                                type: 'Sequence',
+                                                scrollDirection: 'vertical',
+                                                data: '${payload.selections.listItems}',
+                                                width: '100%',
+                                                paddingLeft: '0',
+                                                numbered: true,
+                                                grow: 1,
+                                                items: [
+                                                    {
+                                                        type: 'Container',
+                                                        items: [
+                                                            {
+                                                                type: 'AlexaSwipeToAction',
+                                                                touchForward: true,
+                                                                hideOrdinal: true,
+                                                                theme: 'light',
+                                                                actionIconType: 'AVG',
+                                                                actionIcon: 'cancel',
+                                                                actionIconBackground: 'red',
+                                                                primaryText: '${data.primaryText}',
+                                                                onSwipeDone: {
+                                                                    type: 'Sequential',
+                                                                    commands: [
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'debugText',
+                                                                            value: '${ordinal}',
+                                                                        },
+                                                                        {
+                                                                            type: 'SendEvent',
+                                                                            arguments: [
+                                                                                '${payload.general.controlId}',
+                                                                                'Remove',
+                                                                                '${ordinal}',
+                                                                            ],
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                            },
+                                        ],
                                     },
                                 ],
                             },
                         ],
                     },
                 ],
+            },
+            graphics: {
+                cancel: {
+                    type: 'AVG',
+                    version: '1.0',
+                    width: 24,
+                    height: 24,
+                    parameters: ['fillColor'],
+                    items: [
+                        {
+                            type: 'path',
+                            fill: '${fillColor}',
+                            pathData:
+                                'M19.07 17.66L13.41 12l5.66-5.66C19.41 5.94 19.39 5.35 19.02 4.98 18.65 4.61 18.06 4.59 17.66 4.93L12 10.59 6.34 4.93C5.94 4.59 5.35 4.61 4.98 4.98 4.61 5.35 4.59 5.94 4.93 6.34L10.59 12l-5.66 5.66C4.64 17.9 4.52 18.29 4.61 18.65 4.7 19.02 4.98 19.3 5.35 19.39 5.71 19.48 6.1 19.36 6.34 19.07L12 13.41l5.66 5.66C18.06 19.41 18.65 19.39 19.02 19.02 19.39 18.65 19.41 18.06 19.07 17.66z',
+                        },
+                    ],
+                },
             },
         };
     }

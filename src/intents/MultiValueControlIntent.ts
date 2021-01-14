@@ -95,11 +95,6 @@ export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload
                 break;
             default:
                 if (slotValue !== undefined) {
-                    // did we already capture a value?
-                    // if (valueType !== undefined) {
-                    //     throw new Error('a MultiValueControlIntent should only have one value slot');
-                    // }
-                    // treat it as a slot whose name is an NLU slot type.
                     values = slotValue;
                     valueType = name;
                 }
@@ -124,19 +119,24 @@ export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload
 }
 
 /**
- * TODO docs
- * Intent that conveys feedback, action, target and an AMAZON.Ordinal value
  *
- * The value slot will be named according to the Slot type.
- * - For example `{'AMAZON.NUMBER': '2'}` or  `{ 'AMAZON.Ordinal': 'first' }`
+ * MultiValueControlIntent is an intent that can carry multiple values for one value-type.
+ *
+ * - For example an utterance like "Plan a trip to go hiking, camping, and fishing"
+ *  all three values 'hiking, camping, fishing' can be captured using a multiple-value slot like `activity`.
  *
  * Every sample utterance for a MultiValueControlIntent includes the value
  * slot.  Utterances that do not include a value slot are handled by
  * `GeneralControlIntent`.
  *
+ *
  * Limitations
  *  - `AMAZON.SearchQuery` cannot be used due to restrictions in NLU. Custom
  *    intents should be defined instead.
+ *
+ *  - It does not support multiple value of different slottypes, see:
+ *    https://developer.amazon.com/en-US/docs/alexa/custom-skills/collect-multiple-values-in-a-slot.html#about-multiple-value-slots
+ *
  */
 export class MultiValueControlIntent extends BaseControlIntent {
     valueSlotType: string;
@@ -180,26 +180,6 @@ export class MultiValueControlIntent extends BaseControlIntent {
     /**
      * Create Intent from specification of the slots
      *
-     * Usage:
-     *  * the value should be provided as a property with name = <SlotType>
-     *
-     * Examples:
-     * - AMAZON.NUMBER:
-     * ```
-     * {
-     *    name: AMAZON_NUMBER_ValueControlIntent
-     *    slots: { target: 'count', 'AMAZON.NUMBER': '2' }
-     *    confirmationStatus: 'NONE'
-     * }
-     * ```
-     * - AMAZON.Ordinal:
-     * ```
-     * {
-     *    name: AMAZON_ORDINAL_ValueControlIntent
-     *    slots: { action: 'set', 'AMAZON.Ordinal': 'first'}
-     *    confirmationStatus: 'NONE'
-     * }
-     * ```
      */
     static of(slotType: string, slots: MultiValueControlIntentSlots): Intent {
         return IntentBuilder.of(MultiValueControlIntent.intentName(slotType), slots);
@@ -249,7 +229,7 @@ export class MultiValueControlIntent extends BaseControlIntent {
             },
         ];
 
-        if (this.filteredValueSlotType !== this.valueSlotType) {
+        if (this.filteredValueSlotType !== this.valueSlotType && this.filteredValueSlotType !== 'none') {
             slots.push({
                 name: `${this.filteredValueSlotType}`,
                 type: `${this.filteredValueSlotType}`,

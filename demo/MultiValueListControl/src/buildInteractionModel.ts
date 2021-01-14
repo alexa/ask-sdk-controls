@@ -62,7 +62,7 @@ export namespace MultiValueListDemoIM {
                     },
                 },
                 {
-                    id: 'MacBoook',
+                    id: 'MacBook',
                     name: {
                         value: 'MacBook',
                         synonyms: ['laptop'],

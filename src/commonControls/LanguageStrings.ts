@@ -181,8 +181,7 @@ export const defaultI18nResources: Resource = {
             // MultiValueListControl Runtime
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD: 'OK, added {{value}}.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
-            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED:
-                'OK, removed the following {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_ACTION_SUGGEST:
                 'You can add new values or update existing values',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE:
@@ -202,8 +201,7 @@ export const defaultI18nResources: Resource = {
             // RePrompts
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
-            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED:
-                'OK, removed the following {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_ACTION_SUGGEST:
                 'You can add new values or update existing values',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE:
@@ -220,8 +218,10 @@ export const defaultI18nResources: Resource = {
                 'What value do you want to remove?',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Ok I have {{value}}. Is that all?',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
-            MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Create your List',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Create your list',
             MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE: 'Say an item or touch it to add it your list',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE: 'YOUR SELECTIONS',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE: 'Swipe left to remove items',
 
             // DateRangeControl Runtime
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET: 'Got it. The start date is {{value}}.',
@@ -1010,13 +1010,6 @@ export const defaultI18nResources: Resource = {
                         name: {
                             value: 'clear',
                             synonyms: ['remove all', 'clear'],
-                        },
-                    },
-                    {
-                        id: $.Action.Delete,
-                        name: {
-                            value: 'delete',
-                            synonyms: ['delete'],
                         },
                     },
                     {

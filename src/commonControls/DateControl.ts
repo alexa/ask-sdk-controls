@@ -124,7 +124,7 @@ export interface DateControlProps extends ControlProps {
 }
 
 /**
- * Mapping of action slot values to the behaviors that this control supports.
+ * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
  * - This control will not handle an input if the action-slot is filled with an
