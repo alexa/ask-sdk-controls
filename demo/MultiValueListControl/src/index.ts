@@ -1,6 +1,10 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { Control } from '../../..//src/controls/Control';
-import { MultiValueListControl, MultiValueListStateValue, MultiValueValidationFailure } from '../../../src/commonControls/multiValueListControl/MultiValueListControl';
+import {
+    MultiValueListControl,
+    MultiValueListStateValue,
+    MultiValueValidationFailure,
+} from '../../../src/commonControls/multiValueListControl/MultiValueListControl';
 import { ControlManager } from '../../../src/controls/ControlManager';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
 import { DemoRootControl } from '../../Common/src/DemoRootControl';
@@ -12,10 +16,10 @@ export namespace MultiValueListDemo {
 
             rootControl.addChild(
                 new MultiValueListControl({
-                    id: 'apple',
-                    validation: validateProducts,
-                    listItemIDs: getProductList,
-                    slotType: 'AppleSuite',
+                    id: 'myShoppingList',
+                    validation: validateItems,
+                    listItemIDs: getShoppingList,
+                    slotType: 'GroceryItem',
                     confirmationRequired: true,
                     prompts: {
                         confirmValue: 'Is that all?',
@@ -23,21 +27,21 @@ export namespace MultiValueListDemo {
                 }),
             );
 
-            function getProductList() {
-                return ['AirPods', 'iWatch', 'iPhone', 'iPad', 'MacBook'];
+            function getShoppingList() {
+                return ['Milk', 'Eggs', 'Cereal', 'Bread'];
             }
 
-            function validateProducts(values: MultiValueListStateValue[]): true | MultiValueValidationFailure {
+            function validateItems(values: MultiValueListStateValue[]): true | MultiValueValidationFailure {
                 const invalidValues = [];
-                for (const product of values) {
-                    if (getProductList().includes(product.id) !== true) {
-                        invalidValues.push(product.id);
+                for (const item of values) {
+                    if (getShoppingList().includes(item.id) !== true) {
+                        invalidValues.push(item.id);
                     }
                 }
                 if (invalidValues.length > 0) {
                     return {
                         invalidValues,
-                        renderedReason: 'item is not available in the product list',
+                        renderedReason: 'item is not available in the shopping list',
                     };
                 }
                 return true;

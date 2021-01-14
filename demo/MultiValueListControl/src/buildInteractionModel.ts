@@ -13,7 +13,10 @@
 
 import { MultiValueListDemo } from '.';
 import { Logger, ControlInteractionModelGenerator } from '../../../src';
-import { yesNoMaybeSlotType, filteredYesNoMaybeSlotType } from '../../ListControl/YesNoMaybe/src/interactionModelTypes';
+import {
+    yesNoMaybeSlotType,
+    filteredYesNoMaybeSlotType,
+} from '../../ListControl/YesNoMaybe/src/interactionModelTypes';
 
 const log = new Logger('MultiValueListDemo:InteractionModel');
 
@@ -31,41 +34,41 @@ export namespace MultiValueListDemoIM {
         .addOrMergeSlotType(yesNoMaybeSlotType)
         .addOrMergeSlotType(filteredYesNoMaybeSlotType)
         .addOrMergeSlotType({
-            name: 'AppleSuite',
+            name: 'GroceryItem',
             values: [
                 {
-                    id: 'AirPods',
+                    id: 'Milk',
                     name: {
-                        value: 'AirPods',
-                        synonyms: ['pods', 'earphones', 'ipod'],
+                        value: 'Milk',
+                        synonyms: ['milk', 'almond milk', 'low fat milk'],
                     },
                 },
                 {
-                    id: 'iWatch',
+                    id: 'Eggs',
                     name: {
-                        value: 'iWatch',
-                        synonyms: ['watch', 'wrist wear'],
+                        value: 'Eggs',
+                        synonyms: ['egg', 'eggs'],
                     },
                 },
                 {
-                    id: 'iPhone',
+                    id: 'Ceral',
                     name: {
-                        value: 'iPhone',
-                        synonyms: ['phone', 'mobile'],
+                        value: 'Cereal',
+                        synonyms: ['cereal', 'oats', 'breakfast food'],
                     },
                 },
                 {
-                    id: 'iPad',
+                    id: 'Bread',
                     name: {
-                        value: 'iPad',
-                        synonyms: ['tab'],
+                        value: 'Bread',
+                        synonyms: ['bread'],
                     },
                 },
                 {
-                    id: 'MacBook',
+                    id: 'Honey',
                     name: {
-                        value: 'MacBook',
-                        synonyms: ['laptop'],
+                        value: 'Honey',
+                        synonyms: ['honey', 'nectar'],
                     },
                 },
             ],

@@ -1048,6 +1048,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
      */
     clear() {
         this.state = new MultiValueListControlState();
+        this.state.value = [];
+        this.state.confirmed = false;
     }
 
     standardInitiativeHandlers: ControlInitiativeHandler[] = [

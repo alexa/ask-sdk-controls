@@ -12,21 +12,30 @@
  */
 import { suite, test } from 'mocha';
 import { expect } from 'chai';
-import { waitForDebugger, ControlHandler, SkillInvoker, testTurn, TestInput, IntentBuilder, SingleValueControlIntent, GeneralControlIntent } from '../../../src';
+import {
+    waitForDebugger,
+    ControlHandler,
+    SkillInvoker,
+    testTurn,
+    TestInput,
+    IntentBuilder,
+    SingleValueControlIntent,
+    GeneralControlIntent,
+} from '../../../src';
 import { Strings as $ } from '../../../src/constants/Strings';
 import { MultiValueListDemo } from '../src';
 import { MultiValueListDemoIM } from '../src/buildInteractionModel';
 import { MultiValueControlIntent } from '../../../src/intents/MultiValueControlIntent';
 waitForDebugger();
 
-suite('MultiValueListDemo', () => {
-    test('AppleSuite MultiValueList Demo - IMGen', async () => {
+suite('MultiValueList Demo', () => {
+    test('GroceryItem MultiValueList Demo - IMGen', async () => {
         const imData = MultiValueListDemoIM.imGen.build();
-        const appleSuiteMultiValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(
-            (x) => x.name === 'AppleSuite_MultiValueControlIntent',
+        const groceryItemMultiValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(
+            (x) => x.name === 'GroceryItem_MultiValueControlIntent',
         );
-        expect(appleSuiteMultiValueControlIntent).not.undefined;
-        expect(appleSuiteMultiValueControlIntent?.samples?.includes('{AppleSuite}')).is.true;
+        expect(groceryItemMultiValueControlIntent).not.undefined;
+        expect(groceryItemMultiValueControlIntent?.samples?.includes('{GroceryItem}')).is.true;
     });
 
     test('MultiValueList Demo - add multiple values', async () => {
@@ -36,19 +45,19 @@ suite('MultiValueListDemo', () => {
             invoker,
             'U: __',
             TestInput.launchRequest(),
-            'A: Welcome. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
+            'A: Welcome. What is your selection? Some suggestions are Milk, Eggs or Cereal.',
         );
 
         await testTurn(
             invoker,
-            'U: add iPhone and iPac',
+            'U: add Milk and Honey',
             TestInput.of(
-                MultiValueControlIntent.of('AppleSuite', {
-                    AppleSuite: ['iPhone', 'iPac'],
+                MultiValueControlIntent.of('GroceryItem', {
+                    GroceryItem: ['Milk', 'Honey'],
                     action: $.Action.Add,
                 }),
             ),
-            'A: OK, added iPhone. Sorry, iPac can\'t be added as item is not available in the product list. Is that all?'
+            "A: OK, added Milk. Sorry, Honey can't be added as item is not available in the shopping list. Is that all?",
         );
 
         await testTurn(invoker, 'U: yes', TestInput.of(IntentBuilder.of('AMAZON.YesIntent')), 'A: Great.');
@@ -61,26 +70,26 @@ suite('MultiValueListDemo', () => {
             invoker,
             'U: __',
             TestInput.launchRequest(),
-            'A: Welcome. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
+            'A: Welcome. What is your selection? Some suggestions are Milk, Eggs or Cereal.',
         );
 
         await testTurn(
             invoker,
-            'U: add iPhone and iPad',
+            'U: add Bread, Eggs and Milk',
             TestInput.of(
-                MultiValueControlIntent.of('AppleSuite', {
-                    AppleSuite: ['iPhone', 'iPad'],
+                MultiValueControlIntent.of('GroceryItem', {
+                    GroceryItem: ['Bread', 'Eggs', 'Milk'],
                     action: $.Action.Add,
                 }),
             ),
-            'A: OK, added iPhone and iPad. Is that all?'
+            'A: OK, added Bread, Eggs and Milk. Is that all?',
         );
 
         await testTurn(
             invoker,
-            'U: Clear all items from cart',
+            'U: Clear all items',
             TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
-            'A: OK, removed the following iPhone and iPad from the list. What is your selection? Some suggestions are AirPods, iWatch or iPhone.'
+            'A: OK, removed Bread, Eggs and Milk from the list. What is your selection? Some suggestions are Milk, Eggs or Cereal.',
         );
     });
 });

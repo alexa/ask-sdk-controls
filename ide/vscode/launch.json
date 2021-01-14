@@ -19,23 +19,28 @@
                 // Slow startup
                 "-r",
                 "ts-node/register",
-                "${workspaceFolder}/test/**/*.spec.ts", // (macOS) wrapping the content with \" may be necessary.
+                "${workspaceFolder}/test/**/*.spec.ts",        // (macOS) wrapping the content with \" may be necessary.
+                
+                // Demo test cases
+                "${workspaceFolder}/demo/**/test/**/*.spec.ts" // (macOS) wrapping the content with \" may be necessary.
                 
                     
                 // Fast startup.
-                "--require",
-                "source-map-support/register",
-                "${workspaceFolder}/dist/test/**/*.spec.js"
+                // "--require",
+                // "source-map-support/register",
+                // "${workspaceFolder}/dist/test/**/*.spec.js"
             ],
             "env": {
-                //"DEBUG": "error:*, warn:*, info:*"  // uncomment for logs
+                // "DEBUG": "error:*, warn:*, info:*"  // uncomment for logs
+                // "ASK_SDK_CONTROLS_LOG_RESPONSE_FILEPATH": <file_path> // uncomment to write out response for debugging
             },
-            //"smartStep": true,
+            // "smartStep": true,
             "skipFiles": [
                 "node_modules/**",
                 "<node_internals>/**"
             ],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+
         }
     ]
 }

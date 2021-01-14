@@ -14,7 +14,6 @@ export namespace MultipleLists {
     });
 
     export class DemoControlManager extends ControlManager {
-
         createControlTree(): Control {
             const rootControl = new DemoRootControl({ id: 'root' });
 
@@ -26,7 +25,9 @@ export namespace MultipleLists {
                     interactionModel: {
                         targets: [Strings.Target.It, 'species', 'petKind'],
                     },
-                    confirmationRequired: function(this:ListControl){return this.state.value === 'rabbit'}
+                    confirmationRequired(this: ListControl) {
+                        return this.state.value === 'rabbit';
+                    },
                 }),
             );
 

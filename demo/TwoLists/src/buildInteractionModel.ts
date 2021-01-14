@@ -113,7 +113,7 @@ export namespace TwoListsIM {
             'target',
             {
                 id: 'species',
-                name: { value: 'species', synonyms: ["type of pet"] },
+                name: { value: 'species', synonyms: ['type of pet'] },
             },
             {
                 id: 'petKind',

@@ -20,8 +20,8 @@ export namespace BasicNumberDemo {
                     id: 'number',
                     confirmationRequired: true,
                     validation: [
-                        (state) => state.value! % 2 === 0 || { renderedReason: 'the value must be even' }
-                    ]
+                        (state) => state.value! % 2 === 0 || { renderedReason: 'the value must be even' },
+                    ],
                 }),
             );
             return rootControl;
@@ -30,5 +30,5 @@ export namespace BasicNumberDemo {
 }
 
 export const handler = SkillBuilders.custom()
-        .addRequestHandlers(new ControlHandler(new BasicNumberDemo.DemoControlManager()))
-        .lambda();
+    .addRequestHandlers(new ControlHandler(new BasicNumberDemo.DemoControlManager()))
+    .lambda();

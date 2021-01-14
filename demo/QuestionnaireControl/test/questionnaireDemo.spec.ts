@@ -25,7 +25,7 @@ import { MultipleLists } from '../src';
 
 waitForDebugger();
 
-suite('questionnaire demo skill', () => {
+suite('Questionnaire Demo skill', () => {
     test('general features', async () => {
         const controlManager = new MultipleLists.DemoControlManager();
         const requestHandler = new ControlHandler(controlManager);
