@@ -51,7 +51,7 @@ export namespace MultiValueListDemoIM {
                     },
                 },
                 {
-                    id: 'Ceral',
+                    id: 'Cereal',
                     name: {
                         value: 'Cereal',
                         synonyms: ['cereal', 'oats', 'breakfast food'],

@@ -149,7 +149,7 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                             {
                                 name: 'debugText',
                                 type: 'string',
-                                value: 'debug...',
+                                value: 'debugValue',
                             },
                             {
                                 name: 'disableScreen',
@@ -189,6 +189,12 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                             componentId: 'root',
                                             property: 'disableScreen',
                                             value: true,
+                                        },
+                                        {
+                                            type: 'SetValue',
+                                            componentId: 'root',
+                                            property: 'debugText',
+                                            value: 'Done Selected',
                                         },
                                     ],
                                 },
@@ -232,16 +238,11 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                                             {
                                                                 type: 'AlexaTextListItem',
                                                                 touchForward: true,
+                                                                disabled: '${disableScreen}',
                                                                 primaryText: '${data.primaryText}',
                                                                 primaryAction: {
                                                                     type: 'Sequential',
                                                                     commands: [
-                                                                        {
-                                                                            type: 'SetValue',
-                                                                            componentId: 'root',
-                                                                            property: 'debugText',
-                                                                            value: '${ordinal}',
-                                                                        },
                                                                         {
                                                                             type: 'SendEvent',
                                                                             arguments: [
@@ -249,6 +250,18 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                                                                 'Select',
                                                                                 '${ordinal}',
                                                                             ],
+                                                                        },
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'disableScreen',
+                                                                            value: true,
+                                                                        },
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'debugText',
+                                                                            value: 'selected ${ordinal}',
                                                                         },
                                                                     ],
                                                                 },
@@ -307,16 +320,11 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                                                 actionIconType: 'AVG',
                                                                 actionIcon: 'cancel',
                                                                 actionIconBackground: 'red',
+                                                                disabled: '${disableScreen}',
                                                                 primaryText: '${data.primaryText}',
                                                                 onSwipeDone: {
                                                                     type: 'Sequential',
                                                                     commands: [
-                                                                        {
-                                                                            type: 'SetValue',
-                                                                            componentId: 'root',
-                                                                            property: 'debugText',
-                                                                            value: '${ordinal}',
-                                                                        },
                                                                         {
                                                                             type: 'SendEvent',
                                                                             arguments: [
@@ -324,6 +332,18 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                                                                                 'Remove',
                                                                                 '${ordinal}',
                                                                             ],
+                                                                        },
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'disableScreen',
+                                                                            value: true,
+                                                                        },
+                                                                        {
+                                                                            type: 'SetValue',
+                                                                            componentId: 'root',
+                                                                            property: 'debugText',
+                                                                            value: 'removed ${ordinal}',
                                                                         },
                                                                     ],
                                                                 },
