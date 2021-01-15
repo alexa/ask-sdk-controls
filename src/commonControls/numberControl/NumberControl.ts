@@ -21,8 +21,8 @@ import {
     falseIfGuardFailed,
     InputUtil,
     okIf,
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
+    ValueControlIntent,
+    unpackValueControlIntent,
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
@@ -619,7 +619,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
-        generator.addControlIntent(new SingleValueControlIntent(AmazonBuiltInSlotType.NUMBER), imData);
+        generator.addControlIntent(new ValueControlIntent(AmazonBuiltInSlotType.NUMBER), imData);
         generator.addYesAndNoIntents();
 
         for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
@@ -662,10 +662,8 @@ export class NumberControl extends Control implements InteractionModelContributo
 
                 this.handleFunc = this.handleLastQuestionEmptyAndValueNotExisting;
                 return true;
-            } else if (InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER)) {
-                const { action, target } = unpackSingleValueControlIntent(
-                    (input.request as IntentRequest).intent,
-                );
+            } else if (InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER)) {
+                const { action, target } = unpackValueControlIntent((input.request as IntentRequest).intent);
                 okIf(
                     InputUtil.actionIsMatchOrUndefined(action, [
                         ...this.props.interactionModel.actions.set,
@@ -720,7 +718,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
@@ -749,10 +748,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isValueInRejectedValues(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -772,7 +772,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): void {
-        const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         resultBuilder.addAct(
             new ProblematicInputValueAct(this, {
@@ -835,10 +836,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isFeedbackNoAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { action, target, feedback, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { action, target, feedback, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -874,10 +876,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isFeedbackNoAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -900,17 +903,19 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
 
     private isFeedbackYesAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -933,7 +938,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): void {
-        const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         const previousValue = this.state.value;
         this.setValue(valueStr);
         resultBuilder.addAct(
@@ -967,10 +973,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isFeedbackYesAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -1027,10 +1034,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -1066,10 +1074,11 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     private isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(
                 InputUtil.actionIsMatchOrUndefined(action, [
                     ...this.props.interactionModel.actions.set,
@@ -1091,7 +1100,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const { action, valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
     }
@@ -1341,7 +1351,7 @@ export class NumberControl extends Control implements InteractionModelContributo
  */
 function generateSlotElicitation(): { intent: Intent; slotName: string } {
     const intent: Intent = {
-        name: SingleValueControlIntent.intentName(AmazonBuiltInSlotType.NUMBER),
+        name: ValueControlIntent.intentName(AmazonBuiltInSlotType.NUMBER),
         slots: {
             'AMAZON.NUMBER': { name: 'AMAZON.NUMBER', value: '', confirmationStatus: 'NONE' },
             feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },

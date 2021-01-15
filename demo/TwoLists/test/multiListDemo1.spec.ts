@@ -13,7 +13,7 @@
 import { suite, test } from 'mocha';
 import {
     ControlHandler,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
@@ -37,14 +37,14 @@ suite('multiList Demo', () => {
         await testTurn(
             invoker,
             'U: cat',
-            TestInput.of(SingleValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
+            TestInput.of(ValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
             'A: OK, cat. What is your selection? Some suggestions are labrador or persian.',
         );
 
         await testTurn(
             invoker,
             'U: persian',
-            TestInput.of(SingleValueControlIntent.of('PetBreed', { PetBreed: 'persian' })),
+            TestInput.of(ValueControlIntent.of('PetBreed', { PetBreed: 'persian' })),
             'A: OK, persian. What is your selection? Some suggestions are adopt, foster or sponsor.',
         );
     });

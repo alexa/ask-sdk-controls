@@ -23,10 +23,7 @@ import { InteractionModelContributor } from '../controls/mixins/InteractionModel
 import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../intents/SingleValueControlIntent';
+import { ValueControlIntent, unpackValueControlIntent } from '../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -440,10 +437,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     private isSetWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -515,10 +513,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     private isChangeWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -593,10 +592,11 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     private isBareValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsUndefined(target));
@@ -1000,7 +1000,7 @@ export class ValueControl extends Control implements InteractionModelContributor
 
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
-        generator.addControlIntent(new SingleValueControlIntent(this.props.slotType), imData);
+        generator.addControlIntent(new ValueControlIntent(this.props.slotType), imData);
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addYesAndNoIntents();
 
@@ -1024,7 +1024,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     public static generateSlotElicitationDetails(slotType: string): { intent: Intent; slotName: string } {
         const intent: Intent = {
-            // TODO: refactor: use SingleValueControlIntent.intentName
+            // TODO: refactor: use ValueControlIntent.intentName
             name: `${slotType}_ValueControlIntent`.replace('.', '_'),
             slots: {
                 [slotType]: { name: slotType, value: '', confirmationStatus: 'NONE' },

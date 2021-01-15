@@ -555,7 +555,7 @@ export const defaultI18nResources: Resource = {
                 '{head} {action} {target} {preposition} {AMAZON.Ordinal} {tail}', // {You can} {change} {Bob} {to be} {first} {thanks}
             ],
 
-            SINGLE_VALUE_CONTROL_INTENT_SAMPLES: [
+            VALUE_CONTROL_INTENT_SAMPLES: [
                 '[[filteredValueSlotType]]', // {Apples}, assuming 'apples' matches a value of the slotType.
 
                 '{action} [[valueSlotType]]', // {select} {apples}

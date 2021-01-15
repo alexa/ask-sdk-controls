@@ -15,7 +15,7 @@ import { suite, test } from 'mocha';
 import {
     ControlHandler,
     IntentBuilder,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
@@ -46,7 +46,7 @@ suite('Number Demo', () => {
         await testTurn(
             invoker,
             'U: four',
-            TestInput.of(SingleValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '4' })),
+            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '4' })),
             'A: Was that 4?',
         );
 
@@ -61,7 +61,7 @@ suite('Number Demo', () => {
         await testTurn(
             invoker,
             'U: forty',
-            TestInput.of(SingleValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '40' })),
+            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '40' })),
             'A: Was that 40?',
         );
 
@@ -103,7 +103,7 @@ suite('Number Demo', () => {
         await testTurn(
             invoker,
             'U: 4',
-            TestInput.of(SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' })),
+            TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' })),
             'A: Was that 4?',
         );
 

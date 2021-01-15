@@ -23,7 +23,7 @@ import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
-import { MultiValueControlIntent } from '../../src/intents/MultiValueControlIntent';
+import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
 import { SkillInvoker } from '../../src/utils/testSupport/SkillInvoker';
@@ -77,7 +77,7 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPhone and iPac',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPhone', 'iPac'],
                         action: $.Action.Add,
                     }),
@@ -98,7 +98,7 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPod and iPac',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPod', 'iPac'],
                         action: $.Action.Add,
                     }),
@@ -114,14 +114,14 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPhone and iPac',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPhone', 'iPac'],
                         action: $.Action.Add,
                     }),
                 ),
                 "A: OK, added iPhone. Sorry, iPac can't be added as item is not available in the product list. Is that all?",
                 'U: iPad',
-                TestInput.of(MultiValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
+                TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
                 'A: OK, added iPad. Is that all?',
                 'U: Yeah.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -138,7 +138,7 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPhone and AirPods',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPhone', 'AirPods'],
                         action: $.Action.Add,
                     }),
@@ -149,7 +149,7 @@ suite('MultiValueListControl e2e tests', () => {
                 'A: You can add new values or update existing values',
                 'U: Remove iPods and AirPods',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPods', 'AirPods'],
                         action: $.Action.Remove,
                     }),
@@ -157,7 +157,7 @@ suite('MultiValueListControl e2e tests', () => {
                 'A: OK, removed AirPods. Sorry, iPods is not in the list. What value do you want to remove? Some suggestions are iPhone.',
                 'U: Remove iPhone',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: 'iPhone',
                         action: $.Action.Remove,
                     }),
@@ -173,21 +173,21 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPhone and iPad',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPhone', 'iPad'],
                         action: $.Action.Add,
                     }),
                 ),
                 'A: OK, added iPhone and iPad. Is that all?',
                 'U: AirPods',
-                TestInput.of(MultiValueControlIntent.of('AppleSuite', { AppleSuite: 'AirPods' })),
+                TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'AirPods' })),
                 'A: OK, added AirPods. Is that all?',
                 'U: Clear all items from cart',
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
                 'A: OK, removed iPhone, iPad and AirPods from the list. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
                 'U: Remove iPhone',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: 'iPhone',
                         action: $.Action.Remove,
                     }),
@@ -203,18 +203,18 @@ suite('MultiValueListControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: add iPhone and iPhone',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: ['iPhone', 'iPhone'],
                         action: $.Action.Add,
                     }),
                 ),
                 'A: OK, added iPhone and iPhone. Is that all?',
                 'U: iPhone',
-                TestInput.of(MultiValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+                TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
                 'A: OK, added iPhone. Is that all?',
                 'U: Remove iPhone',
                 TestInput.of(
-                    MultiValueControlIntent.of('AppleSuite', {
+                    ValueControlIntent.of('AppleSuite', {
                         AppleSuite: 'iPhone',
                         action: $.Action.Remove,
                     }),

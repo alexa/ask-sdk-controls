@@ -15,7 +15,7 @@ import { suite, test } from 'mocha';
 import {
     ControlHandler,
     IntentBuilder,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
@@ -86,7 +86,7 @@ suite('List Demo', () => {
         await testTurn(
             invoker,
             'U: maybe',
-            TestInput.of(SingleValueControlIntent.of('YesNoMaybe', { Maybe: 'maybe' })),
+            TestInput.of(ValueControlIntent.of('YesNoMaybe', { Maybe: 'maybe' })),
             'A: Was that maybe?',
         );
 

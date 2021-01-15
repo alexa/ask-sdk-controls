@@ -38,10 +38,7 @@ import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
 import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../src/intents/SingleValueControlIntent';
+import { ValueControlIntent, unpackValueControlIntent } from '../src/intents/ValueControlIntent';
 import { SessionBehavior } from '../src/runtime/SessionBehavior';
 import { ValueChangedAct, ValueSetAct } from '../src/systemActs/ContentActs';
 import { RequestChangedValueAct, RequestValueAct } from '../src/systemActs/InitiativeActs';
@@ -79,7 +76,7 @@ suite('== Single value selector scenarios ==', () => {
 
         const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
-            SingleValueControlIntent.of('CUSTOM.name', {
+            ValueControlIntent.of('CUSTOM.name', {
                 action: $.Action.Set,
                 target: $$.Target.Name,
                 'CUSTOM.name': 'Mike',
@@ -97,7 +94,7 @@ suite('== Single value selector scenarios ==', () => {
     test('valueType mismatch should cause processing to throw', async () => {
         const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
-            SingleValueControlIntent.of('AMAZON.Number', {
+            ValueControlIntent.of('AMAZON.Number', {
                 action: $.Action.Set,
                 target: $$.Target.Name,
                 'AMAZON.Number': 'Mike',
@@ -111,7 +108,7 @@ suite('== Single value selector scenarios ==', () => {
     test('session ending due to lack of initiative', async () => {
         const rootControl = new SingleSelectorManager().createControlTree();
         const input = TestInput.of(
-            SingleValueControlIntent.of('CUSTOM.name', {
+            ValueControlIntent.of('CUSTOM.name', {
                 action: $.Action.Set,
                 target: $$.Target.Name,
                 'CUSTOM.name': 'Mike',
@@ -159,7 +156,7 @@ suite(
 
             const rootControl = new TwoSelectorManager().createControlTree();
             const input = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     action: $.Action.Set,
                     target: PLAYER_COUNT,
                     'AMAZON.NUMBER': '3',
@@ -177,7 +174,7 @@ suite(
 
             // -- turn 1
             const input1 = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     action: $.Action.Set,
                     target: PLAYER_COUNT,
                     'AMAZON.NUMBER': '3',
@@ -190,7 +187,7 @@ suite(
 
             // -- turn 2
             const request2 = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     action: $.Action.Change,
                     target: PLAYER_COUNT,
                     'AMAZON.NUMBER': '4',
@@ -210,7 +207,7 @@ suite(
 
             // -- turn 1
             const input1 = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     action: $.Action.Set,
                     target: PLAYER_COUNT,
                     'AMAZON.NUMBER': '3',
@@ -230,7 +227,7 @@ suite(
 
             // -- turn 3
             const input3 = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' }),
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' }),
             );
             const result3 = await simpleInvoke(rootControl, input3);
 
@@ -282,12 +279,13 @@ suite('== Custom Handler function scenarios ==', () => {
             }
 
             function isSetValue(input: ControlInput) {
-                return InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE);
+                return InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE);
             }
 
             function handleSetValue(input: ControlInput) {
-                const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
-                dateControl.setValue(valueStr);
+                const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+                const valueStr = values[0];
+                dateControl.setValue(valueStr.slotValue);
             }
 
             topControl.addChild(dateControl);
@@ -314,7 +312,7 @@ suite('== Custom Handler function scenarios ==', () => {
     test('Check conflicts in canHandle throws a warn log', async () => {
         const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
-            SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+            ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                 'AMAZON.DATE': '2018',
                 action: $.Action.Set,
             }),

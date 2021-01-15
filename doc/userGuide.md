@@ -1735,8 +1735,9 @@ a bottom-layer predicate function.
 isSetWithValue(input: ControlInput): boolean {
         try {
             okIf(isExpectedIntent(...))
-            const { feedback, action, target, valueStr, valueType } =
-                unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, values, valueType } =
+                unpackValueControlIntent((input.request as IntentRequest).intent);
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target,
                 this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));

@@ -29,10 +29,7 @@ import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../../intents/SingleValueControlIntent';
+import { ValueControlIntent, unpackValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
@@ -227,7 +224,7 @@ export class QuestionnaireControlInteractionModelProps {
      *
      * Purpose:
      *  - the user may give an answer to a specific question, e.g. "I like cats" which is
-     *    parsed as a SingleValueControlIntent with value=like target=cats.  To achieve
+     *    parsed as a ValueControlIntent with value=like target=cats.  To achieve
      *    this, the slotType associated with this control must include the value 'like'
      *    and the targets slotType must include 'cats'.
      *
@@ -630,19 +627,19 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             handle: this.handleMappedAnswerToAskedQuestion,
         },
         {
-            // SingleValueControlIntents that provide answer (value slot)
+            // ValueControlIntents that provide answer (value slot)
             name: 'SpecificAnswerToAskedQuestion (builtin)',
             canHandle: this.isSpecificAnswerToAskedQuestion,
             handle: this.handleSpecificAnswerToAskedQuestion,
         },
         {
-            // SingleValueControlIntents that mention question (target) and answer (value slot)
+            // ValueControlIntents that mention question (target) and answer (value slot)
             name: 'SpecificAnswerToSpecificQuestion (builtin)',
             canHandle: this.isSpecificAnswerToSpecificQuestion,
             handle: this.handleSpecificAnswerToSpecificQuestion,
         },
         {
-            // SingleValueControlIntents that mention question (target) and answer (feedback slot)
+            // ValueControlIntents that mention question (target) and answer (feedback slot)
             name: 'FeedbackAnswerToSpecificQuestion (builtin)',
             canHandle: this.isFeedbackAnswerToSpecificQuestion,
             handle: this.handleFeedbackAnswerToSpecificQuestion,
@@ -805,12 +802,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             okIf(
                 InputUtil.isIntent(
                     input,
-                    SingleValueControlIntent.intentName(this.props.interactionModel.slotType),
+                    ValueControlIntent.intentName(this.props.interactionModel.slotType),
                 ),
             );
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsUndefined(target));
             okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -827,10 +825,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const content = this.getQuestionnaireContent(input);
         const question = this.getQuestionContentById(this.state.focusQuestionId!, input);
 
-        const { feedback, action, target, valueStr, valueType, erMatch } = unpackSingleValueControlIntent(
+        const { feedback, action, target, values, valueType } = unpackValueControlIntent(
             (input.request as IntentRequest).intent,
         );
-
+        const valueStr = values[0].slotValue;
+        const erMatch = values[0].isEntityResolutionMatch;
         // Accept the answer if it is a match to one of the listed choices, otherwise
         // report error and ignore.  Note: being a match is a stronger condition than
         // simply being an ER_MATCH as the answer slot type might have more values than
@@ -928,12 +927,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             okIf(
                 InputUtil.isIntent(
                     input,
-                    SingleValueControlIntent.intentName(this.props.interactionModel.slotType),
+                    ValueControlIntent.intentName(this.props.interactionModel.slotType),
                 ),
             );
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             const content = this.getQuestionnaireContent(input);
 
             okIf(InputUtil.targetIsDefined(target));
@@ -956,10 +956,10 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     private handleSpecificAnswerToSpecificQuestion(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const content = this.getQuestionnaireContent(input);
 
-        const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+        const { feedback, action, target, values, valueType } = unpackValueControlIntent(
             (input.request as IntentRequest).intent,
         );
-
+        const valueStr = values[0].slotValue;
         const choiceIndex = this.getChoiceIndexById(content, valueStr);
         assert(choiceIndex !== undefined);
         const targetedQuestion = content.questions.find((q) => q.targets.includes(target!));
@@ -1360,7 +1360,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
         if (this.props.interactionModel.slotType !== 'dummy') {
             generator.addControlIntent(
-                new SingleValueControlIntent(
+                new ValueControlIntent(
                     this.props.interactionModel.slotType,
                     this.props.interactionModel.filteredSlotType,
                 ),

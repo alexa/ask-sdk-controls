@@ -17,11 +17,7 @@ import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import { MultiValueSlot, unpackMultiValueControlIntent } from '../intents/MultiValueControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../intents/SingleValueControlIntent';
+import { MultiValueSlot, unpackValueControlIntent, ValueControlIntent } from '../intents/ValueControlIntent';
 
 /**
  * Utilities to assist with input handling.
@@ -65,13 +61,13 @@ export namespace InputUtil {
     }
 
     /**
-     * Test if the input is a SingleValueControlIntent for the provided slotType.
+     * Test if the input is a ValueControlIntent for the provided slotType.
      * @param input - Input
      */
-    export function isSingleValueControlIntent(input: ControlInput, slotType: string): boolean {
+    export function isValueControlIntent(input: ControlInput, slotType: string): boolean {
         return (
             input.request.type === 'IntentRequest' &&
-            input.request.intent.name === SingleValueControlIntent.intentName(slotType)
+            input.request.intent.name === ValueControlIntent.intentName(slotType)
         );
     }
 
@@ -359,20 +355,21 @@ export namespace InputUtil {
     }
 
     /**
-     * Extracts the value and erMatch from a SingleValueControlIntent
+     * Extracts the value and erMatch from a ValueControlIntent
      * @param input - Input
      */
     export function getValueResolution(input: ControlInput): { valueStr: string; erMatch: boolean } {
-        const { valueStr, erMatch } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
-        return { valueStr: valueStr!, erMatch: erMatch! };
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const slot = values[0];
+        return { valueStr: slot.slotValue, erMatch: slot.isEntityResolutionMatch };
     }
 
     /**
-     * Extracts the value and erMatch array list from a MultiValueControlIntent
+     * Extracts the value and erMatch array list from a ValueControlIntent
      * @param input - Input
      */
     export function getMultiValueResolution(input: ControlInput): MultiValueSlot[] {
-        const { values } = unpackMultiValueControlIntent((input.request as IntentRequest).intent);
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
         return values;
     }
 

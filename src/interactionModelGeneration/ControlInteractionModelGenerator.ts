@@ -19,7 +19,7 @@ import { ConjunctionControlIntent } from '../intents/ConjunctionControlIntent';
 import { DateRangeControlIntent } from '../intents/DateRangeControlIntent';
 import { GeneralControlIntent } from '../intents/GeneralControlIntent';
 import { OrdinalControlIntent } from '../intents/OrdinalControlIntent';
-import { SingleValueControlIntent } from '../intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../intents/ValueControlIntent';
 import { Logger } from '../logging/Logger';
 import { InteractionModelGenerator } from './InteractionModelGenerator';
 import { IntentUtterances, ModelData } from './ModelTypes';
@@ -165,9 +165,9 @@ function buildDialogIntent(intent: Intent): DialogIntent {
  * @param controlIMData - Localization data
  */
 function generateActualIntent(controlIntent: BaseControlIntent, controlIMData: ModelData): Intent {
-    // Special logic for SingleValueControlIntent
+    // Special logic for ValueControlIntent
     if (controlIntent.name.includes('ValueControlIntent')) {
-        return handleValueControlIntent(controlIntent as SingleValueControlIntent, controlIMData);
+        return handleValueControlIntent(controlIntent as ValueControlIntent, controlIMData);
     }
 
     const intent: Intent = controlIntent.generateIntent();
@@ -185,13 +185,13 @@ function generateActualIntent(controlIntent: BaseControlIntent, controlIMData: M
 }
 
 // special handling for ValueControlIntent
-function handleValueControlIntent(controlIntent: SingleValueControlIntent, controlIMData: ModelData): Intent {
+function handleValueControlIntent(controlIntent: ValueControlIntent, controlIMData: ModelData): Intent {
     const intent: Intent = controlIntent.generateIntent();
     const samples: string[] | undefined = controlIMData.intentValues.find(
-        (intentValue) => intentValue.name === SingleValueControlIntent.name,
+        (intentValue) => intentValue.name === ValueControlIntent.name,
     )?.samples;
     if (samples === undefined) {
-        throw new Error('Can not find SingleValueControlIntent samples in ModelData');
+        throw new Error('Can not find ValueControlIntent samples in ModelData');
     }
     const slotType: string = controlIntent.valueSlotType;
     const filteredSlotType: string = controlIntent.filteredValueSlotType;
@@ -314,8 +314,8 @@ export function _generateModelData(): ModelData {
         samples: i18next.t('ORDINAL_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
     intentValues.push({
-        name: SingleValueControlIntent.name,
-        samples: i18next.t('SINGLE_VALUE_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
+        name: ValueControlIntent.name,
+        samples: i18next.t('VALUE_CONTROL_INTENT_SAMPLES', { returnObjects: true }),
     });
 
     return {

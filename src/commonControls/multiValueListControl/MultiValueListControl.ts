@@ -31,10 +31,10 @@ import { InteractionModelContributor } from '../../controls/mixins/InteractionMo
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import {
-    MultiValueControlIntent,
+    ValueControlIntent,
     MultiValueSlot,
-    unpackMultiValueControlIntent,
-} from '../../intents/MultiValueControlIntent';
+    unpackValueControlIntent,
+} from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
@@ -462,7 +462,7 @@ export class MultiValueListControlState implements ControlState {
  *
  * Intents that can be handled:
  * - `GeneralControlIntent`: E.g. `"no, clear all names"`
- * - `{ValueType}_MultiValueControlIntent`: E.g. "add Elvis, May and Max".
+ * - `{ValueType}_ValueControlIntent`: E.g. "add Elvis, May and Max".
  * - `AMAZON.YesIntent`, `AMAZON.NoIntent`
  *
  * APL events that can be handled:
@@ -741,8 +741,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private isAddWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -797,8 +797,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private isRemoveWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, MultiValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, values, valueType } = unpackMultiValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -1308,7 +1308,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
         if (this.props.slotType !== 'dummy') {
             generator.addControlIntent(
-                new MultiValueControlIntent(
+                new ValueControlIntent(
                     this.props.slotType,
                     this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
                 ),

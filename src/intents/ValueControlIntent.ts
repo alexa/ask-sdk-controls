@@ -18,9 +18,9 @@ import { getMVSSlotResolutions, IntentBuilder, SlotResolutionValue } from '../ut
 import { BaseControlIntent } from './BaseControlIntent';
 
 /**
- * Slot values conveyed by a MultiValueControlIntent
+ * Slot values conveyed by a ValueControlIntent
  */
-export interface MultiValueControlIntentSlots {
+export interface ValueControlIntentSlots {
     feedback?: string;
     action?: string;
     target?: string;
@@ -51,7 +51,7 @@ export interface MultiValuePayload {
  *   the implementation of predicates.
  * @param intent - Intent
  */
-export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload {
+export function unpackValueControlIntent(intent: Intent): MultiValuePayload {
     if (!intent.name.endsWith('ControlIntent')) {
         throw new Error(`Not a ControlIntent: ${intent.name}`);
     }
@@ -103,7 +103,7 @@ export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload
 
     if (values === undefined) {
         throw new Error(
-            `MultiValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(
+            `ValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(
                 intent,
             )}`,
         );
@@ -120,12 +120,12 @@ export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload
 
 /**
  *
- * MultiValueControlIntent is an intent that can carry multiple values for one value-type.
+ * ValueControlIntent is an intent that can carry multiple values for one value-type.
  *
  * - For example an utterance like "Plan a trip to go hiking, camping, and fishing"
  *  all three values 'hiking, camping, fishing' can be captured using a multiple-value slot like `activity`.
  *
- * Every sample utterance for a MultiValueControlIntent includes the value
+ * Every sample utterance for a ValueControlIntent includes the value
  * slot.  Utterances that do not include a value slot are handled by
  * `GeneralControlIntent`.
  *
@@ -138,7 +138,7 @@ export function unpackMultiValueControlIntent(intent: Intent): MultiValuePayload
  *    https://developer.amazon.com/en-US/docs/alexa/custom-skills/collect-multiple-values-in-a-slot.html#about-multiple-value-slots
  *
  */
-export class MultiValueControlIntent extends BaseControlIntent {
+export class ValueControlIntent extends BaseControlIntent {
     valueSlotType: string;
     filteredValueSlotType: string;
 
@@ -154,35 +154,35 @@ export class MultiValueControlIntent extends BaseControlIntent {
 
         if (valueSlotType === 'AMAZON.SearchQuery') {
             throw new Error(
-                'AMAZON.SearchQuery cannot be used with MultiValueControlIntent due to the special rules regarding its use. ' +
+                'AMAZON.SearchQuery cannot be used with ValueControlIntent due to the special rules regarding its use. ' +
                     'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references.',
             );
         }
 
         this.valueSlotType = valueSlotType;
         this.filteredValueSlotType = filteredValueSlotType ?? valueSlotType;
-        this.name = MultiValueControlIntent.intentName(valueSlotType);
+        this.name = ValueControlIntent.intentName(valueSlotType);
     }
 
     /**
-     * Generates the intent name of a specialized `MultiValueControlIntent`.
+     * Generates the intent name of a specialized `ValueControlIntent`.
      *
      * Example:
-     * - The intent name for a `MultiValueControlIntent` that conveys an
-     *   `AMAZON.NUMBER` is `AMAZON_NUMBER_MultiValueControlIntent`.
+     * - The intent name for a `ValueControlIntent` that conveys an
+     *   `AMAZON.NUMBER` is `AMAZON_NUMBER_ValueControlIntent`.
      *
      * @param slotTypeId - Specific slot type id.
      */
     static intentName(slotTypeId: string) {
-        return `${slotTypeId}_MultiValueControlIntent`.replace('.', '_');
+        return `${slotTypeId}_ValueControlIntent`.replace('.', '_');
     }
 
     /**
      * Create Intent from specification of the slots
      *
      */
-    static of(slotType: string, slots: MultiValueControlIntentSlots): Intent {
-        return IntentBuilder.of(MultiValueControlIntent.intentName(slotType), slots);
+    static of(slotType: string, slots: ValueControlIntentSlots): Intent {
+        return IntentBuilder.of(ValueControlIntent.intentName(slotType), slots);
     }
 
     // tsDoc: see BaseControlIntent

@@ -25,7 +25,7 @@ import {
     NumberControl,
     RequestChangedValueAct,
     RequestValueAct,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SystemAct,
     ValueControl,
     ValueSetAct,
@@ -60,7 +60,7 @@ suite('== game_e2e.ts ==', () => {
             const result1 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Set,
                         target: $$.Target.Name,
                         'CUSTOM.name': 'Mike',
@@ -70,7 +70,7 @@ suite('== game_e2e.ts ==', () => {
             const result2 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         target: $$.Target.Age,
                         'AMAZON.NUMBER': '20',
@@ -80,7 +80,7 @@ suite('== game_e2e.ts ==', () => {
             const result3 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('PlayerClass', {
+                    ValueControlIntent.of('PlayerClass', {
                         action: $.Action.Set,
                         target: $$.Target.CharClass,
                         PlayerClass: 'elf',
@@ -95,7 +95,7 @@ suite('== game_e2e.ts ==', () => {
             const result4 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('PetSpecies', {
+                    ValueControlIntent.of('PetSpecies', {
                         action: $.Action.Set,
                         target: $$.Target.Species,
                         PetSpecies: 'cat',
@@ -105,7 +105,7 @@ suite('== game_e2e.ts ==', () => {
             const result5 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Set,
                         target: $$.Target.PetName,
                         'CUSTOM.name': 'Coco',
@@ -131,7 +131,7 @@ suite('== game_e2e.ts ==', () => {
             const result2 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('PlayerClass', {
+                    ValueControlIntent.of('PlayerClass', {
                         action: $.Action.Set,
                         target: $$.Target.CharClass,
                         PlayerClass: $$.Value.Elf,
@@ -167,7 +167,7 @@ suite('== game_e2e.ts ==', () => {
             const result1 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Set,
                         target: $$.Target.Name,
                         'CUSTOM.name': 'Mike',
@@ -177,7 +177,7 @@ suite('== game_e2e.ts ==', () => {
             const result2 = await simpleInvoke(
                 rootControl,
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Change,
                         target: $$.Target.Name,
                         'CUSTOM.name': 'Alexa',
@@ -219,7 +219,7 @@ suite('== game_e2e.ts ==', () => {
             let response;
             response = await skill.invoke(
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Set,
                         target: $$.Target.Name,
                         'CUSTOM.name': 'Alexa',
@@ -232,7 +232,7 @@ suite('== game_e2e.ts ==', () => {
 
             response = await skill.invoke(
                 TestInput.of(
-                    SingleValueControlIntent.of('CUSTOM.name', {
+                    ValueControlIntent.of('CUSTOM.name', {
                         action: $.Action.Set,
                         target: $$.Target.Name,
                         'CUSTOM.name': 'Mike',
@@ -242,15 +242,13 @@ suite('== game_e2e.ts ==', () => {
             expect(response.prompt).equals('OK, Mike. How old is your avatar?');
 
             response = await skill.invoke(
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '25' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '25' })),
             );
             expect(response.prompt).equals("Hey, that's my age! Will you be an elf, a dwarf or a human?"); // control specific NLG for feedback
 
             response = await skill.invoke(
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Change,
                         target: $$.Target.Age,
                         'AMAZON.NUMBER': '24',
@@ -260,19 +258,19 @@ suite('== game_e2e.ts ==', () => {
             expect(response.prompt).equals('Cool. Will you be an elf, a dwarf or a human?'); // control specific NLG for feedback
 
             response = await skill.invoke(
-                TestInput.of(SingleValueControlIntent.of('PlayerClass', { PlayerClass: 'Hobbit' })),
+                TestInput.of(ValueControlIntent.of('PlayerClass', { PlayerClass: 'Hobbit' })),
             );
             expect(response.prompt).equals(
                 'Sorry, Hobbit is not a valid choice because playerClass validation Failed. Will you be an elf, a dwarf or a human?',
             );
 
             response = await skill.invoke(
-                TestInput.of(SingleValueControlIntent.of('PlayerClass', { PlayerClass: 'elf' })),
+                TestInput.of(ValueControlIntent.of('PlayerClass', { PlayerClass: 'elf' })),
             );
             expect(response.prompt).equals('Got it. Will your pet be a cat or dog?');
 
             response = await skill.invoke(
-                TestInput.of(SingleValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
+                TestInput.of(ValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
             );
             expect(response.prompt).equals('OK, cat. What shall we name your cat?'); // contextual NLG.  lambda picking up value of "pet species"
         });

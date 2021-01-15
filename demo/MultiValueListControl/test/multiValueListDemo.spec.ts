@@ -19,23 +19,22 @@ import {
     testTurn,
     TestInput,
     IntentBuilder,
-    SingleValueControlIntent,
     GeneralControlIntent,
 } from '../../../src';
 import { Strings as $ } from '../../../src/constants/Strings';
 import { MultiValueListDemo } from '../src';
 import { MultiValueListDemoIM } from '../src/buildInteractionModel';
-import { MultiValueControlIntent } from '../../../src/intents/MultiValueControlIntent';
+import { ValueControlIntent } from '../../../src/intents/ValueControlIntent';
 waitForDebugger();
 
 suite('MultiValueList Demo', () => {
     test('GroceryItem MultiValueList Demo - IMGen', async () => {
         const imData = MultiValueListDemoIM.imGen.build();
-        const groceryItemMultiValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(
-            (x) => x.name === 'GroceryItem_MultiValueControlIntent',
+        const groceryItemValueControlIntent = imData.interactionModel?.languageModel?.intents?.find(
+            (x) => x.name === 'GroceryItem_ValueControlIntent',
         );
-        expect(groceryItemMultiValueControlIntent).not.undefined;
-        expect(groceryItemMultiValueControlIntent?.samples?.includes('{GroceryItem}')).is.true;
+        expect(groceryItemValueControlIntent).not.undefined;
+        expect(groceryItemValueControlIntent?.samples?.includes('{GroceryItem}')).is.true;
     });
 
     test('MultiValueList Demo - add multiple values', async () => {
@@ -52,7 +51,7 @@ suite('MultiValueList Demo', () => {
             invoker,
             'U: add Milk and Honey',
             TestInput.of(
-                MultiValueControlIntent.of('GroceryItem', {
+                ValueControlIntent.of('GroceryItem', {
                     GroceryItem: ['Milk', 'Honey'],
                     action: $.Action.Add,
                 }),
@@ -77,7 +76,7 @@ suite('MultiValueList Demo', () => {
             invoker,
             'U: add Bread, Eggs and Milk',
             TestInput.of(
-                MultiValueControlIntent.of('GroceryItem', {
+                ValueControlIntent.of('GroceryItem', {
                     GroceryItem: ['Bread', 'Eggs', 'Milk'],
                     action: $.Action.Add,
                 }),
