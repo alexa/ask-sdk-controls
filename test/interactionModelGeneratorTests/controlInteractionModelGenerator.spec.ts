@@ -19,7 +19,7 @@ import sinon from 'sinon';
 import { ContainerControl, Control, ControlManager, ModelData } from '../../src';
 import { InteractionModelContributor } from '../../src/controls/mixins/InteractionModelContributor';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { SharedSlotType } from '../../src/interactionModelGeneration/ModelTypes';
 import { Logger } from '../../src/logging/Logger';
@@ -38,7 +38,7 @@ class SingleValueTestControl extends Control implements InteractionModelContribu
     takeInitiative(): void {}
 
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
-        generator.addControlIntent(new SingleValueControlIntent('TEST'), imData);
+        generator.addControlIntent(new ValueControlIntent('TEST'), imData);
     }
 }
 class SimpleTestControl extends Control implements InteractionModelContributor {

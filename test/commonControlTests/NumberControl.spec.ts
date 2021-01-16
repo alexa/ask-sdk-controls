@@ -20,7 +20,7 @@ import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
 import { AmazonBuiltInSlotType } from '../../src/intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
 import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
@@ -47,9 +47,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: What number?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that 16?',
                 'U: Yes.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -82,9 +80,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: What number?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that 16?',
                 'U: ',
                 TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 60]),
@@ -102,9 +98,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: What number?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that 16?',
                 'U: ',
                 TestInput.simpleUserEvent(['NumberSelectorWithoutValidationExpectation', 16]),
@@ -144,12 +138,12 @@ suite('NumberControl e2e tests', () => {
                     'A: What number?',
                     'U: Fifteen',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '15' }),
+                        ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '15' }),
                     ),
                     "A: Sorry but that's not a valid choice because the value must be even. What number?",
                     'U: Sixteen.',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                        ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
                     ),
                     'A: Ok. Value set to 16.',
                 ]);
@@ -189,7 +183,7 @@ suite('NumberControl e2e tests', () => {
                     "A: Sorry but that's not a valid choice because the value must be even. What number?",
                     'U: 16',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
+                        ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
                     ),
                     'A: Ok. Value set to 16.',
                 ]);
@@ -226,7 +220,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Six',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '6',
                     }),
@@ -245,9 +239,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: How many?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that 16?',
                 'U: Yes.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -263,7 +255,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -271,7 +263,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 16?',
                 'U: Yes, change it to 16',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         feedback: $.Feedback.Affirm,
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '16',
@@ -289,7 +281,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -297,7 +289,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 16?',
                 'U: Yes, change it to 6',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         feedback: $.Feedback.Affirm,
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '6',
@@ -318,7 +310,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -326,7 +318,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 16?',
                 'U: No, change it to 16',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         feedback: $.Feedback.Disaffirm,
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '16',
@@ -334,9 +326,7 @@ suite('NumberControl e2e tests', () => {
                 ),
                 'A: Sorry you disagreed but with the same number. How many?',
                 'U: Six.',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '6' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '6' })),
                 'A: Ok. Value set to 6.',
             ]);
             expect(
@@ -349,16 +339,14 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
                 ),
                 'A: Was that 16?',
                 'U: 16',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Great.',
             ]);
             expect(
@@ -371,7 +359,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -379,7 +367,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 16?',
                 'U: Change it to 6',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '6',
                     }),
@@ -396,7 +384,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Fifteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '15',
                     }),
@@ -404,7 +392,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 15?',
                 'U: No, fifteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         feedback: $.Feedback.Disaffirm,
                         'AMAZON.NUMBER': '15',
                     }),
@@ -424,7 +412,7 @@ suite('NumberControl e2e tests', () => {
             await testE2E(requestHandler, [
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -435,7 +423,7 @@ suite('NumberControl e2e tests', () => {
                 'A: My mistake. How many?',
                 'U: Set to five',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '5',
                     }),
@@ -455,7 +443,7 @@ suite('NumberControl e2e tests', () => {
                 'A: How many?',
                 'U: Sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -463,7 +451,7 @@ suite('NumberControl e2e tests', () => {
                 'A: Was that 16?',
                 'U: No, sixteen',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         feedback: $.Feedback.Disaffirm,
                         'AMAZON.NUMBER': '16',
                     }),
@@ -471,12 +459,12 @@ suite('NumberControl e2e tests', () => {
                 'A: Sorry you disagreed but with the same number. How many?',
                 'U: One thousand',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '1000' }),
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '1000' }),
                 ),
                 "A: Sorry but that's not a valid choice because the value must be between zero and fifty inclusive. How many?",
                 'U: Change to 26',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '26',
                     }),
@@ -499,7 +487,7 @@ suite('NumberControl e2e tests', () => {
                 'A: How many?',
                 'U: Forty',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '40',
                     }),
@@ -512,9 +500,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: My mistake. How many?',
                 'U: Three',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '3' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '3' })),
                 'A: Ok. Value set to 3.',
             ]);
             expect(
@@ -529,9 +515,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: How many?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that 16?',
                 'U: No',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
@@ -541,36 +525,32 @@ suite('NumberControl e2e tests', () => {
                 'A: How many?',
                 'U: I want sixteen of them',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
                 ),
                 "A: I'm really sorry but I heard 16 again. How many?",
                 'U: Never mind I want 20',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '20' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '20' })),
                 'A: Was that 20?',
                 'U: No',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: My mistake. How many?',
                 'U: I want sixteen of them',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Set,
                         'AMAZON.NUMBER': '16',
                     }),
                 ),
                 "A: I'm really sorry but I heard 16 again. How many?",
                 'U: Never mind I want 20',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '20' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '20' })),
                 "A: I'm really sorry but I heard 20 again. How many?",
                 'U: Change to Five',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                         action: $.Action.Change,
                         'AMAZON.NUMBER': '5',
                     }),
@@ -586,14 +566,10 @@ suite('NumberControl e2e tests', () => {
             const requestHandler = new ControlHandler(new NumberControlManager());
             await testE2E(requestHandler, [
                 'U: Minus ten.',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '-10' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '-10' })),
                 "A: Sorry but that's not a valid choice because the value must be between zero and fifty inclusive. How many?",
                 'U: Zero',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '0' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '0' })),
                 'A: Was that 0?',
                 'U: Yes',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -625,9 +601,7 @@ suite('NumberControl e2e tests', () => {
                 TestInput.of(GeneralControlIntent.of({})),
                 'A: What number?',
                 'U: Sixteen',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '16' })),
                 'A: Was that Number: 16?',
                 'U: No.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),

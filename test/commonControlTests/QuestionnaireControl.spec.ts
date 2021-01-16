@@ -33,11 +33,7 @@ waitForDebugger();
     - User ignores the prompt and directly answers a question of their choosing, via an
       alternate value. ie say "I often cough" rather than "yes to cough".
      - allow the value to come via preposition, cf via feedback.
-<<<<<<< HEAD
     - test default content is present in APL (not necessarily the precise details. !undefined, !dummy, etc.)
-=======
-   
->>>>>>> develop
  */
 
 suite('QuestionnaireControl e2e tests', () => {

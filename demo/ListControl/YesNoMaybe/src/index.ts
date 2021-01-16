@@ -4,10 +4,9 @@ import { ListControl } from '../../../../src/commonControls/listControl/ListCont
 import { Control } from '../../../../src/controls/Control';
 import { ControlManager } from '../../../../src/controls/ControlManager';
 import { ControlHandler } from '../../../../src/runtime/ControlHandler';
-import { defaultIntentToValueMapper  } from '../../../../src/utils/IntentUtils';
+import { defaultIntentToValueMapper } from '../../../../src/utils/IntentUtils';
 import { DemoRootControl } from '../../../Common/src/DemoRootControl';
 import { filteredYesNoMaybeSlotType, yesNoMaybeSlotType } from './interactionModelTypes';
-
 
 /**
  * Simple demonstration of a list control.
@@ -33,7 +32,7 @@ export namespace ListDemo1 {
                         },
                     },
                     prompts: {
-                        valueSet: '',  // TODO: if confirmation required, this should probably default to ''. Possible??
+                        valueSet: '', // TODO: if confirmation required, this should probably default to ''. Possible??
                     },
                 }),
             );
@@ -44,5 +43,5 @@ export namespace ListDemo1 {
 }
 
 export const handler = SkillBuilders.custom()
-        .addRequestHandlers(new ControlHandler(new ListDemo1.DemoControlManager()))
-        .lambda();
+    .addRequestHandlers(new ControlHandler(new ListDemo1.DemoControlManager()))
+    .lambda();

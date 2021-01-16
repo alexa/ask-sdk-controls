@@ -14,7 +14,7 @@
 import { IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { ControlInputHandlingProps, InputUtil, SingleValueControlIntent, StringOrList } from '../..';
+import { ControlInputHandlingProps, InputUtil, ValueControlIntent, StringOrList } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     ContainerControl,
@@ -34,7 +34,7 @@ import {
 } from '../../intents/ConjunctionControlIntent';
 import { DateRangeControlIntent, unpackDateRangeControlIntent } from '../../intents/DateRangeControlIntent';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
-import { unpackSingleValueControlIntent } from '../../intents/SingleValueControlIntent';
+import { unpackValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
@@ -184,7 +184,7 @@ export type DateRange = {
 };
 
 /**
- * Mapping of action slot values to the behaviors that this control supports.
+ * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
  * - This control will not handle an input if the action-slot is filled with an
@@ -782,7 +782,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addControlIntent(new ConjunctionControlIntent(), imData);
         generator.addControlIntent(new DateRangeControlIntent(), imData);
-        generator.addControlIntent(new SingleValueControlIntent(AmazonBuiltInSlotType.DATE), imData);
+        generator.addControlIntent(new ValueControlIntent(AmazonBuiltInSlotType.DATE), imData);
         generator.addYesAndNoIntents();
 
         for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
@@ -962,9 +962,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
      */
     private isDateInterpretedAsDateRange(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE));
             const intent = (input.request as IntentRequest).intent;
-            const unpackedSlots = unpackSingleValueControlIntent(intent);
+            const unpackedSlots = unpackValueControlIntent(intent);
             okIf(
                 InputUtil.targetIsMatchOrUndefined(
                     unpackedSlots.target,
@@ -994,7 +994,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
         const intent = (input.request as IntentRequest).intent;
-        const { valueStr } = unpackSingleValueControlIntent(intent);
+        const { values } = unpackValueControlIntent(intent);
+        const valueStr = values[0].slotValue;
         this.setStartDate(findEdgeDateOfDateRange(valueStr, true));
         this.setEndDate(findEdgeDateOfDateRange(valueStr, false));
         this.state.isValueConfirmed = false;

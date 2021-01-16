@@ -1,1 +1,1 @@
-export {DemoRootControl as BasicRootControl, WelcomeAct} from './src/DemoRootControl'
+export { DemoRootControl as BasicRootControl, WelcomeAct } from './src/DemoRootControl';

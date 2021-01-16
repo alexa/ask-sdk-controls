@@ -25,7 +25,7 @@ import {
     DateRangeControlIntent,
     DateRangeControlValidations,
     GeneralControlIntent,
-    SingleValueControlIntent,
+    ValueControlIntent,
     testE2E,
     TestInput,
 } from '../../src';
@@ -177,7 +177,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set start date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2017',
@@ -186,7 +186,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017. What is the end date you want?',
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
@@ -199,7 +199,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set end date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.EndDate,
                             'AMAZON.DATE': '2017',
@@ -208,7 +208,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The end date is 2017. What is the start date you want?',
                     'U: 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
@@ -221,7 +221,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set start date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2017',
@@ -230,14 +230,14 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017. What is the end date you want?',
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
                     'A: Got it. The end date is 2018.',
                     'U: actually 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             'AMAZON.DATE': '2017',
                         }),
@@ -251,7 +251,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set start date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2017',
@@ -260,7 +260,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017. What is the end date you want?',
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
@@ -281,7 +281,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
                     ),
                     'A: Got it. The start date is 2018-01-01 and the end date is 2018-12-31.',
                 ]);
@@ -292,7 +292,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set start date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2017',
@@ -311,7 +311,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2015-01-01 and the end date is 2016-12-31.',
                     'U: change date to 2017',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.Date,
                             'AMAZON.DATE': '2017',
@@ -352,7 +352,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
@@ -375,7 +375,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: set date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.Date,
                             'AMAZON.DATE': '2016',
@@ -402,7 +402,7 @@ suite('DateRangeControl', () => {
                     "A: Got it. The start date is 2017-01-01 and the end date is 2020-12-31. Sorry but that's not a valid end date because the date cannot be greater than today. What should I change the end date to?",
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
@@ -415,7 +415,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: set start date to 2020',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2020',
@@ -424,14 +424,14 @@ suite('DateRangeControl', () => {
                     "A: Sorry but that's not a valid start date because the date cannot be greater than today. What is the start date you want?",
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
                     'A: Got it. The start date is 2018. What is the end date you want?',
                     'U: 2018',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2018',
                         }),
                     ),
@@ -470,7 +470,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2016-01-01 and the end date is 2017-12-31.',
                     'U: change end date to 2015',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.EndDate,
                             'AMAZON.DATE': '2015',
@@ -525,7 +525,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: Change start date to 2015',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2015',
@@ -534,7 +534,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is changed to 2015.',
                     'U: change date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.Date,
                             'AMAZON.DATE': '2016',
@@ -600,7 +600,7 @@ suite('DateRangeControl', () => {
                     'A: What should I change the start date to?',
                     'U: 2015',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2015',
                         }),
                     ),
@@ -654,7 +654,7 @@ suite('DateRangeControl', () => {
                     'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: change start date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2016',
@@ -670,7 +670,7 @@ suite('DateRangeControl', () => {
                     'A: What should I change the start date to?',
                     'U: 2015',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2015',
                         }),
                     ),
@@ -777,7 +777,7 @@ suite('DateRangeControl', () => {
                 await testE2E(handler, [
                     'U: 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
@@ -808,7 +808,7 @@ suite('DateRangeControl', () => {
                     'A: Sorry, invalid range because start date can not be greater than end date. What is the start date and end date you want?',
                     'U: 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
@@ -879,7 +879,7 @@ suite('DateRangeControl', () => {
                     'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: change date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Change,
                             target: $.Target.Date,
                             'AMAZON.DATE': '2016',
@@ -912,7 +912,7 @@ suite('DateRangeControl', () => {
                     'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: set start date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2016',
@@ -945,7 +945,7 @@ suite('DateRangeControl', () => {
                     'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
                     'U: set start date to 2020',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2020',
@@ -954,7 +954,7 @@ suite('DateRangeControl', () => {
                     "A: Sorry but that's not a valid start date because the date cannot be greater than today. What is the start date you want?",
                     'U: set start date to 2016',
                     TestInput.of(
-                        SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                        ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             action: $.Action.Set,
                             target: $.Target.StartDate,
                             'AMAZON.DATE': '2016',
@@ -982,7 +982,7 @@ suite('DateRangeControl', () => {
             await testE2E(handler, [
                 'U: set start date to 2017',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Set,
                         target: $.Target.StartDate,
                         'AMAZON.DATE': '2017',
@@ -991,7 +991,7 @@ suite('DateRangeControl', () => {
                 'A: Roger. Please give me the end date.',
                 'U: 2018',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         'AMAZON.DATE': '2018',
                     }),
                 ),

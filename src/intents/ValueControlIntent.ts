@@ -14,33 +14,32 @@
 import { Intent } from 'ask-sdk-model';
 import { v1 } from 'ask-smapi-model';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
-import { getSlotResolutions, IntentBuilder } from '../utils/IntentUtils';
+import { getMVSSlotResolutions, IntentBuilder, SlotResolutionValue } from '../utils/IntentUtils';
 import { BaseControlIntent } from './BaseControlIntent';
 
 /**
- * Slot values conveyed by a SingleValueControlIntent
- *
- * Note that the value is conveyed in a slot that is named for its type.  This is due to
- * NLU build-time restriction that the model (as a whole) may not have slots that share a
- * name but have different types.
+ * Slot values conveyed by a ValueControlIntent
  */
-export interface SingleValueControlIntentSlots {
+export interface ValueControlIntentSlots {
     feedback?: string;
     action?: string;
     target?: string;
-    [key: string]: string | undefined;
+    [key: string]: string[] | string | undefined;
 }
 
-/**
- * Information conveyed by a SingleValueControlIntent
- */
-export interface SingleValuePayload {
+export interface MultiValueSlot {
+    [key: string]: string | boolean;
+}
+
+export interface MultiValuePayload {
     feedback?: string;
     action?: string;
     target?: string;
-    valueStr: string;
+    values: Array<{
+        slotValue: string;
+        isEntityResolutionMatch: boolean;
+    }>;
     valueType?: string;
-    erMatch?: boolean;
 }
 
 /**
@@ -52,7 +51,7 @@ export interface SingleValuePayload {
  *   the implementation of predicates.
  * @param intent - Intent
  */
-export function unpackSingleValueControlIntent(intent: Intent): SingleValuePayload {
+export function unpackValueControlIntent(intent: Intent): MultiValuePayload {
     if (!intent.name.endsWith('ControlIntent')) {
         throw new Error(`Not a ControlIntent: ${intent.name}`);
     }
@@ -60,23 +59,31 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
     let action: string | undefined;
     let feedback: string | undefined;
     let target: string | undefined;
-    let valueStr: string | undefined;
+    let values:
+        | Array<{
+              slotValue: string;
+              isEntityResolutionMatch: boolean;
+          }>
+        | undefined;
     let valueType: string | undefined;
-    let erMatch: boolean | undefined;
 
     for (const [name, slot] of Object.entries(intent.slots!)) {
-        const slotObject = getSlotResolutions(slot);
-        const slotValue = slotObject !== undefined ? slotObject.slotValue : undefined;
+        const slotObject = getMVSSlotResolutions(slot);
+        let slotValue: SlotResolutionValue[] | undefined;
+
+        if (slotObject !== undefined) {
+            slotValue = Array.isArray(slotObject) ? slotObject : [slotObject];
+        }
 
         switch (name) {
             case 'action':
-                action = slotValue;
+                action = slotValue !== undefined ? slotValue[0].slotValue : undefined;
                 break;
             case 'feedback':
-                feedback = slotValue;
+                feedback = slotValue !== undefined ? slotValue[0].slotValue : undefined;
                 break;
             case 'target':
-                target = slotValue;
+                target = slotValue !== undefined ? slotValue[0].slotValue : undefined;
                 break;
             case 'head':
                 break;
@@ -84,23 +91,19 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
                 break;
             case 'preposition':
                 break;
+            case '__Conjunction':
+                break;
             default:
                 if (slotValue !== undefined) {
-                    // did we already capture a value?
-                    if (valueType !== undefined) {
-                        throw new Error('a SingleValueControlIntent should only have one value slot');
-                    }
-                    // treat it as a slot whose name is an NLU slot type.
-                    valueStr = slotValue;
+                    values = slotValue;
                     valueType = name;
-                    erMatch = slotObject !== undefined ? slotObject.isEntityResolutionMatch : undefined;
                 }
         }
     }
 
-    if (valueStr === undefined) {
+    if (values === undefined) {
         throw new Error(
-            `SingleValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(
+            `ValueControlIntent did not have value slot filled.  This should have mapped to GeneralControlIntent. intent: ${JSON.stringify(
                 intent,
             )}`,
         );
@@ -110,27 +113,32 @@ export function unpackSingleValueControlIntent(intent: Intent): SingleValuePaylo
         feedback,
         action,
         target,
-        valueStr,
+        values,
         valueType,
-        erMatch,
     };
 }
 
 /**
- * Intent that conveys feedback, action, target and an AMAZON.Ordinal value
  *
- * The value slot will be named according to the Slot type.
- * - For example `{'AMAZON.NUMBER': '2'}` or  `{ 'AMAZON.Ordinal': 'first' }`
+ * ValueControlIntent is an intent that can carry multiple values for one value-type.
  *
- * Every sample utterance for a SingleValueControlIntent includes the value
+ * - For example an utterance like "Plan a trip to go hiking, camping, and fishing"
+ *  all three values 'hiking, camping, fishing' can be captured using a multiple-value slot like `activity`.
+ *
+ * Every sample utterance for a ValueControlIntent includes the value
  * slot.  Utterances that do not include a value slot are handled by
  * `GeneralControlIntent`.
+ *
  *
  * Limitations
  *  - `AMAZON.SearchQuery` cannot be used due to restrictions in NLU. Custom
  *    intents should be defined instead.
+ *
+ *  - It does not support multiple value of different slottypes, see:
+ *    https://developer.amazon.com/en-US/docs/alexa/custom-skills/collect-multiple-values-in-a-slot.html#about-multiple-value-slots
+ *
  */
-export class SingleValueControlIntent extends BaseControlIntent {
+export class ValueControlIntent extends BaseControlIntent {
     valueSlotType: string;
     filteredValueSlotType: string;
 
@@ -146,21 +154,21 @@ export class SingleValueControlIntent extends BaseControlIntent {
 
         if (valueSlotType === 'AMAZON.SearchQuery') {
             throw new Error(
-                'AMAZON.SearchQuery cannot be used with SingleValueControlIntent due to the special rules regarding its use. ' +
+                'AMAZON.SearchQuery cannot be used with ValueControlIntent due to the special rules regarding its use. ' +
                     'Specifically, utterances that include SearchQuery must have a carrier phrase and not be comprised entirely of slot references.',
             );
         }
 
         this.valueSlotType = valueSlotType;
         this.filteredValueSlotType = filteredValueSlotType ?? valueSlotType;
-        this.name = SingleValueControlIntent.intentName(valueSlotType);
+        this.name = ValueControlIntent.intentName(valueSlotType);
     }
 
     /**
-     * Generates the intent name of a specialized `SingleValueControlIntent`.
+     * Generates the intent name of a specialized `ValueControlIntent`.
      *
      * Example:
-     * - The intent name for a `SingleValueControlIntent` that conveys an
+     * - The intent name for a `ValueControlIntent` that conveys an
      *   `AMAZON.NUMBER` is `AMAZON_NUMBER_ValueControlIntent`.
      *
      * @param slotTypeId - Specific slot type id.
@@ -172,29 +180,9 @@ export class SingleValueControlIntent extends BaseControlIntent {
     /**
      * Create Intent from specification of the slots
      *
-     * Usage:
-     *  * the value should be provided as a property with name = <SlotType>
-     *
-     * Examples:
-     * - AMAZON.NUMBER:
-     * ```
-     * {
-     *    name: AMAZON_NUMBER_ValueControlIntent
-     *    slots: { target: 'count', 'AMAZON.NUMBER': '2' }
-     *    confirmationStatus: 'NONE'
-     * }
-     * ```
-     * - AMAZON.Ordinal:
-     * ```
-     * {
-     *    name: AMAZON_ORDINAL_ValueControlIntent
-     *    slots: { action: 'set', 'AMAZON.Ordinal': 'first'}
-     *    confirmationStatus: 'NONE'
-     * }
-     * ```
      */
-    static of(slotType: string, slots: SingleValueControlIntentSlots): Intent {
-        return IntentBuilder.of(SingleValueControlIntent.intentName(slotType), slots);
+    static of(slotType: string, slots: ValueControlIntentSlots): Intent {
+        return IntentBuilder.of(ValueControlIntent.intentName(slotType), slots);
     }
 
     // tsDoc: see BaseControlIntent
@@ -235,6 +223,9 @@ export class SingleValueControlIntent extends BaseControlIntent {
             {
                 name: `${this.valueSlotType}`,
                 type: `${this.valueSlotType}`,
+                multipleValues: {
+                    enabled: true,
+                },
             },
         ];
 
@@ -242,6 +233,9 @@ export class SingleValueControlIntent extends BaseControlIntent {
             slots.push({
                 name: `${this.filteredValueSlotType}`,
                 type: `${this.filteredValueSlotType}`,
+                multipleValues: {
+                    enabled: true,
+                },
             });
         }
 

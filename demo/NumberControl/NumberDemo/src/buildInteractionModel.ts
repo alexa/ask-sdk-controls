@@ -28,7 +28,7 @@ export namespace BasicNumberDemoIM {
         .addIntent({ name: 'AMAZON.NoIntent' })
         .addIntent({ name: 'AMAZON.FallbackIntent' })
         .setModelConfiguration({ fallbackIntentSensitivity: { level: 'HIGH' } })
-        .buildCoreModelForControls(new BasicNumberDemo.DemoControlManager())
+        .buildCoreModelForControls(new BasicNumberDemo.DemoControlManager());
 }
 
 // If launched directly, build and write to a file
@@ -37,4 +37,3 @@ if (require.main === module) {
     BasicNumberDemoIM.imGen.buildAndWrite('en-US-generated.json');
     console.log('Wrote ./en-US-generated.json');
 }
-

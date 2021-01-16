@@ -22,7 +22,7 @@ import { ControlResultBuilder } from '../src/controls/ControlResult';
 import { throwIf } from '../src/utils/ErrorUtils';
 import { simpleInvoke, TestInput } from '../src/utils/testSupport/TestingUtils';
 import { GameStrings as $$ } from './game_strings';
-import { SingleValueControlIntent } from '../src/intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../src/intents/ValueControlIntent';
 import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
 import { RequestValueAct } from '../src/systemActs/InitiativeActs';
 import { SystemAct } from '../src/systemActs/SystemAct';
@@ -39,7 +39,7 @@ suite('== Custom policy scenarios (custom_policy.ts) ==', () => {
     test('container with custom canHandle that always returns false.', async () => {
         const rootControl = new CustomManager('never').createControlTree();
         const input = TestInput.of(
-            SingleValueControlIntent.of('CUSTOM.name', {
+            ValueControlIntent.of('CUSTOM.name', {
                 action: $.Action.Set,
                 target: $$.Target.Name,
                 'CUSTOM.name': 'Mike',
@@ -51,7 +51,7 @@ suite('== Custom policy scenarios (custom_policy.ts) ==', () => {
 
     test('Default canHandle returns first listed control (playerName)', async () => {
         const rootControl = new CustomManager('normal').createControlTree();
-        const input = TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })); // TODO:handle SingleValueControlIntent with just slotTypes
+        const input = TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })); // TODO:handle ValueControlIntent with just slotTypes
         const result = await simpleInvoke(rootControl, input);
         expect(result.acts[0]).instanceOf(RequestValueAct);
         expect((result.acts[0] as SystemAct).control.id).equals($$.ID.PlayerName);
@@ -59,7 +59,7 @@ suite('== Custom policy scenarios (custom_policy.ts) ==', () => {
 
     test('Custom policy for container.canHandle returns different initiative control (playerAge rather than playerName)', async () => {
         const rootControl = new CustomManager('reverse').createControlTree();
-        const input = TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })); // TODO:handle SingleValueControlIntent with just slotTypes
+        const input = TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })); // TODO:handle ValueControlIntent with just slotTypes
         const result = await simpleInvoke(rootControl, input);
         expect(result.acts[0]).instanceOf(RequestValueAct);
         expect((result.acts[0] as SystemAct).control.id).equals($$.ID.PlayerAge); // <====== RESULT: Requesting Age rather than Name.

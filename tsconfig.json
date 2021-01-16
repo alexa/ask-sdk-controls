@@ -19,7 +19,7 @@
         "composite": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "importHelpers": true
+        "importHelpers": true,
     },
     "include": [
         "src",
@@ -72,7 +72,7 @@
             "Interaction Model Generation": {
                 "ControlInteractionModelGenerator": "classes/_interactionmodelgeneration_controlinteractionmodelgenerator_.controlinteractionmodelgenerator",
                 "GeneralControlIntent": "classes/_intents_generalcontrolintent_.generalcontrolintent",
-                "SingleValueControlIntent": "classes/_intents_singlevaluecontrolintent_.singlevaluecontrolintent",
+                "ValueControlIntent": "classes/_intents_valuecontrolintent_.valuecontrolintent",
                 "OrdinalControlIntent": "classes/_intents_ordinalcontrolintent_.ordinalcontrolintent",
                 "ConjunctionControlIntent": "classes/_intents_conjunctioncontrolintent_.conjunctioncontrolintent",
                 "DateRangeControlIntent": "classes/_intents_daterangecontrolintent_.daterangecontrolintent"

@@ -15,9 +15,9 @@ import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import {
     NumberControl,
-    SingleValueControlIntent,
+    ValueControlIntent,
     Strings,
-    unpackSingleValueControlIntent,
+    unpackValueControlIntent,
     ValueControl,
 } from '../../src';
 import { ContainerControl } from '../../src/controls/ContainerControl';
@@ -73,7 +73,7 @@ suite('== dynamic controls ==', () => {
         expect(response.prompt).equals('What is your first name?');
 
         response = await skill.invoke(
-            TestInput.of(SingleValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'Bob' })),
+            TestInput.of(ValueControlIntent.of('CUSTOM.name', { 'CUSTOM.name': 'Bob' })),
         );
         expect(response.prompt).equals('OK, Bob. And what is your last name, please?');
     });
@@ -127,7 +127,7 @@ export class MyMultiControl extends DynamicContainerControl {
         const unpacked =
             intent.name === 'GeneralControlIntent'
                 ? unpackGeneralControlIntent(intent)
-                : unpackSingleValueControlIntent(intent);
+                : unpackValueControlIntent(intent);
 
         if (unpacked.action === 'addAnother') {
             return true;

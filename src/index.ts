@@ -147,11 +147,11 @@ export {
     unpackOrdinalControlIntent,
 } from './intents/OrdinalControlIntent';
 export {
-    SingleValueControlIntent,
-    SingleValueControlIntentSlots,
-    SingleValuePayload,
-    unpackSingleValueControlIntent,
-} from './intents/SingleValueControlIntent';
+    ValueControlIntent,
+    ValueControlIntentSlots,
+    MultiValuePayload,
+    unpackValueControlIntent,
+} from './intents/ValueControlIntent';
 export { ControlInteractionModelGenerator } from './interactionModelGeneration/ControlInteractionModelGenerator';
 export { InteractionModelGenerator } from './interactionModelGeneration/InteractionModelGenerator';
 export {

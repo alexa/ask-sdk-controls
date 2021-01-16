@@ -115,9 +115,12 @@ export const defaultI18nResources: Resource = {
                 'What is your selection? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE:
                 'What should I change it to? Some suggestions are {{suggestions}}.',
+            LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+            // RePrompts
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE: 'Sorry, {{value}} is not a valid choice.',
@@ -128,6 +131,8 @@ export const defaultI18nResources: Resource = {
                 'What is your selection? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE:
                 'What should I change it to? Some suggestions are {{suggestions}}.',
+            LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
             LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
@@ -166,6 +171,51 @@ export const defaultI18nResources: Resource = {
 
             QUESTIONNAIRE_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
             QUESTIONNAIRE_CONTROL_DEFAULT_APL_SUBMIT_TEXT: 'Submit >',
+
+            // MultiValueListControl Runtime
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD: 'OK, added {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_ACTION_SUGGEST:
+                'You can add new values or update existing values',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE:
+                "Sorry, {{value}} can't be added it doesn't exist.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
+                "Sorry, {{value}} can't be added as {{reason}}.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_REMOVE_VALUE:
+                'Sorry, {{value}} is not in the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE:
+                'What is your selection? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'OK, I have {{value}}. Is that all?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
+            // RePrompts
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_ACTION_SUGGEST:
+                'You can add new values or update existing values',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE:
+                "Sorry, {{value}} can't be added it doesn't exist.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_REMOVE_VALUE:
+                'Sorry, {{value}} is not in the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
+                "Sorry, {{value}} can't be added as {{reason}}.",
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE:
+                'What is your selection? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove? Some suggestions are {{suggestions}}.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_REQUEST_REMOVED_VALUE:
+                'What value do you want to remove?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Ok I have {{value}}. Is that all?',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Create your list',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE: 'Say an item or touch it to add it your list',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE: 'YOUR SELECTIONS',
+            MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE: 'Swipe left to remove items',
 
             // DateRangeControl Runtime
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_START_DATE_SET: 'Got it. The start date is {{value}}.',
@@ -499,7 +549,7 @@ export const defaultI18nResources: Resource = {
                 '{head} {action} {target} {preposition} {AMAZON.Ordinal} {tail}', // {You can} {change} {Bob} {to be} {first} {thanks}
             ],
 
-            SINGLE_VALUE_CONTROL_INTENT_SAMPLES: [
+            VALUE_CONTROL_INTENT_SAMPLES: [
                 '[[filteredValueSlotType]]', // {Apples}, assuming 'apples' matches a value of the slotType.
 
                 '{action} [[valueSlotType]]', // {select} {apples}
@@ -933,6 +983,34 @@ export const defaultI18nResources: Resource = {
                         name: {
                             value: 'resume',
                             synonyms: ['continue'],
+                        },
+                    },
+                    {
+                        id: $.Action.Add,
+                        name: {
+                            value: 'add',
+                            synonyms: ['add'],
+                        },
+                    },
+                    {
+                        id: $.Action.Remove,
+                        name: {
+                            value: 'remove',
+                            synonyms: ['remove', 'delete'],
+                        },
+                    },
+                    {
+                        id: $.Action.Clear,
+                        name: {
+                            value: 'clear',
+                            synonyms: ['remove all', 'clear'],
+                        },
+                    },
+                    {
+                        id: $.Action.Ignore,
+                        name: {
+                            value: 'ignore',
+                            synonyms: ['ignore'],
                         },
                     },
                 ],

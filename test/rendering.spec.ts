@@ -21,7 +21,7 @@ import {
     DateControlValidations,
     InvalidValueAct,
     RequestValueAct,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     SystemAct,
     UnusableInputValueAct,
@@ -161,7 +161,7 @@ suite('== i18n overrides scenarios ==', () => {
         await testTurn(
             invoker,
             'U: 2020',
-            TestInput.of(SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
+            TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
             "A: Sorry but that's not a valid date because PAST DATE ONLY PLEASE. What date?",
         );
     });

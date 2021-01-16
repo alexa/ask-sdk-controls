@@ -27,6 +27,51 @@ export interface ValueSetPayload<T> {
 }
 
 /**
+ * Payload for ValueAddeddAct
+ */
+export interface ValueAddedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
+ * Payload for ValueRemovedAct
+ */
+export interface ValueRemovedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
+ * Payload for ValueClearedAct
+ */
+export interface ValueClearedPayload<T> {
+    /**
+     * The control value.
+     */
+    value: T;
+
+    /**
+     * The rendered value.
+     */
+    renderedValue: string;
+}
+
+/**
  * Payload for ValueChangedAct
  */
 export interface ValueChangedPayload<T> {
@@ -49,6 +94,13 @@ export interface ValueChangedPayload<T> {
      * The previous rendered value.
      */
     renderedPreviousValue: string;
+}
+
+/**
+ * Payload for SuggestActionAct
+ */
+export interface SuggestActionPayload<T> {
+    renderedTarget?: string;
 }
 
 /**
@@ -109,6 +161,18 @@ export interface RequestChangedValueByListPayload {
     allChoices: string[];
     renderedChoicesFromActivePage: string[];
     renderedAllChoices: string[];
+    renderedTarget?: string;
+    renderedChoices?: string;
+}
+
+/**
+ * Payload for RequestRemovedValueByListAct
+ */
+export interface RequestRemovedValueByListActPayload {
+    availableChoicesFromActivePage: string[];
+    availableChoices: string[];
+    renderedChoicesFromActivePage: string[];
+    renderedAvailableChoices: string[];
     renderedTarget?: string;
     renderedChoices?: string;
 }

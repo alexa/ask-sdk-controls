@@ -13,7 +13,7 @@
 import { suite, test } from 'mocha';
 import {
     ControlHandler,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
@@ -23,7 +23,7 @@ import { MultipleLists } from '../src';
 
 waitForDebugger();
 
-suite('all', () => {
+suite('multiList Demo', () => {
     test('YesNoMaybe List Demo - yes as value, then yes as confirmation', async () => {
         const requestHandler = new ControlHandler(new MultipleLists.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
@@ -37,14 +37,14 @@ suite('all', () => {
         await testTurn(
             invoker,
             'U: cat',
-            TestInput.of(SingleValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
+            TestInput.of(ValueControlIntent.of('PetSpecies', { PetSpecies: 'cat' })),
             'A: OK, cat. What is your selection? Some suggestions are labrador or persian.',
         );
 
         await testTurn(
             invoker,
             'U: persian',
-            TestInput.of(SingleValueControlIntent.of('PetBreed', { PetBreed: 'persian' })),
+            TestInput.of(ValueControlIntent.of('PetBreed', { PetBreed: 'persian' })),
             'A: OK, persian. What is your selection? Some suggestions are adopt, foster or sponsor.',
         );
     });

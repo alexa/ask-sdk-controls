@@ -18,7 +18,7 @@ import { Strings as $, Strings } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { IntentBuilder, defaultIntentToValueMapper } from '../../src/utils/IntentUtils';
 import { SkillInvoker } from '../../src/utils/testSupport/SkillInvoker';
@@ -49,7 +49,7 @@ suite('ListControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
             'U: iPhone',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
             'U: Yeah.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -61,7 +61,7 @@ suite('ListControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
             'U: iPhone',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
             'U: No.',
             TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
@@ -73,14 +73,14 @@ suite('ListControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ListControlManager());
         await testE2E(requestHandler, [
             'U: iPhone',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
             'U: Change to iPad.',
             TestInput.of(
-                SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad', action: $.Action.Change }),
+                ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad', action: $.Action.Change }),
             ),
             'A: OK, I changed it to iPad. Was that iPad?',
             'U: Yes.',
@@ -95,7 +95,7 @@ suite('ListControl e2e tests', () => {
         await testTurn(
             invoker,
             'U: iPhone',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
             'A: Was that iPhone?',
         );
 
@@ -110,7 +110,7 @@ suite('ListControl e2e tests', () => {
             invoker,
             'U: Change to Airpods.',
             TestInput.of(
-                SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'Airpods', action: $.Action.Change }),
+                ValueControlIntent.of('AppleSuite', { AppleSuite: 'Airpods', action: $.Action.Change }),
             ),
             'A: Sorry, Airpods is not a valid choice because Apple Suite category validation failed. What should I change it to? Some suggestions are iPhone, iPad or MacBook.',
         );
@@ -118,7 +118,7 @@ suite('ListControl e2e tests', () => {
         await testTurn(
             invoker,
             'U: iPad',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
         );
 
@@ -132,7 +132,7 @@ suite('ListControl e2e tests', () => {
         await testTurn(
             invoker,
             'U: iPad',
-            TestInput.of(SingleValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPad' })),
             'A: OK, I changed it to iPad. Was that iPad?',
         );
 

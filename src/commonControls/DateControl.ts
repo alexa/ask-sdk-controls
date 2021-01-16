@@ -21,10 +21,7 @@ import { InteractionModelContributor } from '../controls/mixins/InteractionModel
 import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../intents/SingleValueControlIntent';
+import { ValueControlIntent, unpackValueControlIntent } from '../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -124,7 +121,7 @@ export interface DateControlProps extends ControlProps {
 }
 
 /**
- * Mapping of action slot values to the behaviors that this control supports.
+ * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
  * - This control will not handle an input if the action-slot is filled with an
@@ -444,10 +441,11 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private isSetWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -463,7 +461,8 @@ export class DateControl extends Control implements InteractionModelContributor 
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
         return;
@@ -497,10 +496,11 @@ export class DateControl extends Control implements InteractionModelContributor 
      */
     private isChangeWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -516,7 +516,8 @@ export class DateControl extends Control implements InteractionModelContributor 
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
         return;
@@ -555,10 +556,11 @@ export class DateControl extends Control implements InteractionModelContributor 
      */
     private isBareValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isSingleValueControlIntent(input, AmazonBuiltInSlotType.DATE));
-            const { feedback, action, target, valueStr } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE));
+            const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -571,7 +573,8 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private async handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        const { valueStr } = unpackSingleValueControlIntent((input.request as IntentRequest).intent);
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+        const valueStr = values[0].slotValue;
         this.setValue(valueStr);
         await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
         return;
@@ -866,7 +869,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
-        generator.addControlIntent(new SingleValueControlIntent(AmazonBuiltInSlotType.DATE), imData);
+        generator.addControlIntent(new ValueControlIntent(AmazonBuiltInSlotType.DATE), imData);
         generator.addYesAndNoIntents();
 
         for (const [capability, actionSlotIds] of Object.entries(this.props.interactionModel.actions)) {
@@ -886,7 +889,7 @@ export class DateControl extends Control implements InteractionModelContributor 
  */
 function generateSlotElicitation(): { intent: Intent; slotName: string } {
     const intent: Intent = {
-        name: SingleValueControlIntent.intentName(AmazonBuiltInSlotType.DATE),
+        name: ValueControlIntent.intentName(AmazonBuiltInSlotType.DATE),
         slots: {
             feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
             action: { name: 'action', value: '', confirmationStatus: 'NONE' },

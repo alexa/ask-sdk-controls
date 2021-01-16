@@ -24,7 +24,7 @@ import {
     Logger,
     RequestChangedValueAct,
     RequestValueAct,
-    SingleValueControlIntent,
+    ValueControlIntent,
     ValueSetAct,
 } from '../../src';
 import { DateControl, DateControlValidations } from '../../src/commonControls/DateControl';
@@ -131,7 +131,7 @@ suite('DateControl tests', () => {
         test('set value with valid date should be processed.', async () => {
             const control = dateControlUnderTest();
             const input = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
+                ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
             );
             const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
@@ -146,7 +146,7 @@ suite('DateControl tests', () => {
         test('set value with invalid choice should be rejected.', async () => {
             const control = dateControlUnderTest();
             const input = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                     action: $.Action.Set,
                     target: 'food',
                     'AMAZON.DATE': '2019-01-01',
@@ -178,7 +178,7 @@ suite('DateControl tests', () => {
         test('test controller clear state function.', async () => {
             const control = dateControlUnderTest();
             const input = TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2019-01-01' }),
+                ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2019-01-01' }),
             );
             const canHandleResult = await control.canHandle(input);
             expect(canHandleResult).true;
@@ -256,9 +256,7 @@ suite('DateControl tests', () => {
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })),
                 'A: What date?',
                 'U: 2020',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
                 'A: OK.',
             ]);
         });
@@ -267,13 +265,11 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager());
             await testE2E(requestHandler, [
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 "A: Sorry but that's not a valid date because the date cannot be less than today. What date?",
                 'U: 2020',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020-01-01' }),
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020-01-01' }),
                 ),
                 'A: OK.',
             ]);
@@ -283,14 +279,10 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager2());
             await testE2E(requestHandler, [
                 'U: 2021',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2021' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2021' })),
                 "A: Sorry but that's not a valid date because the date cannot be greater than today. What date?",
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 'A: OK.',
             ]);
         });
@@ -299,13 +291,11 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager());
             await testE2E(requestHandler, [
                 'U: 2020',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
                 'A: OK.',
                 'U: change date to 2021',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Change,
                         target: $.Target.Date,
                         'AMAZON.DATE': '2021',
@@ -319,13 +309,11 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager());
             await testE2E(requestHandler, [
                 'U: 2020',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
                 'A: OK.',
                 'U: change date to 2016',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Change,
                         target: $.Target.Date,
                         'AMAZON.DATE': '2016',
@@ -334,7 +322,7 @@ suite('DateControl tests', () => {
                 "A: Sorry but that's not a valid date because the date cannot be less than today. What should I change it to?",
                 'U: 2021',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Change,
                         'AMAZON.DATE': '2021',
                     }),
@@ -347,16 +335,14 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager());
             await testE2E(requestHandler, [
                 'U: 2020',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
                 'A: OK.',
                 'U: change',
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Change })),
                 'A: What should I change it to?',
                 'U: change to 2021',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Change,
                         'AMAZON.DATE': '2021',
                     }),
@@ -369,21 +355,17 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManager());
             await testE2E(requestHandler, [
                 'U: 1993',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '1993' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '1993' })),
                 "A: Sorry but that's not a valid date because the date cannot be less than today. What date?",
                 'U: 2020',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2020' })),
                 'A: OK.',
                 'U: change',
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Change })),
                 'A: What should I change it to?',
                 'U: change to 2021',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         action: $.Action.Change,
                         'AMAZON.DATE': '2021',
                     }),
@@ -393,9 +375,7 @@ suite('DateControl tests', () => {
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })),
                 'A: What date?',
                 'U: 2025',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2025' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2025' })),
                 'A: OK.',
             ]);
         });
@@ -407,14 +387,10 @@ suite('DateControl tests', () => {
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Change })),
                 'A: What should I change it to?',
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 "A: Sorry but that's not a valid date because the date cannot be less than today. What should I change it to?",
                 'U: 2021',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2021' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2021' })),
                 'A: Changed from 2018 to 2021.',
             ]);
         });
@@ -423,9 +399,7 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManagerWithConfirmation());
             await testE2E(requestHandler, [
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 'A: Was that 2018?',
                 'U: Yeah.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -437,9 +411,7 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManagerWithConfirmation());
             await testE2E(requestHandler, [
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 'A: Was that 2018?',
                 'U: No.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
@@ -451,16 +423,14 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManagerWithConfirmation());
             await testE2E(requestHandler, [
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 'A: Was that 2018?',
                 'U: Yes.',
                 TestInput.of(GeneralControlIntent.of({ feedback: $.Feedback.Affirm })),
                 'A: Great.',
                 'U: Change to 08-12-1993.',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         'AMAZON.DATE': '08-12-1993',
                         action: $.Action.Change,
                     }),
@@ -476,33 +446,27 @@ suite('DateControl tests', () => {
             const requestHandler = new ControlHandler(new DateManagerWithConfirmation());
             await testE2E(requestHandler, [
                 'U: 2018',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' })),
                 'A: Was that 2018?',
                 'U: Yes.',
                 TestInput.of(GeneralControlIntent.of({ feedback: $.Feedback.Affirm })),
                 'A: Great.',
                 'U: Change to 2021.',
                 TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                    ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                         'AMAZON.DATE': '2021',
                         action: $.Action.Change,
                     }),
                 ),
                 "A: Sorry but that's not a valid date because the date cannot be greater than today. What should I change it to?",
                 'U: 2000.',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2000' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2000' })),
                 'A: Was that 2000?',
                 'U: No.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
                 'A: My mistake. What date?',
                 'U: 2016.',
-                TestInput.of(
-                    SingleValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2016' }),
-                ),
+                TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2016' })),
                 'A: Was that 2016?',
                 'U: Yes.',
                 TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),

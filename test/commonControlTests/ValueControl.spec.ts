@@ -18,7 +18,7 @@ import { Strings as $ } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { AmazonIntent } from '../../src/intents/AmazonBuiltInIntent';
-import { SingleValueControlIntent } from '../../src/intents/SingleValueControlIntent';
+import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
 import { assert } from '../../src/utils/AssertionUtils';
 import { IntentBuilder } from '../../src/utils/IntentUtils';
@@ -49,7 +49,7 @@ suite('ValueControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ValueControlManager());
         await testE2E(requestHandler, [
             'U: Amazon',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
             'A: Was that Amazon?',
             'U: Yeah.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
@@ -61,7 +61,7 @@ suite('ValueControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ValueControlManager());
         await testE2E(requestHandler, [
             'U: Amazon',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
             'A: Was that Amazon?',
             'U: No.',
             TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
@@ -73,14 +73,14 @@ suite('ValueControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ValueControlManager());
         await testE2E(requestHandler, [
             'U: Alexa',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Alexa' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Alexa' })),
             'A: Was that Alexa?',
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
             'U: Change to Redfox.',
             TestInput.of(
-                SingleValueControlIntent.of('LOGIN.name', {
+                ValueControlIntent.of('LOGIN.name', {
                     'LOGIN.name': 'Redfox',
                     action: $.Action.Change,
                 }),
@@ -96,24 +96,24 @@ suite('ValueControl e2e tests', () => {
         const requestHandler = new ControlHandler(new ValueControlManager());
         await testE2E(requestHandler, [
             'U: Alexa',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Alexa' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Alexa' })),
             'A: Was that Alexa?',
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
             'U: Change to Apple.',
             TestInput.of(
-                SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Apple', action: $.Action.Change }),
+                ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Apple', action: $.Action.Change }),
             ),
             'A: Sorry, Apple is not a valid choice because Login name validation failed. What should I change it to?',
             'U: Amazon',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
             'A: OK, I changed it to Amazon. Was that Amazon?',
             'U: No.',
             TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
             'A: My mistake. What is your login name?',
             'U: Amazon',
-            TestInput.of(SingleValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
+            TestInput.of(ValueControlIntent.of('LOGIN.name', { 'LOGIN.name': 'Amazon' })),
             'A: OK, I changed it to Amazon. Was that Amazon?',
             'U: Yes.',
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),

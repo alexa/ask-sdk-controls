@@ -15,20 +15,20 @@ import { suite, test } from 'mocha';
 import {
     ControlHandler,
     IntentBuilder,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
     waitForDebugger,
     AmazonBuiltInSlotType,
-    AmazonIntent
+    AmazonIntent,
 } from '../../../../src';
 import { BasicNumberDemo } from '../src';
 import { BasicNumberDemoIM } from '../src/buildInteractionModel';
 
 waitForDebugger();
 
-suite('all', () => {
+suite('Number Demo', () => {
     test('Number Demo - IMGen', async () => {
         const imData = BasicNumberDemoIM.imGen.build();
 
@@ -41,17 +41,12 @@ suite('all', () => {
     test('Number Demo - give value, then confirm', async () => {
         const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
-        await testTurn(
-            invoker,
-            'U: __',
-            TestInput.launchRequest(),
-            'A: Welcome. What number?',
-        );
+        await testTurn(invoker, 'U: __', TestInput.launchRequest(), 'A: Welcome. What number?');
 
         await testTurn(
             invoker,
             'U: four',
-            TestInput.of(SingleValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '4' })),
+            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '4' })),
             'A: Was that 4?',
         );
 
@@ -61,17 +56,12 @@ suite('all', () => {
     test('Number Demo - 40 as value, no as disconfirmation, resolve ambiguity to 14', async () => {
         const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
-        await testTurn(
-            invoker,
-            'U: __',
-            TestInput.launchRequest(),
-            'A: Welcome. What number?',
-        );
+        await testTurn(invoker, 'U: __', TestInput.launchRequest(), 'A: Welcome. What number?');
 
         await testTurn(
             invoker,
             'U: forty',
-            TestInput.of(SingleValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '40' })),
+            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '40' })),
             'A: Was that 40?',
         );
 
@@ -88,12 +78,7 @@ suite('all', () => {
     test('Number Demo - screen input, no confirmation', async () => {
         const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
-        await testTurn(
-            invoker,
-            'U: __',
-            TestInput.launchRequest(),
-            'A: Welcome. What number?',
-        );
+        await testTurn(invoker, 'U: __', TestInput.launchRequest(), 'A: Welcome. What number?');
 
         await testTurn(
             invoker,
@@ -106,26 +91,19 @@ suite('all', () => {
     test('Number Demo - screen input, invalid, new value valid', async () => {
         const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
-        await testTurn(
-            invoker,
-            'U: __',
-            TestInput.launchRequest(),
-            'A: Welcome. What number?',
-        );
+        await testTurn(invoker, 'U: __', TestInput.launchRequest(), 'A: Welcome. What number?');
 
         await testTurn(
             invoker,
             'U: __',
             TestInput.simpleUserEvent(['number', 3]),
-            'A: Sorry but that\'s not a valid choice because the value must be even. What number?',
+            "A: Sorry but that's not a valid choice because the value must be even. What number?",
         );
 
         await testTurn(
             invoker,
             'U: 4',
-            TestInput.of(
-                SingleValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' }),
-            ),
+            TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '4' })),
             'A: Was that 4?',
         );
 

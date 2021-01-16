@@ -24,10 +24,7 @@ import { StateValidationFunction, ValidationFailure } from '../../controls/Valid
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
-import {
-    SingleValueControlIntent,
-    unpackSingleValueControlIntent,
-} from '../../intents/SingleValueControlIntent';
+import { ValueControlIntent, unpackValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
@@ -159,7 +156,7 @@ export interface ListControlProps extends ControlProps {
 }
 
 /**
- * Mapping of action slot values to the behaviors that this control supports.
+ * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
  * - This control will not handle an input if the action-slot is filled with an
@@ -581,10 +578,11 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private isSetWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -630,10 +628,11 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private isChangeWithValue(input: ControlInput): boolean {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType)); // TODO: GENERAL BUG: don't all handlers need to accept valueType == slotType | filteredSlotType.
             okIf(InputUtil.valueStrDefined(valueStr));
@@ -679,10 +678,11 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private isBareValue(input: ControlInput): any {
         try {
-            okIf(InputUtil.isIntent(input, SingleValueControlIntent.intentName(this.props.slotType)));
-            const { feedback, action, target, valueStr, valueType } = unpackSingleValueControlIntent(
+            okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
+            const valueStr = values[0].slotValue;
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
@@ -1198,7 +1198,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
         generator.addControlIntent(
-            new SingleValueControlIntent(
+            new ValueControlIntent(
                 this.props.slotType,
                 this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
             ),

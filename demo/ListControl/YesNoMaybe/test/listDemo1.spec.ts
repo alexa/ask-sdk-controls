@@ -15,7 +15,7 @@ import { suite, test } from 'mocha';
 import {
     ControlHandler,
     IntentBuilder,
-    SingleValueControlIntent,
+    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
@@ -26,7 +26,7 @@ import { ListDemo1IM } from '../src/buildInteractionModel';
 
 waitForDebugger();
 
-suite('all', () => {
+suite('List Demo', () => {
     test('YesNoMaybe List Demo - IMGen', async () => {
         const imData = ListDemo1IM.imGen.build();
         expect(imData.interactionModel?.languageModel?.intents?.find((x) => x.name === 'HelloIntent')).not
@@ -86,7 +86,7 @@ suite('all', () => {
         await testTurn(
             invoker,
             'U: maybe',
-            TestInput.of(SingleValueControlIntent.of('YesNoMaybe', { Maybe: 'maybe' })),
+            TestInput.of(ValueControlIntent.of('YesNoMaybe', { Maybe: 'maybe' })),
             'A: Was that maybe?',
         );
 
