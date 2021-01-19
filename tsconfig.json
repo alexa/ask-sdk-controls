@@ -68,6 +68,8 @@
                 "DateControl": "modules/_commoncontrols_datecontrol_",
                 "DateRangeControl": "modules/_commoncontrols_daterangecontrol_daterangecontrol_",
                 "NumberControl": "modules/_commoncontrols_numbercontrol_",
+                "QuestionnaireControl": "modules/_commoncontrols_questionnairecontrol_questionnairecontrol_",
+                "MultiValueListControl": "modules/_commoncontrols_multivaluelistcontrol_multivaluelistcontrol_"
             },
             "Interaction Model Generation": {
                 "ControlInteractionModelGenerator": "classes/_interactionmodelgeneration_controlinteractionmodelgenerator_.controlinteractionmodelgenerator",
