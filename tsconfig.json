@@ -19,13 +19,12 @@
         "composite": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "importHelpers": true,
+        "importHelpers": true
     },
     "include": [
         "src",
         "test",
-        "demo",
-        "launchDemo.ts"
+        "demo"
     ],
     "exclude": [
         "doc",
@@ -67,7 +66,7 @@
                 "ListControl": "modules/_commoncontrols_listcontrol_listcontrol_",
                 "DateControl": "modules/_commoncontrols_datecontrol_",
                 "DateRangeControl": "modules/_commoncontrols_daterangecontrol_daterangecontrol_",
-                "NumberControl": "modules/_commoncontrols_numbercontrol_",
+                "NumberControl": "modules/_commoncontrols_numbercontrol_numbercontrol_",
                 "QuestionnaireControl": "modules/_commoncontrols_questionnairecontrol_questionnairecontrol_",
                 "MultiValueListControl": "modules/_commoncontrols_multivaluelistcontrol_multivaluelistcontrol_"
             },

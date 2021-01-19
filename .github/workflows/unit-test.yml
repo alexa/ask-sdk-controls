@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Linter, Formatting checks and unit Tests
 
 on:
   push:
@@ -20,5 +20,6 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
+    - run: npm run format-check
     - run: npm run lint
     - run: npm run test
