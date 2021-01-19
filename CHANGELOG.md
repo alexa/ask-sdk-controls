@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.1](https://github.com/alexa/ask-sdk-controls/compare/v0.5.0...v0.5.1) (2021-01-19)
+
+
+### Docs
+
+* fixed Changelog previous release messages and formatting issues ([7e52e9f](https://github.com/alexa/ask-sdk-controls/commit/7e52e9fea3a8af73d4552072a2b3bb5f716b2a05))
+
 ## [0.5.0](https://github.com/alexa/ask-sdk-controls/compare/v0.4.0...v0.5.0) (2021-01-19)
 
 
