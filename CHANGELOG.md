@@ -7,440 +7,16 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### ⚠ BREAKING CHANGES
 
-*  - change to interaction model building flow. (controls must be added after custom content)
- - various additions and minor changes to built-in interaction model content
-
-Squashed commit of the following:
-
-commit d744f6ca02c351ec6da651a94d98c502920c9375
-Author: mliddell <mliddell@amazon.com>
-Date:   Sun Dec 6 18:14:47 2020 -0800
-
-    cleanup, export new publics
-
-commit 0dad51a1ceab2a0747e392b55bab61f1793d6574
-Author: mliddell <mliddell@amazon.com>
-Date:   Sun Dec 6 17:41:36 2020 -0800
-
-    i18n strings, put response logging behind env-var
-
-commit b019371beb68cecf348aee716be6fc8aaafe7828
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:16:30 2020 -0800
-
-    fix: fix lint warnings
-
-commit 218aec5b66d2f0248fa96047a9bb3e23257011e2
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:12:06 2020 -0800
-
-    chore: force upgrade highlight.js
-
-commit 13108790b8c7a46f2a80f803b021dbcc2251b8d5
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:01:19 2020 -0800
-
-    added some todos
-
-commit 3103314104e19be5feb3dc336675c7a1eaa5f2d8
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 17:48:59 2020 -0800
-
-    fix formatting
-
-commit 3122b010a90e58dcab12ee79537fa7f96bd67936
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 17:48:09 2020 -0800
-
-    reorganize and simplify how interaction-model build works
-
-commit 7375763d8c171e4c3ba7df5d9c049d64e85c7a9d
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 13:53:01 2020 -0800
-
-    all tests passing
-
-commit c2d4670c4d284bbeecceca167df503ac5d7e0450
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 13:47:56 2020 -0800
-
-    visualLabel and tests for touch input
-
-commit 5d6634a2cd619fce5e29cb113667486ad82b8990
-Author: mliddell <mliddell@amazon.com>
-Date:   Wed Dec 2 19:08:36 2020 -0800
-
-    Generally working
-
-commit 6f7613de1edd81df0b1fa5ad3c5047a8916554c1
-Author: mliddell <mliddell@amazon.com>
-Date:   Wed Dec 2 10:55:01 2020 -0800
-
-    wip
-
-commit 2a68f2513e50e64b88ee3af24b5998bb94ab39ca
-Author: mliddell <mliddell@amazon.com>
-Date:   Tue Nov 24 18:16:56 2020 -0800
-
-    wip
-
-commit 2bcdeaf696870d554ef5a52a5c8a33f172e90c2c
-Author: mliddell <mliddell@amazon.com>
-Date:   Fri Nov 20 14:21:50 2020 -0800
-
-    wip
-
-commit 3becee386b499b7448df45ce8589530a0db9a6de
-Author: mliddell <mliddell@amazon.com>
-Date:   Tue Nov 3 16:46:54 2020 -0800
-
-    feat: add QuestionnaireControl (basic facilities)
-
-    QuestionnaireControl presents a series of questions to the user
-    - each question must have the same set of allowed answers
-    - intended to reduce friction by allowing fast data-entry and
-      better user initiative to move between questions & be done with
-      only partial input.
-
-    This control is still in design/development.
-
-    Squashed commit of the following:
-
-    commit a65e4508130bbf364b4657a869500bba03e3104b
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Nov 3 16:38:14 2020 -0800
-
-        wip: fix formatting
-
-    commit fa97a216fbd1b5c7e450527a1198fa4a3bdfa084
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Nov 3 16:37:01 2020 -0800
-
-        wip: Added tests for Questionnaire. Improved async usage in other controls.
-
-    commit 9af6b35a535095406731116c1f0143e8a5061cd2
-    Merge: ad07cfb bbcd95e
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Nov 1 14:01:43 2020 -0800
-
-        wip: merged and continuiing...
-
-    commit ad07cfb6a247be34c8c390b651f7acff5ee0499a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Fri Oct 30 14:21:47 2020 -0700
-
-        wip: adding question-asking initiative
-
-    commit 76f39ffcf85f9731da5272e8ed7467d5e423ae90
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 26 16:29:30 2020 -0700
-
-        wip Demo with three columns, improved APL formatting
-
-    commit a714dbe0b6c89c89f691fb4c3a625246d179b637
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 26 16:07:51 2020 -0700
-
-        wip - APL improved
-
-    commit 3c71204eb768624acd805760ba1a09aa5c14c319
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 18:02:02 2020 -0700
-
-        wip: general updates. auto-scrolling
-
-    commit e1d4439164e2b4be774430e91fe55132b936db9f
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 16:51:02 2020 -0700
-
-        wip: basic question prompts & value answers
-
-    commit 13277043d5146695fcbfa49aca8e26f992a92a74
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 14:30:27 2020 -0700
-
-        wip: basic apl touch-selection wired up
-
-    commit a42dc2bdd448d9b25fdf8b19a42ff5a770d87808
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 13:06:04 2020 -0700
-
-        wip: simplified questionnaire content props
-
-    commit 4b93fac681de2a532bc2ca7eee797dc5208f4f76
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Fri Oct 23 10:27:33 2020 -0700
-
-        wip
-
-    commit 68beedda18617bbe40df62b7e1891d40591d44f7
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 11:01:37 2020 -0700
-
-        chore_(.commitrc): change 'docs' to 'doc'
-
-    commit a02210f2b06087708789a15bdb37d2f15490dd6a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 11:00:20 2020 -0700
-
-        docs_: jsDoc for ControlManagerProps
-
-    commit 37f31ba14828e20f39f34c1cc81d67318630267a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 09:23:03 2020 -0700
-
-        wip
-
-    commit b71b8ad1d91a41e40b821a1c38dd063661bd1dd7
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 19 18:06:31 2020 -0700
-
-        checkpoint before rework of userActs to handleFuncs
-
-    commit 2e0ff3969ee824c19fc30f85baef3adb53d0a250
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 18 17:10:32 2020 -0700
-
-        wip_: progress on QuestionnaireControl
-
-    commit c06056131c67fb384b61c83b7cb11513c6b7dae0
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sat Oct 17 17:58:07 2020 -0700
-
-        wip_: getting started with QuestionnaireControl
-
-    commit 2914843849f2dfb3f637f20210c14b9f6bee8ea4
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sat Oct 17 12:33:34 2020 -0700
-
-        wip: starting questionnaire
-
-    commit 25e298610f0ddf76149af1ce34a426192e4cc0e4
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Wed Oct 14 13:31:16 2020 -0700
-
-        feat: a simple demo skill using multiple lists
-*  - change to interaction model building flow. (controls must be added after custom content)
- - various additions and minor changes to built-in interaction model content
-
-Squashed commit of the following:
-
-commit d744f6ca02c351ec6da651a94d98c502920c9375
-Author: mliddell <mliddell@amazon.com>
-Date:   Sun Dec 6 18:14:47 2020 -0800
-
-    cleanup, export new publics
-
-commit 0dad51a1ceab2a0747e392b55bab61f1793d6574
-Author: mliddell <mliddell@amazon.com>
-Date:   Sun Dec 6 17:41:36 2020 -0800
-
-    i18n strings, put response logging behind env-var
-
-commit b019371beb68cecf348aee716be6fc8aaafe7828
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:16:30 2020 -0800
-
-    fix: fix lint warnings
-
-commit 218aec5b66d2f0248fa96047a9bb3e23257011e2
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:12:06 2020 -0800
-
-    chore: force upgrade highlight.js
-
-commit 13108790b8c7a46f2a80f803b021dbcc2251b8d5
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 18:01:19 2020 -0800
-
-    added some todos
-
-commit 3103314104e19be5feb3dc336675c7a1eaa5f2d8
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 17:48:59 2020 -0800
-
-    fix formatting
-
-commit 3122b010a90e58dcab12ee79537fa7f96bd67936
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 17:48:09 2020 -0800
-
-    reorganize and simplify how interaction-model build works
-
-commit 7375763d8c171e4c3ba7df5d9c049d64e85c7a9d
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 13:53:01 2020 -0800
-
-    all tests passing
-
-commit c2d4670c4d284bbeecceca167df503ac5d7e0450
-Author: mliddell <mliddell@amazon.com>
-Date:   Sat Dec 5 13:47:56 2020 -0800
-
-    visualLabel and tests for touch input
-
-commit 5d6634a2cd619fce5e29cb113667486ad82b8990
-Author: mliddell <mliddell@amazon.com>
-Date:   Wed Dec 2 19:08:36 2020 -0800
-
-    Generally working
-
-commit 6f7613de1edd81df0b1fa5ad3c5047a8916554c1
-Author: mliddell <mliddell@amazon.com>
-Date:   Wed Dec 2 10:55:01 2020 -0800
-
-    wip
-
-commit 2a68f2513e50e64b88ee3af24b5998bb94ab39ca
-Author: mliddell <mliddell@amazon.com>
-Date:   Tue Nov 24 18:16:56 2020 -0800
-
-    wip
-
-commit 2bcdeaf696870d554ef5a52a5c8a33f172e90c2c
-Author: mliddell <mliddell@amazon.com>
-Date:   Fri Nov 20 14:21:50 2020 -0800
-
-    wip
-
-commit 3becee386b499b7448df45ce8589530a0db9a6de
-Author: mliddell <mliddell@amazon.com>
-Date:   Tue Nov 3 16:46:54 2020 -0800
-
-    feat: add QuestionnaireControl (basic facilities)
-
-    QuestionnaireControl presents a series of questions to the user
-    - each question must have the same set of allowed answers
-    - intended to reduce friction by allowing fast data-entry and
-      better user initiative to move between questions & be done with
-      only partial input.
-
-    This control is still in design/development.
-
-    Squashed commit of the following:
-
-    commit a65e4508130bbf364b4657a869500bba03e3104b
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Nov 3 16:38:14 2020 -0800
-
-        wip: fix formatting
-
-    commit fa97a216fbd1b5c7e450527a1198fa4a3bdfa084
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Nov 3 16:37:01 2020 -0800
-
-        wip: Added tests for Questionnaire. Improved async usage in other controls.
-
-    commit 9af6b35a535095406731116c1f0143e8a5061cd2
-    Merge: ad07cfb bbcd95e
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Nov 1 14:01:43 2020 -0800
-
-        wip: merged and continuiing...
-
-    commit ad07cfb6a247be34c8c390b651f7acff5ee0499a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Fri Oct 30 14:21:47 2020 -0700
-
-        wip: adding question-asking initiative
-
-    commit 76f39ffcf85f9731da5272e8ed7467d5e423ae90
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 26 16:29:30 2020 -0700
-
-        wip Demo with three columns, improved APL formatting
-
-    commit a714dbe0b6c89c89f691fb4c3a625246d179b637
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 26 16:07:51 2020 -0700
-
-        wip - APL improved
-
-    commit 3c71204eb768624acd805760ba1a09aa5c14c319
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 18:02:02 2020 -0700
-
-        wip: general updates. auto-scrolling
-
-    commit e1d4439164e2b4be774430e91fe55132b936db9f
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 16:51:02 2020 -0700
-
-        wip: basic question prompts & value answers
-
-    commit 13277043d5146695fcbfa49aca8e26f992a92a74
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 14:30:27 2020 -0700
-
-        wip: basic apl touch-selection wired up
-
-    commit a42dc2bdd448d9b25fdf8b19a42ff5a770d87808
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 25 13:06:04 2020 -0700
-
-        wip: simplified questionnaire content props
-
-    commit 4b93fac681de2a532bc2ca7eee797dc5208f4f76
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Fri Oct 23 10:27:33 2020 -0700
-
-        wip
-
-    commit 68beedda18617bbe40df62b7e1891d40591d44f7
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 11:01:37 2020 -0700
-
-        chore_(.commitrc): change 'docs' to 'doc'
-
-    commit a02210f2b06087708789a15bdb37d2f15490dd6a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 11:00:20 2020 -0700
-
-        docs_: jsDoc for ControlManagerProps
-
-    commit 37f31ba14828e20f39f34c1cc81d67318630267a
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Tue Oct 20 09:23:03 2020 -0700
-
-        wip
-
-    commit b71b8ad1d91a41e40b821a1c38dd063661bd1dd7
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Mon Oct 19 18:06:31 2020 -0700
-
-        checkpoint before rework of userActs to handleFuncs
-
-    commit 2e0ff3969ee824c19fc30f85baef3adb53d0a250
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sun Oct 18 17:10:32 2020 -0700
-
-        wip_: progress on QuestionnaireControl
-
-    commit c06056131c67fb384b61c83b7cb11513c6b7dae0
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sat Oct 17 17:58:07 2020 -0700
-
-        wip_: getting started with QuestionnaireControl
-
-    commit 2914843849f2dfb3f637f20210c14b9f6bee8ea4
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Sat Oct 17 12:33:34 2020 -0700
-
-        wip: starting questionnaire
-
-    commit 25e298610f0ddf76149af1ce34a426192e4cc0e4
-    Author: mliddell <mliddell@amazon.com>
-    Date:   Wed Oct 14 13:31:16 2020 -0700
-
-        feat: a simple demo skill using multiple lists
+* change to interaction model building flow. (controls must be added after custom content) 
+* various additions and minor changes to built-in interaction model content
 
 ### Features
 
 * **MultiValueList:** added multiValueListControl and its default APL ([59f970f](https://github.com/alexa/ask-sdk-controls/commit/59f970f207e80bac49e80d38ca76281f9799a6cb))
 * add APL for NumberControl ([831cc83](https://github.com/alexa/ask-sdk-controls/commit/831cc83df63665742daf612c9f12f081326a03dc))
 * async load/save of control state ([c492307](https://github.com/alexa/ask-sdk-controls/commit/c492307473f70895c33f6fd04e412efb5a7cb63d))
+* **QuestionnarieControl:** added QuestionnaireControl ([65ed192](https://github.com/alexa/ask-sdk-controls/commit/65ed192f712e569d54f84deede7b5808f429e188))
 * **questionnaire:** improve APL behavior ([759719e](https://github.com/alexa/ask-sdk-controls/commit/759719e50a304a4265930404f1c4af98475a1ef1))
-* add QuestionnaireControl (multiple yes/no questions) ([65ed192](https://github.com/alexa/ask-sdk-controls/commit/65ed192f712e569d54f84deede7b5808f429e188))
 * add QuestionnaireControl (multiple yes/no questions) ([dec8b04](https://github.com/alexa/ask-sdk-controls/commit/dec8b0494f4c036eb39a28a1de0a03f20e4ba680))
 
 
@@ -484,8 +60,8 @@ Date:   Tue Nov 3 16:46:54 2020 -0800
 
 ### ⚠ BREAKING CHANGES
 
-* - (minor) ControlManager.createControlTree(). Removed controlStateBag parameter
-- (minor) renamed LanguageStrings.systemResources to defaultI18nResources
+* (minor) ControlManager.createControlTree(). Removed controlStateBag parameter
+* (minor) renamed LanguageStrings.systemResources to defaultI18nResources
 
 ### Features
 
@@ -507,18 +83,27 @@ Date:   Tue Nov 3 16:46:54 2020 -0800
 
 ### [0.2.4](https://github.com/alexa/ask-sdk-controls/compare/v0.2.3...v0.2.4) (2020-09-11)
 
+This release contains the following changes :
+ - minor bug fixes and npm packaging configurations.
+
 ### [0.2.3](https://github.com/alexa/ask-sdk-controls/compare/v0.2.2...v0.2.3) (2020-09-11)
 
-### 0.2.2 (2020-09-10)
+This release contains the following changes :
+ - minor bug fixes and npm packaging configurations.
 
-# 0.2.1 (2020-07-21)
+### [0.2.2](https://github.com/alexa/ask-sdk-controls/compare/v0.2.2...v0.2.1) (2020-09-10)
+
+This release contains the following changes :
+ - minor bug fixes.
+
+### [0.2.1](https://github.com/alexa/ask-sdk-controls/compare/v0.2.1...v0.2.0) (2020-07-21)
 
 This release contains the following changes : 
 
-- Add chai as runtime dependency.
-- Add the Changelog.
+- add chai as runtime dependency.
+- add the Changelog.
 
-# 0.2.0 (2020-07-21)
+## [0.2.0](https://github.com/alexa/ask-sdk-controls/compare/v0.2.0...v0.2.0) (2020-07-21)
 
 This release contains the following changes : 
 
