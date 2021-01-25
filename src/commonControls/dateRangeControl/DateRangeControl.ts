@@ -794,15 +794,15 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         }
     }
 
-    private getStartDateFromChild(): string | undefined {
+    private getStartDateFromChild(): string {
         return this.startDateControl.state.value;
     }
 
-    private getEndDateFromChild(): string | undefined {
+    private getEndDateFromChild(): string {
         return this.endDateControl.state.value;
     }
 
-    private setStartDate(date: string | undefined): void {
+    private setStartDate(date: string): void {
         this.startDateControl.state.value = date;
         this.state.startDate = date;
 
@@ -810,7 +810,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.state.isChangingRange = false;
     }
 
-    private setEndDate(date: string | undefined): void {
+    private setEndDate(date: string): void {
         this.endDateControl.state.value = date;
         this.state.endDate = date;
 

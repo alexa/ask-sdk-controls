@@ -44,7 +44,7 @@ export interface ControlState {
      *   controls and other consumers should `control.isReady()` to determine if the value
      *   is ready for use.
      */
-    value?: any; //TODO: make mandatory to tighten the convention.
+    value: any;
 }
 
 export interface ControlInputHandler {

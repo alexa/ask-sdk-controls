@@ -348,7 +348,7 @@ export class ListControlState implements ControlState {
      * If `erMatch = true` the value is a slot value ID for the slot type `this.slotType`.
      * If `erMatch = false` the value may be an arbitrary string.
      */
-    value?: string;
+    value: string;
 
     /**
      * Tracks whether the value is an Entity Resolution match.

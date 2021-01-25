@@ -412,7 +412,7 @@ export class MultiValueListControlState implements ControlState {
     /**
      * The list of values as [ (id1, erMatch), (id2, erMatch) ]
      */
-    value?: MultiValueListStateValue[];
+    value: MultiValueListStateValue[];
 
     /**
      * Tracks the most recent elicitation action.
@@ -1213,7 +1213,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     // tsDoc - see ControlStateDiagramming
     stringifyStateForDiagram(): string {
-        let text = this.state.value ? this.state.value.join(', ') : '<none>';
+        let text = this.state.value.length > 0 ? this.state.value.join(', ') : '<none>';
         if (this.state.elicitationAction !== undefined) {
             text += `[eliciting, ${this.state.elicitationAction}]`;
         }
