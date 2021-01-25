@@ -35,7 +35,7 @@ interface ChildActivityRecord {
  * Container state for use in arbitration
  */
 export class ContainerControlState implements ControlState {
-    value?: any;
+    value: any;
     lastHandlingControl?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
     lastInitiativeChild?: ChildActivityRecord; // ditto.
 }

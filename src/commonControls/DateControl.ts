@@ -293,7 +293,7 @@ export class DateControlState implements ControlState {
     /**
      * The value, an ISO date string.
      */
-    value?: string;
+    value: string;
 
     /**
      * Tracks if the control is actively asking the user to set or change the value.

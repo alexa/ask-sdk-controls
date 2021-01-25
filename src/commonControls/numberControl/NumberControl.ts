@@ -301,7 +301,7 @@ export class NumberControlState implements ControlState {
     /**
      * The value, an integer.
      */
-    value?: number;
+    value: number;
 
     /**
      * Tracks whether the value has been explicitly confirmed by the user.
