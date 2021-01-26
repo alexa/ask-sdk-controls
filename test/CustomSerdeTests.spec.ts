@@ -64,8 +64,12 @@ class CustomSerdeControlManager extends ControlManager {
 class CustomSerdeControlState implements ControlState {
     value: Set<string>;
 
+    lastInitiative: {
+        actname?: string;
+    };
     constructor(value: Set<string>) {
         this.value = value;
+        this.lastInitiative = {};
     }
 }
 

@@ -31,6 +31,13 @@ interface ChildActivityRecord {
     turnNumber: number;
 }
 
+export type LastInitiativeState = {
+    /**
+     * Tracks the last act initiated from the control.
+     */
+    actName?: string;
+};
+
 /**
  * Container state for use in arbitration
  */
@@ -38,6 +45,7 @@ export class ContainerControlState implements ControlState {
     value: any;
     lastHandlingControl?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
     lastInitiativeChild?: ChildActivityRecord; // ditto.
+    lastInitiative: LastInitiativeState;
 }
 
 /**

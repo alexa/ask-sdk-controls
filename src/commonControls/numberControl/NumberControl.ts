@@ -292,6 +292,13 @@ export class NumberControlAPLProps {
     validationFailedMessage?: string | ((value?: number) => string);
 }
 
+export type LastInitiativeState = {
+    /**
+     * Tracks the last act initiated from the control.
+     */
+    actName?: string;
+};
+
 /**
  * State tracked by a NumberControl.
  */
@@ -307,11 +314,6 @@ export class NumberControlState implements ControlState {
     isValueConfirmed: boolean = false;
 
     /**
-     * Tracks the last initiative act from the control
-     */
-    activeInitiativeAct?: string;
-
-    /**
      * Tracks the values the user disconfirmed.
      */
     rejectedValues: number[] = [];
@@ -321,6 +323,11 @@ export class NumberControlState implements ControlState {
      * TODO: remove this and allow async prop functions.
      */
     isValidValue: boolean = true;
+
+    /**
+     * Tracks the last initiative act from the control
+     */
+    lastInitiative: LastInitiativeState;
 }
 
 /**
@@ -356,6 +363,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         super(props.id);
         this.rawProps = props;
         this.props = NumberControl.mergeWithDefaultProps(props);
+        this.state.lastInitiative = {};
     }
 
     /**
@@ -787,7 +795,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     private isBareNoWhenConfirmingValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -809,7 +817,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -821,7 +829,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value!,
@@ -847,7 +855,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackNoAndValueNotChangedWhenConfirmingValue;
             return true;
@@ -860,7 +868,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
                 value: this.state.value!,
@@ -888,7 +896,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsFalse(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value !== Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackNoAndValueChangedWhenConfirmingValue;
             return true;
@@ -923,7 +931,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value !== Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueChangedWhenConfirmingValue;
             return true;
@@ -948,7 +956,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 reasonCode: 'ConfirmedWithDifferentValue',
             }),
         );
-        this.state.activeInitiativeAct = 'ConfirmValueAct';
+        this.state.lastInitiative.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
@@ -961,7 +969,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     private isBareYesConfirmingValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -984,7 +992,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
@@ -1007,7 +1015,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -1020,7 +1028,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder: ControlResultBuilder,
     ): void {
         this.state.isValueConfirmed = true;
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -1046,7 +1054,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueUndefinedWhenConfirmingValue;
             return true;
@@ -1060,7 +1068,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder: ControlResultBuilder,
     ): void {
         this.state.isValueConfirmed = true;
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -1155,7 +1163,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             resultBuilder.addAct(new RequestValueAct(this));
         } else if (!this.isConfirmationRequired(input)) {
             this.state.isValueConfirmed = true;
-            this.state.activeInitiativeAct = undefined;
+            this.state.lastInitiative.actName = undefined;
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: this.state.value,
@@ -1166,7 +1174,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 }),
             );
         } else {
-            this.state.activeInitiativeAct = 'ConfirmValueAct';
+            this.state.lastInitiative.actName = ConfirmValueAct.name;
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: this.state.value,
@@ -1196,7 +1204,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             const validationResult = await this.validateNumber(input);
             if (validationResult === true) {
                 // this is to confirm from users for the suggestedValue
-                this.state.activeInitiativeAct = 'ConfirmValueAct';
+                this.state.lastInitiative.actName = ConfirmValueAct.name;
                 resultBuilder.addAct(
                     new SuggestValueAct(this, {
                         value: this.state.value,
@@ -1267,7 +1275,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.activeInitiativeAct = 'ConfirmValueAct';
+        this.state.lastInitiative.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,

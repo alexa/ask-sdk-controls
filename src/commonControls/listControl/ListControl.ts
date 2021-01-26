@@ -344,6 +344,13 @@ export class ListControlAPLProps {
     requestChangedValue?: ControlAPL<RequestChangedValueByListAct, ListControlState>;
 }
 
+export type LastInitiativeState = {
+    /**
+     * Tracks the last act initiated from the control.
+     */
+    actName?: string;
+};
+
 /**
  * State tracked by a ListControl.
  */
@@ -389,7 +396,7 @@ export class ListControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    activeInitiativeActName?: string;
+    lastInitiative: LastInitiativeState;
 }
 
 /**
@@ -444,6 +451,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
         this.rawProps = props;
         this.props = ListControl.mergeWithDefaultProps(props);
+        this.state.lastInitiative = {};
     }
 
     /**
@@ -754,8 +762,8 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isMappedBareValueDuringElicitation(input: ControlInput): any {
         try {
             okIf(InputUtil.isIntent(input));
-            okIf(this.state.activeInitiativeActName !== undefined);
-            okIf(this.state.activeInitiativeActName === RequestValueByListAct.name);
+            okIf(this.state.lastInitiative !== undefined);
+            okIf(this.state.lastInitiative.actName === RequestValueByListAct.name);
             const intent = (input.request as IntentRequest).intent;
             const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
                 intent,
@@ -785,7 +793,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isConfirmationAffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.activeInitiativeActName === ConfirmValueAct.name);
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
         } catch (e) {
@@ -795,7 +803,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = true;
-        this.state.activeInitiativeActName = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -807,7 +815,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isConfirmationDisaffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.activeInitiativeActName === ConfirmValueAct.name);
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
@@ -817,7 +825,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
-        this.state.activeInitiativeActName = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
@@ -1122,7 +1130,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     addInitiativeAct(initiativeAct: InitiativeAct, resultBuilder: ControlResultBuilder) {
-        this.state.activeInitiativeActName = initiativeAct.constructor.name;
+        this.state.lastInitiative.actName = initiativeAct.constructor.name;
         resultBuilder.addAct(initiativeAct);
     }
 

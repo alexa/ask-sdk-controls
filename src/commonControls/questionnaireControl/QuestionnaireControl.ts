@@ -398,6 +398,13 @@ export type QuestionnaireUserAnswers = {
     };
 };
 
+export type LastInitiativeState = {
+    /**
+     * Tracks the last act initiated from the control.
+     */
+    actName?: string;
+};
+
 /**
  * State tracked by a QuestionnaireControl.
  */
@@ -408,15 +415,9 @@ export class QuestionnaireControlState implements ControlState {
     value: QuestionnaireUserAnswers;
 
     /**
-     * Tracks the most recent initiative action.
+     * Tracks the last initiative act from the control
      */
-    activeInitiative?: {
-        actName: string;
-        //other things related to the act? but probably should just be tracked as regular
-        //state variables.
-        //(note that SystemActs are not good state variables.. they are programming model
-        //helpers to pass information to render() functions.)
-    };
+    lastInitiative: LastInitiativeState;
 
     /**
      * Which questionId is active, aka in focus.
@@ -473,6 +474,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             this.props.interactionModel.filteredSlotType = this.props.interactionModel.slotType;
         }
         this.state.value = {};
+        this.state.lastInitiative = {};
     }
 
     /**
@@ -709,7 +711,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         }
 
         await this.handleFunc(input, resultBuilder);
-        this.state.activeInitiative = undefined; // clear the initiative state so we don't get confused on subsequent turns.
+        this.state.lastInitiative.actName = undefined; // clear the initiative state so we don't get confused on subsequent turns.
     }
 
     private isActivate(input: ControlInput): any {
@@ -750,7 +752,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         try {
             const content = this.getQuestionnaireContent(input);
             okIf(InputUtil.isIntent(input));
-            okIf(this.state.activeInitiative?.actName === AskQuestionAct.name);
+            okIf(this.state.lastInitiative.actName === AskQuestionAct.name);
             okIf(this.state.focusQuestionId !== undefined);
             const intent = (input.request as IntentRequest).intent;
             const mappedValue = this.props.inputHandling.intentToChoiceMapper(intent);
@@ -1073,7 +1075,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
     private isBareYesToCompletionQuestion(input: ControlInput): boolean {
         try {
-            okIf(this.state.activeInitiative?.actName === AskIfCompleteAct.name);
+            okIf(this.state.lastInitiative.actName === AskIfCompleteAct.name);
             okIf(InputUtil.isBareYes(input));
             return true;
         } catch (e) {
@@ -1084,7 +1086,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
     private isBareNoToCompletionQuestion(input: ControlInput): boolean {
         try {
-            okIf(this.state.activeInitiative?.actName === AskIfCompleteAct.name);
+            okIf(this.state.lastInitiative.actName === AskIfCompleteAct.name);
             okIf(InputUtil.isBareNo(input));
             return true;
         } catch (e) {
@@ -1171,7 +1173,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const initiativeAct = new ActiveAPLInitiativeAct(this);
         resultBuilder.addAct(initiativeAct);
         resultBuilder.enterIdleState();
-        this.state.activeInitiative = { actName: initiativeAct.constructor.name };
+        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
     }
 
     private wantsToAskLineItemQuestion(input: ControlInput): boolean {
@@ -1215,7 +1217,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         });
 
         resultBuilder.addAct(initiativeAct);
-        this.state.activeInitiative = { actName: initiativeAct.constructor.name };
+        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
     }
 
     private wantsToAskIfComplete(input: ControlInput): boolean {
@@ -1242,7 +1244,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         } else {
             initiativeAct = new AskIfCompleteAct(this);
         }
-        this.state.activeInitiative = { actName: initiativeAct.constructor.name };
+        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
         resultBuilder.addAct(initiativeAct);
     }
 
@@ -1277,8 +1279,8 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     // tsDoc - see ControlStateDiagramming
     public stringifyStateForDiagram(): string {
         let text = ''; // TODO:Maybe: some representation of the answers?
-        if (this.state.activeInitiative !== undefined) {
-            text += `[${this.state.activeInitiative.actName}]`;
+        if (this.state.lastInitiative.actName !== undefined) {
+            text += `[${this.state.lastInitiative.actName}]`;
         }
         return text;
     }
