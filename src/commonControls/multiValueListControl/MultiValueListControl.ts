@@ -56,7 +56,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { _logIfBothTrue } from '../../utils/ControlUtils';
+import { _logIfBothTrue, evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
@@ -697,29 +697,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     ];
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        const stdHandlers = this.standardInputHandlers;
-        const customHandlers = this.props.inputHandling.customHandlingFuncs ?? [];
-
-        const matches = [];
-        for (const handler of stdHandlers.concat(customHandlers)) {
-            if (await handler.canHandle.call(this, input)) {
-                matches.push(handler);
-            }
-        }
-
-        if (matches.length > 1) {
-            log.error(
-                `More than one handler matched. Handlers in a single control should be mutually exclusive. ` +
-                    `Defaulting to the first. handlers: ${JSON.stringify(matches.map((x) => x.name))}`,
-            );
-        }
-
-        if (matches.length >= 1) {
-            this.handleFunc = matches[0].handle.bind(this);
-            return true;
-        } else {
-            return false;
-        }
+        return evaluateInputHandlers(this, input);
     }
 
     // tsDoc - see Control

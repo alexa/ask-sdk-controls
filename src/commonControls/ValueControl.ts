@@ -15,7 +15,13 @@ import { Intent, IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { Strings as $ } from '../constants/Strings';
-import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../controls/Control';
+import {
+    Control,
+    ControlInputHandler,
+    ControlInputHandlingProps,
+    ControlProps,
+    ControlState,
+} from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
@@ -38,7 +44,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../utils/ControlUtils';
+import { evaluateInputHandlers, _logIfBothTrue } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -394,21 +400,38 @@ export class ValueControl extends Control implements InteractionModelContributor
         return _.merge(defaults, props);
     }
 
+    standardInputHandlers: ControlInputHandler[] = [
+        { name: 'SetWithValue (built-in)', canHandle: this.isSetWithValue, handle: this.handleSetWithValue },
+        {
+            name: 'ChangeWithValue (built-in)',
+            canHandle: this.isChangeWithValue,
+            handle: this.handleChangeWithValue,
+        },
+        {
+            name: 'SetWithoutValue (built-in)',
+            canHandle: this.isSetWithoutValue,
+            handle: this.handleSetWithoutValue,
+        },
+        {
+            name: 'ChangeWithoutValue (built-in)',
+            canHandle: this.isChangeWithoutValue,
+            handle: this.handleChangeWithoutValue,
+        },
+        { name: 'isBareValue (built-in)', canHandle: this.isBareValue, handle: this.handleBareValue },
+        {
+            name: 'ConfirmationAffirmed (built-in)',
+            canHandle: this.isConfirmationAffirmed,
+            handle: this.handleConfirmationAffirmed,
+        },
+        {
+            name: 'ConfirmationDisaffirmed (built-in)',
+            canHandle: this.isConfirmationDisaffirmed,
+            handle: this.handleConfirmationDisaffirmed,
+        },
+    ];
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        const customCanHandle = await evaluateCustomHandleFuncs(this, input);
-
-        const builtInCanHandle: boolean =
-            this.isSetWithValue(input) ||
-            this.isChangeWithValue(input) ||
-            this.isSetWithoutValue(input) ||
-            this.isChangeWithoutValue(input) ||
-            this.isBareValue(input) ||
-            this.isConfirmationAffirmed(input) ||
-            this.isConfirmationDisaffirmed(input);
-
-        _logIfBothTrue(customCanHandle, builtInCanHandle);
-        return customCanHandle || builtInCanHandle;
+        return evaluateInputHandlers(this, input);
     }
 
     // tsDoc - see Control

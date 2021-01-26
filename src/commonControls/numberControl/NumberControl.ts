@@ -26,14 +26,13 @@ import {
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
-import { ControlAPL } from '../../controls/ControlAPL';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
+import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
@@ -52,9 +51,8 @@ import {
     SuggestValueAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
-import { assert } from '../../utils/AssertionUtils';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
 import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
@@ -476,7 +474,7 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        const customCanHandle = await evaluateCustomHandleFuncs(this, input);
+        const customCanHandle = await evaluateInputHandlers(this, input);
         const builtInCanHandle: boolean =
             this.canHandleForEmptyStateValue(input) ||
             this.canHandleForExistingStateValue(input) ||

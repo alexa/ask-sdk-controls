@@ -48,7 +48,7 @@ import {
 } from '../../systemActs/ContentActs';
 import { ConfirmValueAct, RequestValueAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
-import { evaluateCustomHandleFuncs, _logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 import { DateControl, DateControlPromptProps, DateControlState } from '../DateControl';
@@ -741,7 +741,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        const customCanHandle = await evaluateCustomHandleFuncs(this, input);
+        const customCanHandle = await evaluateInputHandlers(this, input);
         const builtInCanHandle =
             (await this.canHandleForFocus(input)) || (await this.canHandleForNoFocus(input));
         _logIfBothTrue(customCanHandle, builtInCanHandle);

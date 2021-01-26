@@ -173,7 +173,7 @@ export { ISystemAct, SystemAct } from './systemActs/SystemAct';
 export { matchIfDefined, mismatch, moveArrayItem, randomlyPick } from './utils/ArrayUtils';
 export { StringOrList, StringOrTrue } from './utils/BasicTypes';
 export { generateControlTreeTextDiagram } from './utils/ControlTreeVisualization';
-export { evaluateCustomHandleFuncs, findControlById } from './utils/ControlUtils';
+export { evaluateInputHandlers, findControlById } from './utils/ControlUtils';
 export { visitControls } from './utils/ControlVisitor';
 export { DeepRequired } from './utils/DeepRequired';
 export { throwIf, throwIfUndefined } from './utils/ErrorUtils';
