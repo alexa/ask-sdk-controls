@@ -36,7 +36,7 @@ import { DateRangeControlIntent, unpackDateRangeControlIntent } from '../../inte
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { unpackValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData, SharedSlotType } from '../../interactionModelGeneration/ModelTypes';
+import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
@@ -177,11 +177,6 @@ export interface DateRangeControlProps extends ContainerControlProps {
      */
     valueRenderer?: (value: DateRange, component: string, input: ControlInput) => string;
 }
-
-export type DateRange = {
-    startDate: string;
-    endDate: string;
-};
 
 /**
  * Mapping of action slot values to the capability that this control supports.
@@ -364,8 +359,8 @@ export namespace DateRangeControlValidations {
         state: DateRangeControlState,
         input: ControlInput,
     ): true | ValidationFailure => {
-        const startDate = alexaDateFormatToDate(state.startDate!);
-        const endDate = alexaDateFormatToDate(state.endDate!);
+        const startDate = alexaDateFormatToDate(state.value.startDate!);
+        const endDate = alexaDateFormatToDate(state.value.endDate!);
         if (startDate > endDate) {
             return {
                 reasonCode: DateRangeValidationFailReasonCode.START_BEFORE_END,
@@ -397,12 +392,7 @@ export interface DateRangeControlPromptProps {
     confirmValue?: StringOrList | ((act: ConfirmValueAct<string>, input: ControlInput) => StringOrList);
 }
 
-/**
- * State tracked by a DateRangeControl.
- */
-export class DateRangeControlState extends ContainerControlState {
-    // TODO: refactor: collate startDate/endDate into .value
-
+export type DateRange = {
     /**
      * The start date
      */
@@ -412,6 +402,15 @@ export class DateRangeControlState extends ContainerControlState {
      * The end date
      */
     endDate?: string;
+};
+/**
+ * State tracked by a DateRangeControl.
+ */
+export class DateRangeControlState extends ContainerControlState {
+    /**
+     * The value as (startDate, endDate) object.
+     */
+    value: DateRange;
 
     /**
      * The previous start date
@@ -712,6 +711,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         super(props);
         this.state = new DateRangeControlState();
         this.props = DateRangeControl.mergeWithDefaultProps(props);
+        this.state.value = {};
         this.startDateControl = new DateControl({
             id: `${this.props.id}_startDate`,
             interactionModel: {
@@ -756,7 +756,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.updatePrior();
 
         // Calling handle function to make changes to state values
-        if (this.handleFunc) {
+        if (this.handleFunc !== undefined) {
             return this.handleFunc(input, resultBuilder);
         }
 
@@ -804,7 +804,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     private setStartDate(date: string): void {
         this.startDateControl.state.value = date;
-        this.state.startDate = date;
+        this.state.value.startDate = date;
 
         // Clean open question once a value set
         this.state.isChangingRange = false;
@@ -812,7 +812,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     private setEndDate(date: string): void {
         this.endDateControl.state.value = date;
-        this.state.endDate = date;
+        this.state.value.endDate = date;
 
         // Clean open question once a value set
         this.state.isChangingRange = false;
@@ -1101,8 +1101,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.startDateControl.state.isValueConfirmed = true;
         this.endDateControl.state.isValueConfirmed = true;
         const dateRange = {
-            startDate: this.state.startDate!,
-            endDate: this.state.endDate!,
+            startDate: this.state.value.startDate!,
+            endDate: this.state.value.endDate!,
         };
         if (await this.wantsToCorrectRange(input)) {
             await this.correctRange(input, resultBuilder);
@@ -1132,8 +1132,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.state.isValueConfirmed = false;
         this.state.isConfirmingRange = false;
         const dateRange = {
-            startDate: this.state.startDate!,
-            endDate: this.state.endDate!,
+            startDate: this.state.value.startDate!,
+            endDate: this.state.value.endDate!,
         };
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
@@ -1154,8 +1154,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private updatePrior(): void {
         // Only update prior if it's not in confirming range status
         if (!this.state.isConfirmingRange) {
-            this.state.previousEndDate = this.state.endDate;
-            this.state.previousStartDate = this.state.startDate;
+            this.state.previousEndDate = this.state.value?.endDate;
+            this.state.previousStartDate = this.state.value?.startDate;
         }
     }
 
@@ -1163,14 +1163,14 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         // The DateRangeControl only ack date range changes
         // Only start date change or end date change will be handled by Child controls
         if (
-            this.state.startDate !== undefined &&
-            this.state.endDate !== undefined &&
-            this.state.startDate !== this.state.previousStartDate &&
-            this.state.endDate !== this.state.previousEndDate
+            this.state.value.startDate !== undefined &&
+            this.state.value.endDate !== undefined &&
+            this.state.value.startDate !== this.state.previousStartDate &&
+            this.state.value.endDate !== this.state.previousEndDate
         ) {
             const dateRange = {
-                startDate: this.state.startDate!,
-                endDate: this.state.endDate!,
+                startDate: this.state.value.startDate!,
+                endDate: this.state.value.endDate!,
             };
             // If it's the first time to set the value, DateRangeControl will send DateRangeSetAct
             // And when there's an old value exist, DateRangeControl will send DateRangeChangedAct
@@ -1178,8 +1178,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 ? resultBuilder.addAct(
                       new DateRangeChangedAct(
                           this,
-                          this.state.startDate,
-                          this.state.endDate,
+                          this.state.value.startDate,
+                          this.state.value.endDate,
                           this.state.previousStartDate,
                           this.state.previousEndDate,
                           this.props.valueRenderer(dateRange, 'START_DATE', input),
@@ -1189,8 +1189,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 : resultBuilder.addAct(
                       new DateRangeSetAct(
                           this,
-                          this.state.startDate,
-                          this.state.endDate,
+                          this.state.value.startDate,
+                          this.state.value.endDate,
                           this.props.valueRenderer(dateRange, 'START_DATE', input),
                           this.props.valueRenderer(dateRange, 'END_DATE', input),
                       ),
@@ -1283,7 +1283,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private needsValue(input: ControlInput): boolean {
         try {
             okIf(this.evaluateBooleanProp(this.props.required, input));
-            okIf(this.state.startDate === undefined && this.state.endDate === undefined);
+            okIf(this.state.value.startDate === undefined && this.state.value.endDate === undefined);
             this.takeInitiativeFunc = this.requestDateRange;
             return true;
         } catch (e) {
@@ -1324,8 +1324,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         this.state.onFocus = true;
         if (rangeValidationResult !== true) {
             const dateRange = {
-                startDate: this.state.startDate!,
-                endDate: this.state.endDate!,
+                startDate: this.state.value.startDate!,
+                endDate: this.state.value.endDate!,
             };
             resultBuilder.addAct(
                 new InvalidValueAct(this, {
@@ -1337,11 +1337,11 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             );
             // if the range-validation failure is due to one date changing, only request that one
             if (
-                this.state.startDate !== this.state.previousStartDate &&
-                this.state.endDate !== this.state.previousEndDate
+                this.state.value.startDate !== this.state.previousStartDate &&
+                this.state.value.endDate !== this.state.previousEndDate
             ) {
                 resultBuilder.addAct(new RequestValueAct(this));
-            } else if (this.state.startDate !== this.state.previousStartDate) {
+            } else if (this.state.value.startDate !== this.state.previousStartDate) {
                 resultBuilder.addAct(new RequestValueAct(this.startDateControl));
             } else {
                 resultBuilder.addAct(new RequestValueAct(this.endDateControl));
@@ -1364,8 +1364,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isConfirmingRange = true;
         const dateRange = {
-            startDate: this.state.startDate!,
-            endDate: this.state.endDate!,
+            startDate: this.state.value.startDate!,
+            endDate: this.state.value.endDate!,
         };
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
