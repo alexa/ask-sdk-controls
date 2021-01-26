@@ -21,41 +21,52 @@ const log = new Logger('AskSdkControls:ControlUtils');
 /*
  * //    TODO: tighten up the contract.. what props are supported, precisely.
  *       probably also good to factor into gatherFuncs() and evaluateFuncs()
- */
-
+ 
+ * //    TODO: tighten by refactoring NumberControl/DateRangeControl canHandle.
 /**
- * Evaluate the custom handlers
+ * Evaluate the Input handlers
  *
- * Custom handlers can be defined in two places:
+ *  Handlers can be defined in two places:
  *  1. `props.inputHandling.customHandlingFuncs`, and
  *  2. `props.apl.customHandlingFuncs`
  * @param control - control
  * @param input - input
  */
-export async function evaluateCustomHandleFuncs(control: IControl, input: ControlInput) {
-    const customHandleFuncs: Array<{
-        canHandle: (input: ControlInput) => boolean | Promise<boolean>;
-        handle: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
-    }> = (control as any).props.inputHandling.customHandlingFuncs;
+export async function evaluateInputHandlers(control: Control, input: ControlInput): Promise<boolean> {
+    const stdHandlers = (control as any).standardInputHandlers ?? [];
+    const customHandlers = (control as any).props.inputHandling.customHandlingFuncs ?? [];
 
     const aplProps = (control as any).props.apl;
 
-    // TODO: Add apl props to all commonControls
+    // TODO: deperecate apl customHandlers prop
     if (aplProps !== undefined) {
         Object.entries(aplProps).forEach(([_key, value]) => {
             if (typeof value === 'object' && 'customHandlingFuncs' in value!) {
-                customHandleFuncs.push(...(value as any).customHandlingFuncs);
+                customHandlers.push(...(value as any).customHandlingFuncs);
             }
         });
     }
 
-    for (const { canHandle, handle } of customHandleFuncs) {
-        if ((await canHandle(input)) === true) {
-            (control as any).handleFunc = handle;
-            return true;
+    const matches = [];
+    for (const handler of stdHandlers.concat(customHandlers)) {
+        if ((await handler.canHandle.call(control as any, input)) === true) {
+            matches.push(handler);
         }
     }
-    return false;
+
+    if (matches.length > 1) {
+        log.error(
+            `More than one handler matched. Handlers in a single control should be mutually exclusive. ` +
+                `Defaulting to the first. handlers: ${JSON.stringify(matches.map((x) => x.name))}`,
+        );
+    }
+
+    if (matches.length >= 1) {
+        (control as any).handleFunc = matches[0].handle.bind(control as any);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 //Exported for internal use only. Not sufficiently well-defined or valuable for public export.

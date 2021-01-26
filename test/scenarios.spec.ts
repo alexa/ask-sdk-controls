@@ -257,11 +257,15 @@ suite('== Custom Handler function scenarios ==', () => {
                 inputHandling: {
                     customHandlingFuncs: [
                         {
-                            name: 'custom::setDateEvent',
+                            name: 'SetDateEvent',
                             canHandle: isSetDateEvent,
                             handle: handleSetDateEvent,
                         },
-                        { name: 'custom::setValue', canHandle: isSetValue, handle: handleSetValue },
+                        {
+                            name: 'SetValue',
+                            canHandle: isSetValue,
+                            handle: handleSetValue,
+                        },
                     ],
                 },
             });
@@ -309,7 +313,7 @@ suite('== Custom Handler function scenarios ==', () => {
         expect(dateControlState.state.value).eq('2020-01-01');
     });
 
-    test('Check conflicts in canHandle throws a warn log', async () => {
+    test('Check conflicts in canHandle throws a error log', async () => {
         const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
             ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -317,14 +321,14 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const spy = sinon.stub(Logger.prototype, 'warn');
+        const spy = sinon.stub(Logger.prototype, 'error');
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
 
         expect(
             spy.calledOnceWith(
-                'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',
+                'More than one handler matched. Handlers in a single control should be mutually exclusive. Defaulting to the first. handlers: ["SetWithValue (built-in)","SetValue"]',
             ),
         ).eq(true);
 
