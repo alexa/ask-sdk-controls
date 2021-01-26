@@ -292,6 +292,13 @@ export interface DateControlPromptProps {
     valueAffirmed?: StringOrList | ((act: ValueConfirmedAct<number>, input: ControlInput) => StringOrList);
 }
 
+export type LastInitiativeState = {
+    /**
+     * Tracks the last act initiated from the control.
+     */
+    actName?: string;
+};
+
 /**
  * State tracked by a DateControl.
  */
@@ -319,7 +326,7 @@ export class DateControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    activeInitiativeAct?: string;
+    lastInitiative: LastInitiativeState;
 }
 
 /**
@@ -352,6 +359,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         super(props.id);
         this.rawProps = props;
         this.props = DateControl.mergeWithDefaultProps(props);
+        this.state.lastInitiative = {};
     }
 
     /**
@@ -615,7 +623,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
         } catch (e) {
@@ -624,7 +632,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         this.state.isValueConfirmed = true;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
@@ -637,7 +645,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.activeInitiativeAct === 'ConfirmValueAct');
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
@@ -647,7 +655,7 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
-        this.state.activeInitiativeAct = undefined;
+        this.state.lastInitiative.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
@@ -789,7 +797,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.activeInitiativeAct = 'ConfirmValueAct';
+        this.state.lastInitiative.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,

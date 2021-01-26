@@ -397,12 +397,12 @@ export type LastInitiativeState = {
     /**
      * Tracks the last act initiated from the control.
      */
-    actName: string;
+    actName?: string;
 
     /**
      * A list of values which are used in last initiative act.
      */
-    valueIds: string[];
+    valueIds?: string[];
 };
 
 /**
@@ -436,7 +436,7 @@ export class MultiValueListControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative?: LastInitiativeState;
+    lastInitiative: LastInitiativeState;
 
     /**
      * Tracks if the control state values are confirmed
@@ -497,6 +497,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.props.interactionModel.slotValueConflictExtensions.filteredSlotType = this.props.slotType;
         }
         this.state.value = [];
+        this.state.lastInitiative = {};
     }
 
     /**
@@ -850,9 +851,10 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder) {
-        const valueIds = this.state.lastInitiative?.valueIds;
+        const valueIds = this.state.lastInitiative.valueIds;
         if (valueIds !== undefined) {
-            this.state.lastInitiative = undefined;
+            this.state.lastInitiative.actName = undefined;
+            this.state.lastInitiative.valueIds = undefined;
             this.state.confirmed = true;
             resultBuilder.addAct(
                 new ValueConfirmedAct(this, {
@@ -876,7 +878,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder) {
         resultBuilder.addAct(new SuggestActionAct(this, {}));
-        this.state.lastInitiative = undefined;
+        this.state.lastInitiative.actName = undefined;
+        this.state.lastInitiative.valueIds = undefined;
         return;
     }
 
@@ -1004,7 +1007,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     private handleSelectDoneByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
-        this.state.lastInitiative = undefined;
+        this.state.lastInitiative.actName = undefined;
+        this.state.lastInitiative.valueIds = undefined;
         this.state.confirmed = true;
         return;
     }

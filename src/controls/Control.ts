@@ -45,6 +45,11 @@ export interface ControlState {
      *   is ready for use.
      */
     value: any;
+
+    /**
+     * Tracks the last initiative act from the control.
+     */
+    lastInitiative: any;
 }
 
 export interface ControlInputHandler {
@@ -88,7 +93,7 @@ export abstract class Control implements IControl {
 
     constructor(id: string) {
         this.id = id;
-        this.state = { value: undefined };
+        this.state = { value: undefined, lastInitiative: undefined };
     }
 
     /**
