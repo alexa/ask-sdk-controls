@@ -19,10 +19,10 @@
                 // Slow startup
                 "-r",
                 "ts-node/register",
-                "${workspaceFolder}/test/**/*.spec.ts",        // (macOS) wrapping the content with \" may be necessary.
+                "${workspaceFolder}/test/**/*.spec.ts",
                 
                 // Demo test cases
-                "${workspaceFolder}/demo/**/test/**/*.spec.ts" // (macOS) wrapping the content with \" may be necessary.
+                "${workspaceFolder}/demo/**/test/**/*.spec.ts"
                 
                     
                 // Fast startup.
