@@ -12,7 +12,6 @@
  */
 
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
-import { LastInitiativeState } from '../commonControls/multiValueListControl/MultiValueListControl';
 import { Strings as $ } from '../constants/Strings';
 import { ControlInput } from '../controls/ControlInput';
 import { AmazonIntent } from '../intents/AmazonBuiltInIntent';
@@ -371,15 +370,5 @@ export namespace InputUtil {
     export function getMultiValueResolution(input: ControlInput): MultiValueSlot[] {
         const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
         return values;
-    }
-
-    export function lastInitiativeMatch(
-        lastInitiative: LastInitiativeState | undefined,
-        actName: string,
-    ): boolean {
-        if (lastInitiative !== undefined) {
-            return lastInitiative.actName === actName;
-        }
-        return false;
     }
 }

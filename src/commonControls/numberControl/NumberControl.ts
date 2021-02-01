@@ -21,8 +21,8 @@ import {
     falseIfGuardFailed,
     InputUtil,
     okIf,
-    ValueControlIntent,
     unpackValueControlIntent,
+    ValueControlIntent,
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
@@ -46,8 +46,8 @@ import {
 } from '../../systemActs/ContentActs';
 import {
     ConfirmValueAct,
-    RequestValueAct,
     RequestChangedValueAct,
+    RequestValueAct,
     SuggestValueAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
@@ -292,12 +292,12 @@ export class NumberControlAPLProps {
     validationFailedMessage?: string | ((value?: number) => string);
 }
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
     actName?: string;
-};
+}
 
 /**
  * State tracked by a NumberControl.

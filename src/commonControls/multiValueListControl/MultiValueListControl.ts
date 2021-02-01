@@ -31,9 +31,9 @@ import { InteractionModelContributor } from '../../controls/mixins/InteractionMo
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import {
-    ValueControlIntent,
     MultiValueSlot,
     unpackValueControlIntent,
+    ValueControlIntent,
 } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
@@ -56,7 +56,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { _logIfBothTrue, evaluateInputHandlers } from '../../utils/ControlUtils';
+import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
@@ -393,7 +393,7 @@ export type MultiValueListStateValue = {
     erMatch: boolean;
 };
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
@@ -403,7 +403,7 @@ export type LastInitiativeState = {
      * A list of values which are used in last initiative act.
      */
     valueIds?: string[];
-};
+}
 
 /**
  * State tracked by a ListControl.
@@ -642,7 +642,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             apl: {
                 enabled: true,
                 requestValue: MultiValueListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
-                    valueRenderer: (choice, input) => choice, // TOOD: Pass the valueRenderer prop
+                    valueRenderer: (choice, input) => choice, // TODO: Pass the valueRenderer prop
                 }),
             },
             inputHandling: {
@@ -843,7 +843,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(InputUtil.lastInitiativeMatch(this.state.lastInitiative, ConfirmValueAct.name));
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -869,7 +869,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(InputUtil.lastInitiativeMatch(this.state.lastInitiative, ConfirmValueAct.name));
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -1059,7 +1059,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
         if (matches.length > 1) {
             log.error(
-                `More than one handler matched. Initiaitive Handlers in a single control should be mutually exclusive. ` +
+                `More than one handler matched. Initiative Handlers in a single control should be mutually exclusive. ` +
                     `Defaulting to the first. Initiative handlers: ${JSON.stringify(
                         matches.map((x) => x.name),
                     )}`,

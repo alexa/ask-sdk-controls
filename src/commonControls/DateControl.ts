@@ -27,7 +27,7 @@ import { InteractionModelContributor } from '../controls/mixins/InteractionModel
 import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
-import { ValueControlIntent, unpackValueControlIntent } from '../intents/ValueControlIntent';
+import { unpackValueControlIntent, ValueControlIntent } from '../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
@@ -42,7 +42,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateInputHandlers, _logIfBothTrue } from '../utils/ControlUtils';
+import { evaluateInputHandlers } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -292,12 +292,12 @@ export interface DateControlPromptProps {
     valueAffirmed?: StringOrList | ((act: ValueConfirmedAct<number>, input: ControlInput) => StringOrList);
 }
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
     actName?: string;
-};
+}
 
 /**
  * State tracked by a DateControl.
