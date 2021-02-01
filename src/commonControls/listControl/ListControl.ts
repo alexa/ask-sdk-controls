@@ -30,7 +30,7 @@ import { StateValidationFunction, ValidationFailure } from '../../controls/Valid
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
-import { ValueControlIntent, unpackValueControlIntent } from '../../intents/ValueControlIntent';
+import { unpackValueControlIntent, ValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
@@ -52,7 +52,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
@@ -344,12 +344,12 @@ export class ListControlAPLProps {
     requestChangedValue?: ControlAPL<RequestChangedValueByListAct, ListControlState>;
 }
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
     actName?: string;
-};
+}
 
 /**
  * State tracked by a ListControl.

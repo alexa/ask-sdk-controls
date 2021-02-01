@@ -31,12 +31,12 @@ interface ChildActivityRecord {
     turnNumber: number;
 }
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
     actName?: string;
-};
+}
 
 /**
  * Container state for use in arbitration

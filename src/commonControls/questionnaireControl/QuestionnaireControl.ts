@@ -29,7 +29,7 @@ import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
-import { ValueControlIntent, unpackValueControlIntent } from '../../intents/ValueControlIntent';
+import { unpackValueControlIntent, ValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
@@ -398,12 +398,12 @@ export type QuestionnaireUserAnswers = {
     };
 };
 
-export type LastInitiativeState = {
+interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
      */
     actName?: string;
-};
+}
 
 /**
  * State tracked by a QuestionnaireControl.
