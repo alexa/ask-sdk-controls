@@ -12,8 +12,6 @@
  */
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
-import { ControlResultBuilder } from '../controls/ControlResult';
-import { IControl } from '../controls/interfaces/IControl';
 import { Logger } from '../logging/Logger';
 
 const log = new Logger('AskSdkControls:ControlUtils');
@@ -38,7 +36,7 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
 
     const aplProps = (control as any).props.apl;
 
-    // TODO: deperecate apl customHandlers prop
+    // TODO: deprecate apl customHandlers prop
     if (aplProps !== undefined) {
         Object.entries(aplProps).forEach(([_key, value]) => {
             if (typeof value === 'object' && 'customHandlingFuncs' in value!) {

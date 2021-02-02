@@ -648,7 +648,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             inputHandling: {
                 customHandlingFuncs: [],
             },
-            valueRenderer: (value, input) => value,
+            valueRenderer: props.valueRenderer ?? ((value, input) => value),
         };
 
         return _.merge(defaults, props);

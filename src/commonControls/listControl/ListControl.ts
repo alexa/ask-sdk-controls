@@ -14,6 +14,7 @@ import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
+import { ModelData } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     Control,
@@ -22,7 +23,6 @@ import {
     ControlProps,
     ControlState,
 } from '../../controls/Control';
-import { ControlAPL } from '../../controls/ControlAPL';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
@@ -32,7 +32,6 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
 import { unpackValueControlIntent, ValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
@@ -328,6 +327,10 @@ export class ListControlPromptProps {
         | ((act: ValueDisconfirmedAct<any>, input: ControlInput) => StringOrList);
 }
 
+export type AplContent = { document: { [key: string]: any }; dataSource: { [key: string]: any } };
+export type AplContentFunc = (control: ListControl, input: ControlInput) => AplContent;
+export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
+
 /**
  * Props associated with the APL produced by ListControl.
  */
@@ -339,9 +342,11 @@ export class ListControlAPLProps {
      */
     enabled?: boolean | ((input: ControlInput) => boolean);
 
-    // TODO js docs
-    requestValue?: ControlAPL<RequestValueByListAct, ListControlState>;
-    requestChangedValue?: ControlAPL<RequestChangedValueByListAct, ListControlState>;
+    /**
+     * Custom APL to request value from list of choices.
+     */
+    requestValue?: AplDocumentPropNewStyle;
+    requestChangedValue?: AplDocumentPropNewStyle;
 }
 
 interface LastInitiativeState {
@@ -545,13 +550,19 @@ export class ListControl extends Control implements InteractionModelContributor 
                         suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                     }),
             },
-            apl: ListControlAPLPropsBuiltIns.textList(
-                props.valueRenderer ?? ((value: string, input) => value),
-            ),
             inputHandling: {
                 customHandlingFuncs: [],
             },
-            valueRenderer: (value: string, input) => value,
+            valueRenderer: props.valueRenderer ?? ((value: string, input) => value),
+            apl: {
+                enabled: true,
+                requestValue: ListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
+                    valueRenderer: props.valueRenderer ?? ((value, input) => value),
+                }),
+                requestChangedValue: ListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
+                    valueRenderer: props.valueRenderer ?? ((value, input) => value),
+                }),
+            },
         };
 
         return _.merge(defaults, props);
@@ -636,9 +647,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             );
             const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
@@ -664,7 +675,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithoutValue;
             return true;
@@ -686,9 +697,9 @@ export class ListControl extends Control implements InteractionModelContributor 
             );
             const valueStr = values[0].slotValue;
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType)); // TODO: GENERAL BUG: don't all handlers need to accept valueType == slotType | filteredSlotType.
+            okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithValue;
             return true;
@@ -714,7 +725,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithoutValue;
             return true;
@@ -739,12 +750,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(
-                InputUtil.valueTypeMatch(
-                    valueType,
-                    this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
-                ),
-            );
+            okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             this.handleFunc = this.handleBareValue;
             return true;
         } catch (e) {
@@ -889,7 +895,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             const { feedback, action, target, 'AMAZON.Ordinal': value } = unpackOrdinalControlIntent(
                 (input.request as IntentRequest).intent,
             );
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
             okIf(InputUtil.actionIsMatchOrUndefined(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(value));
@@ -1143,7 +1149,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         return text;
     }
 
-    private getChoicesList(input: ControlInput): string[] {
+    public getChoicesList(input: ControlInput): string[] {
         const slotIds: string[] =
             typeof this.props.listItemIDs === 'function'
                 ? this.props.listItemIDs.call(this, input)
@@ -1167,43 +1173,23 @@ export class ListControl extends Control implements InteractionModelContributor 
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
         if (act instanceof RequestValueByListAct) {
-            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestValue, input);
-            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestValue, input);
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
+            );
 
-            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
-
-            if (
-                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            ) {
-                const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
-                const dataSource = this.evaluateAPLProp(act, input, this.props.apl.requestValue.dataSource);
-                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            }
+            const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
+            this.addStandardAPL(input, builder, renderedAPL);
         } else if (act instanceof RequestChangedValueByListAct) {
-            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
-            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
+            builder.addPromptFragment(
+                this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input),
+            );
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
+            );
 
-            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
-
-            if (
-                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            ) {
-                const document = this.evaluateAPLProp(
-                    act,
-                    input,
-                    this.props.apl.requestChangedValue.document,
-                );
-                const dataSource = this.evaluateAPLProp(
-                    act,
-                    input,
-                    this.props.apl.requestChangedValue.dataSource,
-                );
-                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            }
+            const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestChangedValue, input);
+            this.addStandardAPL(input, builder, renderedAPL);
         } else if (act instanceof UnusableInputValueAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
@@ -1245,7 +1231,29 @@ export class ListControl extends Control implements InteractionModelContributor 
             this.throwUnhandledActError(act);
         }
     }
+    private evaluateAPLPropNewStyle(prop: AplDocumentPropNewStyle, input: ControlInput): AplContent {
+        return typeof prop === 'function' ? (prop as AplContentFunc).call(this, this, input) : prop;
+    }
 
+    private addStandardAPL(input: ControlInput, builder: ControlResponseBuilder, renderedAPL: AplContent) {
+        if (
+            this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+            getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+        ) {
+            builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
+        }
+    }
+
+    private getSlotTypes(): string[] {
+        return [
+            this.props.slotType,
+            this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
+        ];
+    }
+
+    private getFeedBackTypes(): string[] {
+        return [$.Feedback.Affirm, $.Feedback.Disaffirm];
+    }
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);

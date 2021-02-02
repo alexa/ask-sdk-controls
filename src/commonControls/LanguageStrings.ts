@@ -136,7 +136,7 @@ export const defaultI18nResources: Resource = {
             LIST_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
-            LIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
+            LIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select',
 
             // Questionnaire Control Runtime
             QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'OK, {{value}}.',
