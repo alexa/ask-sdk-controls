@@ -1,7 +1,6 @@
 import i18next from 'i18next';
-import { RequestChangedValueByListAct } from '../..';
-import { ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
+import { AplContent, ListControl } from './ListControl';
 
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -21,23 +20,34 @@ interface APLListItem {
 }
 
 export namespace ListControlAPLPropsBuiltIns {
-    /*
-     * For information about the TextListTemplate, see following doc:
-     * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
-     */
-    export function textList(valueRenderer: (value: string, input: ControlInput) => string) {
-        return {
-            enabled: true,
-            requestValue: {
-                document: textListDocumentGenerator(),
-                dataSource: textListDataSourceGenerator(valueRenderer),
-                customHandlingFuncs: [],
-            },
-            requestChangedValue: {
-                document: textListDocumentGenerator(),
-                dataSource: textListDataSourceGenerator(valueRenderer),
-                customHandlingFuncs: [],
-            },
+    export interface DefaultSelectValueAPLProps {
+        /**
+         * Default: 'Please select'
+         */
+        title?: string;
+
+        /**
+         * Default: ''
+         */
+        subtitle?: string;
+
+        /**
+         * Function that maps the ListControlState.value to rendered value that
+         * will be presented to the user as a list.
+         *
+         * Default: returns the value unchanged.
+         */
+        valueRenderer: (value: string, input: ControlInput) => string;
+    }
+
+    export function defaultSelectValueAPLContent(
+        props: DefaultSelectValueAPLProps,
+    ): (control: ListControl, input: ControlInput) => AplContent {
+        return (control: ListControl, input: ControlInput) => {
+            return {
+                document: listDocumentGenerator(control, input),
+                dataSource: listDataSourceGenerator(control, input, props),
+            };
         };
     }
 
@@ -48,24 +58,27 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-data-source.html
      */
-    export function textListDataSourceGenerator(
-        valueRenderer: (value: string, input: ControlInput) => string,
+    export function listDataSourceGenerator(
+        control: ListControl,
+        input: ControlInput,
+        contentProps: DefaultSelectValueAPLProps,
     ) {
-        return (act: RequestChangedValueByListAct, input: ControlInput, state: ControlState) => {
-            const itemsArray: APLListItem[] = [];
-            for (const choice of (act as any).payload.allChoices) {
-                itemsArray.push({
-                    primaryText: valueRenderer(choice, input),
-                });
-            }
-
-            return {
-                textListData: {
-                    controlId: act.control.id,
-                    headerTitle: i18next.t('LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
-                    items: itemsArray,
-                },
-            };
+        const listOfChoices = [];
+        const choices = control.getChoicesList(input);
+        for (const item of choices) {
+            listOfChoices.push({
+                primaryText: contentProps.valueRenderer(item, input),
+            });
+        }
+        return {
+            general: {
+                headerTitle: contentProps.title ?? i18next.t('LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
+                headerSubtitle: contentProps.subtitle ?? '',
+                controlId: control.id,
+            },
+            choices: {
+                listItems: listOfChoices,
+            },
         };
     }
 
@@ -76,7 +89,7 @@ export namespace ListControlAPLPropsBuiltIns {
      * See
      * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-alexa-text-list-layout.html
      */
-    export function textListDocumentGenerator() {
+    export function listDocumentGenerator(control: ListControl, input: ControlInput) {
         return {
             type: 'APL',
             version: '1.3',
@@ -87,26 +100,20 @@ export namespace ListControlAPLPropsBuiltIns {
                 },
             ],
             mainTemplate: {
-                parameters: ['textListData'],
+                parameters: ['payload'],
                 items: [
                     {
                         type: 'AlexaTextList',
                         theme: '${viewport.theme}',
-                        headerTitle: '${textListData.headerTitle}',
+                        headerTitle: '${payload.general.headerTitle}',
                         headerDivider: true,
-                        headerBackButton: false,
-                        headerBackButtonAccessibilityLabel: 'back',
-                        headerBackgroundColor: 'transparent',
                         backgroundColor: 'transparent',
-                        backgroundScale: 'best-fill',
-                        backgroundAlign: 'center',
-                        backgroundBlur: false,
-                        hideOrdinal: false,
+                        touchForward: true,
                         primaryAction: {
                             type: 'SendEvent',
-                            arguments: ['${textListData.controlId}', '${ordinal}'],
+                            arguments: ['${payload.general.controlId}', '${ordinal}'],
                         },
-                        listItems: '${textListData.items}',
+                        listItems: '${payload.choices.listItems}',
                     },
                 ],
             },

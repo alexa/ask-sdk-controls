@@ -356,13 +356,19 @@ suite('== Custom List APL Props ==', () => {
                             ? true
                             : { renderedReason: 'houseControl validation Failed' },
                 ],
-                apl: {
-                    requestValue: {
-                        customHandlingFuncs: [
-                            { canHandle: isButtonSelected, handle: handleButtonSelection },
-                            { canHandle: isHouseSelected, handle: handleHouseSelection },
-                        ],
-                    },
+                inputHandling: {
+                    customHandlingFuncs: [
+                        {
+                            name: 'ButtonSelection (custom)',
+                            canHandle: isButtonSelected,
+                            handle: handleButtonSelection,
+                        },
+                        {
+                            name: 'HouseSelection (custom)',
+                            canHandle: isHouseSelected,
+                            handle: handleHouseSelection,
+                        },
+                    ],
                 },
                 valueRenderer: (x: string, input) => `Wizard House: ${x}`,
             });
@@ -434,19 +440,12 @@ suite('== Custom List APL Props ==', () => {
             token: 'houseButtonToken',
         };
         const expectedDataSource = {
-            textListData: {
-                controlId: 'hogwarts',
-                headerTitle: 'Please select...',
-                items: [
-                    {
-                        primaryText: 'Wizard House: Gryffindor',
-                    },
-                    {
-                        primaryText: 'Wizard House: Ravenclaw',
-                    },
-                    {
-                        primaryText: 'Wizard House: Slytherin',
-                    },
+            general: { headerTitle: 'Please select...', headerSubtitle: '', controlId: 'hogwarts' },
+            choices: {
+                listItems: [
+                    { primaryText: 'Wizard House: Gryffindor' },
+                    { primaryText: 'Wizard House: Ravenclaw' },
+                    { primaryText: 'Wizard House: Slytherin' },
                 ],
             },
         };
