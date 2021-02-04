@@ -11,8 +11,8 @@
  * permissions and limitations under the License.
  */
 
-import { ui, Intent, interfaces, Directive, Response, dialog, canfulfill } from 'ask-sdk-model';
 import { ResponseBuilder } from 'ask-sdk-core';
+import { canfulfill, dialog, Directive, Intent, interfaces, Response, ui } from 'ask-sdk-model';
 
 /**
  * A specialized ResponseBuilder for use with Controls framework
@@ -33,6 +33,7 @@ export class ControlResponseBuilder implements ResponseBuilder {
     private repromptPlayBehavior?: ui.PlayBehavior;
 
     private displayUsed: boolean;
+    shouldEndSession: boolean;
 
     constructor(responseBuilder: ResponseBuilder) {
         this.coreBuilder = responseBuilder;
@@ -71,6 +72,7 @@ export class ControlResponseBuilder implements ResponseBuilder {
         const reprompt = this.getReprompt();
 
         this.coreBuilder.speak(prompt, this.promptPlayBehavior).reprompt(reprompt, this.repromptPlayBehavior);
+        this.coreBuilder.withShouldEndSession(this.shouldEndSession);
 
         return this.coreBuilder.getResponse();
     }
@@ -244,8 +246,23 @@ export class ControlResponseBuilder implements ResponseBuilder {
         this.coreBuilder.withCanFulfillIntent(canFulfillIntent);
         return this;
     }
+
+    /**
+     * Set the 'shouldEndSession' flag
+     *
+     * See
+     * https://developer.amazon.com/en-GB/docs/alexa/custom-skills/manage-skill-session-and-session-attributes.html#session-lifecycle
+     * for full details.
+     *
+     * Usage:
+     *  - Use this if you cannot control the session behavior via `ControlResultBuilder`
+     *    such as when handing a turn initialization exception in `ControlManager.handleInternalError`
+     * @param val - true to end the session, false to leave the session open,
+     *              undefined|null to keep session alive with microphone closed (APL devices only).
+     */
     withShouldEndSession(val: boolean): this {
-        throw new Error('Do not set this here.. use methods on ControlResultBuilder instead.');
+        this.shouldEndSession = val; //memo it and set it during build (because of weirdness in ResponseBuilder.reprompt implementation)
+        return this;
     }
     addDirective(directive: Directive): this {
         if (directive.type.startsWith('Alexa.Presentation')) {

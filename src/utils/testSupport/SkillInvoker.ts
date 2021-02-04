@@ -11,10 +11,10 @@
  * permissions and limitations under the License.
  */
 
-import { Skill, RequestHandler } from 'ask-sdk-core';
-import { ui, Directive, Response, ResponseEnvelope } from 'ask-sdk-model';
-import { wrapRequestHandlerAsSkill } from './SkillWrapper';
+import { RequestHandler, Skill } from 'ask-sdk-core';
+import { Directive, Response, ResponseEnvelope, ui } from 'ask-sdk-model';
 import { IControlInput } from '../../controls/interfaces/IControlInput';
+import { wrapRequestHandlerAsSkill } from './SkillWrapper';
 
 type TSessionAttributes = { [key: string]: any } | undefined;
 
@@ -53,14 +53,14 @@ export class SkillInvoker {
 
         this.sessionAttributes = responseEnvelope.sessionAttributes; // save updated state
 
-        const promptSSML = (responseEnvelope.response.outputSpeech as ui.SsmlOutputSpeech).ssml;
-        const prompt = promptSSML.replace('<speak>', '').replace('</speak>', '');
+        const promptSSML = (responseEnvelope.response?.outputSpeech as ui.SsmlOutputSpeech)?.ssml;
+        const prompt = promptSSML?.replace('<speak>', '').replace('</speak>', '');
 
-        const repromptSSML = ((responseEnvelope.response.reprompt as ui.Reprompt)
-            .outputSpeech as ui.SsmlOutputSpeech).ssml;
-        const reprompt = repromptSSML.replace('<speak>', '').replace('</speak>', '');
+        const repromptSSML = ((responseEnvelope.response?.reprompt as ui.Reprompt)
+            ?.outputSpeech as ui.SsmlOutputSpeech)?.ssml;
+        const reprompt = repromptSSML?.replace('<speak>', '').replace('</speak>', '');
 
-        const directive: Directive[] | undefined = responseEnvelope.response.directives;
+        const directive: Directive[] | undefined = responseEnvelope.response?.directives;
         // const cardContent = (responseEnv.response.card as ui.SimpleCard).content;
         return {
             responseEnvelope,
@@ -74,7 +74,7 @@ export class SkillInvoker {
 
 export interface TestResponseObject {
     responseEnvelope: ResponseEnvelope;
-    response: Response;
+    response?: Response;
     prompt: string;
     reprompt?: string;
     directive?: Directive[];

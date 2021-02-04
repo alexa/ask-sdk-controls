@@ -232,7 +232,11 @@ export abstract class ControlManager implements IControlManager {
      * @param error - Error
      * @param responseBuilder - Response builder
      */
-    handleInternalError(input: ControlInput, error: any, responseBuilder: ControlResponseBuilder): void {
+    handleInternalError(
+        input: ControlInput | undefined,
+        error: any,
+        responseBuilder: ControlResponseBuilder,
+    ): void {
         const err =
             error.stack !== undefined ? { name: error.name, msg: error.message, stack: error.stack } : error; // Error doesn't have enumerable properties, so we convert it.
         log.error(`Error handled: ${JSON.stringify(err)}`);

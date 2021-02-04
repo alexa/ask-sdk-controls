@@ -12,6 +12,7 @@
  */
 
 import { HandlerInput, RequestHandler, UserAgentManager } from 'ask-sdk-core';
+import { Response } from 'ask-sdk-model';
 import fs from 'fs';
 import _ from 'lodash';
 import { ControlInput } from '../controls/ControlInput';
@@ -20,7 +21,6 @@ import { isContainerControl } from '../controls/interfaces/IContainerControl';
 import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
-import { IControlResponse } from '../controls/interfaces/IControlResponse';
 import { IControlResult } from '../controls/interfaces/IControlResult';
 import { IControlResultBuilder } from '../controls/interfaces/IControlResultBuilder';
 import { Logger } from '../logging/Logger';
@@ -39,6 +39,8 @@ const log = new Logger('AskSdkControls:ControlHandler');
 class AdditionalSessionContext {
     turnNumber: number = 0;
 }
+
+export type CanHandleExceptionBehavior = 'ProduceResponse' | 'ReturnFalse' | 'Rethrow';
 
 /**
  * RequestHandler for a skill built using Controls.
@@ -70,6 +72,22 @@ export class ControlHandler implements RequestHandler {
      *    attributes. In this situation, set `validateStateRoundtrip = false`.
      */
     validateStateRoundtrip = true; // TODO improve the validation testing and remove this
+
+    /**
+     * Behavior if an exception occurs during ControlHandler.canHandle.
+     *
+     * In all cases, `ControlManager.handleInternalError` will be called.  The options
+     * differ in how the response is produced.
+     *
+     * ProduceResponse (default) - treat the input as handled, and return the custom response
+     * ReturnFalse - treat the input as 'cannot handle'.
+     * Rethrow - let the exception bubble up to be processed by `CustomSkill.errorHandlers`
+     *
+     * Usage:
+     *  - The default, 'ProduceResponse', allows ControlManager
+     */
+    canHandleThrowBehavior: CanHandleExceptionBehavior = 'ProduceResponse';
+    protected canHandleFailureResponse?: Response;
 
     constructor(controlManager: IControlManager) {
         this.controlManager = controlManager;
@@ -129,14 +147,19 @@ export class ControlHandler implements RequestHandler {
             await this.prepare(handlerInput);
             return this.rootControl!.canHandle(this.controlInput);
         } catch (error) {
+            const responseBuilder = new ControlResponseBuilder(handlerInput.responseBuilder);
             if (this.controlManager.handleInternalError) {
-                this.controlManager.handleInternalError(
-                    this.controlInput,
-                    error,
-                    new ControlResponseBuilder(handlerInput.responseBuilder),
-                );
+                this.controlManager.handleInternalError(this.controlInput, error, responseBuilder);
             }
-            throw error; // rethrow so top-level observes it too.
+
+            if (this.canHandleThrowBehavior === 'ProduceResponse') {
+                this.canHandleFailureResponse = responseBuilder.build();
+                return true; // return true and generate the response in handle.
+            } else if (this.canHandleThrowBehavior === 'ReturnFalse') {
+                return false; // silent
+            } else {
+                throw error; // rethrow to top-level
+            }
         }
     }
 
@@ -145,7 +168,12 @@ export class ControlHandler implements RequestHandler {
      *
      * @param handlerInput - HandlerInput
      */
-    async handle(handlerInput: HandlerInput, processInput = true): Promise<IControlResponse> {
+    async handle(handlerInput: HandlerInput, processInput = true): Promise<Response> {
+        if (this.canHandleFailureResponse !== undefined) {
+            return this.canHandleFailureResponse;
+        }
+
+        const responseBuilder = new ControlResponseBuilder(handlerInput.responseBuilder);
         try {
             await this.prepare(handlerInput);
 
@@ -154,7 +182,6 @@ export class ControlHandler implements RequestHandler {
              * Do the work (state updates and dialog policy)
              */
 
-            const responseBuilder = new ControlResponseBuilder(handlerInput.responseBuilder);
             const resultBuilder = new ControlResultBuilder();
             await ControlHandler.handleCore(
                 this.rootControl!,
@@ -208,14 +235,12 @@ export class ControlHandler implements RequestHandler {
             return response;
         } catch (error) {
             if (this.controlManager.handleInternalError) {
-                this.controlManager.handleInternalError(
-                    this.controlInput,
-                    error,
-                    new ControlResponseBuilder(handlerInput.responseBuilder),
-                );
+                this.controlManager.handleInternalError(this.controlInput, error, responseBuilder);
             }
 
-            return { ...handlerInput.responseBuilder.getResponse(), isTurnEnding: true };
+            const response = await this.buildResponseCore(undefined, responseBuilder, this.controlInput);
+
+            return response;
         }
     }
 
@@ -337,7 +362,7 @@ export class ControlHandler implements RequestHandler {
         handlerInput: HandlerInput,
         promptPrefix: string,
         repromptPrefix?: string,
-    ): Promise<IControlResponse> {
+    ): Promise<Response> {
         if (repromptPrefix === undefined) {
             repromptPrefix = promptPrefix;
         }
@@ -373,7 +398,7 @@ export class ControlHandler implements RequestHandler {
         return response;
     }
 
-    static getPromptAndRepromptFromResponse(response: IControlResponse): [string, string] {
+    static getPromptAndRepromptFromResponse(response: Response): [string, string] {
         const prompt =
             response.outputSpeech === undefined
                 ? ''
@@ -391,27 +416,31 @@ export class ControlHandler implements RequestHandler {
     }
 
     private async buildResponseCore(
-        result: IControlResult,
+        result: IControlResult | undefined,
         controlResponseBuilder: ControlResponseBuilder,
         input: IControlInput,
-    ): Promise<IControlResponse> {
-        await this.controlManager.render(result, input, controlResponseBuilder);
+    ): Promise<Response> {
+        if (result) {
+            await this.controlManager.render(result, input, controlResponseBuilder);
+        }
         const response = controlResponseBuilder.getResponse();
-        switch (result.sessionBehavior) {
-            case SessionBehavior.OPEN:
-                response.shouldEndSession = false;
-                break;
-            case SessionBehavior.END:
-                response.shouldEndSession = true;
-                break;
-            case SessionBehavior.IDLE:
-                response.shouldEndSession = undefined;
-                break;
-            default:
-                throw new Error(`unknown SessionBehavior value: ${JSON.stringify(result)}`);
+        if (result) {
+            switch (result.sessionBehavior) {
+                case SessionBehavior.OPEN:
+                    response.shouldEndSession = false;
+                    break;
+                case SessionBehavior.END:
+                    response.shouldEndSession = true;
+                    break;
+                case SessionBehavior.IDLE:
+                    response.shouldEndSession = undefined;
+                    break;
+                default:
+                    throw new Error(`unknown SessionBehavior value: ${JSON.stringify(result)}`);
+            }
         }
 
-        return { ...response, isTurnEnding: result.hasInitiativeAct() };
+        return response;
     }
 
     // public for testing

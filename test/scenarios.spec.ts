@@ -11,15 +11,15 @@
  * permissions and limitations under the License.
  */
 
+import { getSupportedInterfaces } from 'ask-sdk-core';
+import { IntentRequest, interfaces } from 'ask-sdk-model';
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
-import { IntentRequest, interfaces } from 'ask-sdk-model';
-import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
-import { getSupportedInterfaces } from 'ask-sdk-core';
 import {
     AmazonBuiltInSlotType,
     ControlHandler,
+    ControlResponseBuilder,
     DateControl,
     InputUtil,
     IntentBuilder,
@@ -29,7 +29,7 @@ import {
     SkillInvoker,
     wrapRequestHandlerAsSkill,
 } from '../src';
-import { AplContent, AplContentFunc, NumberControl } from '../src/commonControls/numberControl/NumberControl';
+import { NumberControl } from '../src/commonControls/numberControl/NumberControl';
 import { ValueControl } from '../src/commonControls/ValueControl';
 import { Strings as $ } from '../src/constants/Strings';
 import { ContainerControl } from '../src/controls/ContainerControl';
@@ -38,7 +38,7 @@ import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
 import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
-import { ValueControlIntent, unpackValueControlIntent } from '../src/intents/ValueControlIntent';
+import { unpackValueControlIntent, ValueControlIntent } from '../src/intents/ValueControlIntent';
 import { SessionBehavior } from '../src/runtime/SessionBehavior';
 import { ValueChangedAct, ValueSetAct } from '../src/systemActs/ContentActs';
 import { RequestChangedValueAct, RequestValueAct } from '../src/systemActs/InitiativeActs';
@@ -50,8 +50,7 @@ import {
     waitForDebugger,
 } from '../src/utils/testSupport/TestingUtils';
 import { GameStrings as $$ } from './game_strings';
-import { ListControlAPLPropsBuiltIns } from '../src/commonControls/listControl/ListControlAPL';
-import { NumberControlAPLPropsBuiltIns } from '../src/commonControls/numberControl/NumberControlAPL';
+import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
 
 waitForDebugger();
 
@@ -522,5 +521,86 @@ suite('== Custom Number APL Props ==', () => {
             "Sorry but that's not a valid choice because the value must be even. What number?",
         );
         expect(dataSource).deep.equals(expectedDataSource);
+    });
+});
+
+class ExceptionHandlingControlManager1 extends ControlManager {
+    createControlTree(): Control {
+        throw new Error('synthetic error during createControlTree (ie. during canHandle)');
+    }
+
+    handleInternalError(
+        controlInput: ControlInput | undefined,
+        error: any,
+        responseBuilder: ControlResponseBuilder,
+    ) {
+        controlInput?.handlerInput.responseBuilder.withShouldEndSession(true);
+        responseBuilder.addPromptFragment('custom response prompt');
+        responseBuilder.withShouldEndSession(true);
+    }
+}
+
+class ExceptionHandlingControlManager2 extends ControlManager {
+    createControlTree(): Control {
+        return new ValueControl({
+            id: 'a',
+            slotType: 'dummy',
+            inputHandling: {
+                customHandlingFuncs: [
+                    {
+                        name: 'Exception generating handler',
+                        canHandle: () => true,
+                        handle: () => {
+                            throw new Error('synthetic error during handle');
+                        },
+                    },
+                ],
+            },
+        });
+    }
+
+    handleInternalError(
+        controlInput: ControlInput | undefined,
+        error: Error,
+        responseBuilder: ControlResponseBuilder,
+    ) {
+        responseBuilder.addPromptFragment(`${error.message}`);
+        responseBuilder.withShouldEndSession(true);
+    }
+}
+
+suite('== Top-level exception handling ==', () => {
+    test('Top-level exception during canHandle can produce response.', async () => {
+        const requestHandler = new ControlHandler(new ExceptionHandlingControlManager1());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(TestInput.launchRequest());
+        expect(response.prompt).equals('custom response prompt');
+        expect(response.responseEnvelope.response.shouldEndSession).equals(true);
+    });
+
+    test('Top-level exception during canHandle can return false.', async () => {
+        const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
+        controlHandler.canHandleThrowBehavior = 'ReturnFalse';
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
+        const response = await skill.invoke(TestInput.launchRequest());
+        expect(response.prompt).equals('Unable to find a suitable request handler.');
+        expect(response.responseEnvelope.response.shouldEndSession).equals(false);
+    });
+
+    test('Top-level exception during canHandle can throw.', async () => {
+        const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
+        controlHandler.canHandleThrowBehavior = 'Rethrow';
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
+        const response = await skill.invoke(TestInput.launchRequest());
+        expect(response.prompt).equals('synthetic error during createControlTree (ie. during canHandle)');
+        expect(response.responseEnvelope.response.shouldEndSession).equals(false);
+    });
+
+    test('Top-level exception during handle can end the session.', async () => {
+        const requestHandler = new ControlHandler(new ExceptionHandlingControlManager2());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(TestInput.launchRequest());
+        expect(response.prompt).equals('synthetic error during handle');
+        expect(response.responseEnvelope.response.shouldEndSession).equals(true);
     });
 });
