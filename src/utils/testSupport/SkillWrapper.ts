@@ -31,7 +31,7 @@ export function wrapRequestHandlerAsSkill(requestHandler: RequestHandler): Skill
         },
         handle(handlerInput: HandlerInput, error: Error) {
             log.error(`~~~~ Error handled: ${error.stack}`);
-            const speakOutput = `Sorry, I had trouble doing what you asked. Please try again.`;
+            const speakOutput = `${error.message}`;
 
             return handlerInput.responseBuilder.speak(speakOutput).reprompt(speakOutput).getResponse();
         },

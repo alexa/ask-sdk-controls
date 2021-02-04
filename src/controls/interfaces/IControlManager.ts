@@ -67,10 +67,17 @@ export interface IControlManager {
     ): void | Promise<void>;
 
     /**
-     * Custom handling of a internal error before the skill exits and closes the
-     * user session.
+     * Custom handling of a internal error.
+     *
+     * @param input - ControlInput object or undefined if an error occurs early in processing
+     * @param error - Error object
+     * @param responseBuilder - Response builder
      */
-    handleInternalError?(input: IControlInput, error: any, responseBuilder: ControlResponseBuilder): void;
+    handleInternalError?(
+        input: IControlInput | undefined,
+        error: any,
+        responseBuilder: ControlResponseBuilder,
+    ): void;
 
     /**
      *

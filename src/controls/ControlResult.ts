@@ -12,7 +12,7 @@
  */
 
 import { SessionBehavior } from '../runtime/SessionBehavior';
-import { SystemAct, ISystemAct } from '../systemActs/SystemAct';
+import { ISystemAct, SystemAct } from '../systemActs/SystemAct';
 import { IControlResult } from './interfaces/IControlResult';
 
 /**
@@ -83,13 +83,13 @@ export class ControlResultBuilder {
     }
 
     /**
-     * Force the user session to end.
+     * End the user session.
      *
      * See
-     * https://developer.amazon.com/en-US/docs/alexa/echo-button-skills/keep-session-open.html
+     * https://developer.amazon.com/en-GB/docs/alexa/custom-skills/manage-skill-session-and-session-attributes.html#session-lifecycle
      *
      * Framework behavior:
-     *  * this causes the framework to call
+     *  * this will cause the framework to call
      *    `ask-core.ResponseBuilder.withShouldEndSession(true)`.
      *
      * Skill/device behavior:
@@ -102,19 +102,18 @@ export class ControlResultBuilder {
     }
 
     /**
-     * Force the user session to immediately enter the idle state.
+     * Place the user session in the idle state.
+     *
+     * https://developer.amazon.com/en-GB/docs/alexa/custom-skills/manage-skill-session-and-session-attributes.html#session-lifecycle
      *
      * * Framework behavior:
-     *  * this causes the framework to call
+     *  * this will cause the framework to call
      *    `ask-core.ResponseBuilder.withShouldEndSession(undefined)`.
-     *
      *
      * Skill/device behavior:
      *  * The session remains alive but the microphone is closed.
      *  * The user can interact with the skill but must use the wake-word.
      */
-    //TODO:review/document why this is here and not on ResponseBuilder.
-    //is it really intrinsic to the Result rather than the presentation??
     enterIdleState(): void {
         this.sessionBehavior = SessionBehavior.IDLE;
     }

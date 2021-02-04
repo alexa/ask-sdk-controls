@@ -106,7 +106,6 @@ export { IContainerControl, isContainerControl } from './controls/interfaces/ICo
 export { IControl } from './controls/interfaces/IControl';
 export { IControlInput } from './controls/interfaces/IControlInput';
 export { IControlManager } from './controls/interfaces/IControlManager';
-export { IControlResponse } from './controls/interfaces/IControlResponse';
 export { IControlResult } from './controls/interfaces/IControlResult';
 export { IControlResultBuilder } from './controls/interfaces/IControlResultBuilder';
 export {
@@ -165,7 +164,10 @@ export { EnglishGrammar } from './intl/EnglishGrammar';
 export { ListFormatting } from './intl/ListFormat';
 export { Logger } from './logging/Logger';
 export { ControlResponseBuilder } from './responseGeneration/ControlResponseBuilder';
-export { ControlHandler } from './runtime/ControlHandler';
+export {
+    ControlHandler,
+    CanHandleExceptionBehavior as CanHandleThrowBehavior,
+} from './runtime/ControlHandler';
 export * from './systemActs/ContentActs';
 export * from './systemActs/InitiativeActs';
 export * from './systemActs/PayloadTypes';
