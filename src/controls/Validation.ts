@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import { ControlState } from './Control';
 import { ControlInput } from './ControlInput';
 
 /**
@@ -19,8 +20,8 @@ import { ControlInput } from './ControlInput';
  * Takes a Control state object and returns `true` if the state passes validation.  If
  * validation fails, a `ValidationResult` object is returned instead.
  */
-export type StateValidationFunction<TState> = (
-    state: TState,
+export type StateValidationFunction<TState extends ControlState> = (
+    state: TState & Required<{ value: any }>,
     input: ControlInput,
 ) => true | ValidationFailure | Promise<true | ValidationFailure>;
 
@@ -63,7 +64,7 @@ export type ValidationFailure = {
  * @param state - The control's state object.
  * @param input - ControlInput.
  */
-export async function evaluateValidationProp<TState>(
+export async function evaluateValidationProp<TState extends ControlState>(
     validationProp: StateValidationFunction<TState> | Array<StateValidationFunction<TState>>,
     state: TState,
     input: ControlInput,

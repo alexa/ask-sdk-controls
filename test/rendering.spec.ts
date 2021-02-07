@@ -92,11 +92,11 @@ class RenderingDemoControlManager extends ControlManager {
         return new RenderingDemoControl('root');
     }
 
-    render(
+    async render(
         result: ControlResult,
         input: ControlInput,
         controlResponseBuilder: ControlResponseBuilder,
-    ): void | Promise<void> {
+    ): Promise<void> {
         for (const act of result.acts) {
             if (act instanceof RequestValueAct) {
                 controlResponseBuilder.addPromptFragment('How many ducks?'); // <<---- 'render by ControlManager'.. this offers maximum power.
