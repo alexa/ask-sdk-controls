@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from 'ask-sdk-model';
+import { ControlAPLRenderProps } from '../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { randomlyPick } from '../utils/ArrayUtils';
@@ -284,6 +284,10 @@ export abstract class Control implements IControl {
     renderAct(act: SystemAct, input: ControlInput, responseBuilder: ControlResponseBuilder): void {
         // The default is to let the act render itself
         return act.render(input, responseBuilder);
+    }
+
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        throw Error('Not implemented');
     }
 
     // TODO: remove and/or create a new class... class UnhandledActError extends Error.

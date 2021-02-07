@@ -34,6 +34,8 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
+import { APLRenderContext } from '../../responseGeneration/APLRenderContext';
+import { ControlAPLRenderProps } from '../../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InformConfusingConfirmationAct,
@@ -56,6 +58,11 @@ import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils'
 import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
+
+export class NumberControlAPLRenderProps implements ControlAPLRenderProps {
+    aplRenderContext: APLRenderContext;
+    size: 'small' | 'large';
+}
 
 /**
  * Props for a NumberControl.
@@ -306,7 +313,7 @@ export class NumberControlState implements ControlState {
     /**
      * The value, an integer.
      */
-    value: number;
+    value: number | undefined;
 
     /**
      * Tracks whether the value has been explicitly confirmed by the user.
@@ -536,10 +543,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
             );
-            const slotElicitation = generateSlotElicitation();
-            builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
 
-            this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            //const slotElicitation = generateSlotElicitation();
+            //builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
+            //this.addStandardAPL(input, builder, this.props.apl.requestValue);
         } else if (act instanceof RequestChangedValueAct) {
             const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
             const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
@@ -547,7 +554,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            this.addStandardAPL(input, builder, this.props.apl.requestChangedValue);
+            //this.addStandardAPL(input, builder, this.props.apl.requestChangedValue);
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
@@ -620,6 +627,78 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
         }
+    }
+
+    renderAPLComponent(props: NumberControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        const dataSourceId = this.id + 'Data';
+        const validationFailureMessage = this.evaluateAPLValidationFailedMessage(this.state.value);
+
+        // props.aplRenderContext.addDataSource(dataSourceId, {
+        //     controlId: this.id,
+        //     value: this.state.value,
+        //     isValidValue: this.state.isValidValue
+        // });
+
+        return {
+            id: this.id,
+            type: 'Frame',
+            style: 'NumberControlFrameStyle',
+            items: [
+                {
+                    type: 'Container',
+                    direction: 'column',
+                    //parameters: [dataSourceId], // needs to be placed in the mainTemplate, not here.
+                    items: [
+                        {
+                            type: 'EditText',
+                            id: 'editTextNumber',
+                            style: 'EditStyle',
+                            keyboardType: 'numberPad',
+                            submitKeyType: 'go',
+                            // // bind: [
+                            // //     {
+                            // //         name: 'NumberValue',
+                            // //         value: '${NumberValue}',
+                            // //         type: 'number',
+                            // //     },
+                            // ],
+                            onSubmit: [
+                                {
+                                    type: 'Sequential',
+                                    commands: [
+                                        {
+                                            type: 'SendEvent',
+                                            arguments: [this.id, '${event.source.value}'],
+                                        },
+                                    ],
+                                },
+                            ],
+                            accessibilityLabel: 'Enter a number',
+                            minWidth: '100%',
+                            maxWidth: '100%',
+                            minHeight: '70%',
+                            maxHeight: '70%',
+                            validCharacters: '-0-9',
+                            text: this.state.value?.toString(),
+                            hint: 'Enter a number',
+                            hintWeight: 'normal',
+                            fontSize: '34px',
+                        },
+                        {
+                            type: 'Text',
+                            text: validationFailureMessage,
+                            when: !this.state.isValidValue,
+                            minWidth: '100%',
+                            maxWidth: '100%',
+                            minHeight: '30%',
+                            maxHeight: '30%',
+                            fontSize: '24px',
+                            color: 'red',
+                        },
+                    ],
+                },
+            ],
+        };
     }
 
     // tsDoc - see Control

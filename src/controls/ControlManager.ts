@@ -212,12 +212,22 @@ export abstract class ControlManager implements IControlManager {
      *      `ControlManager.renderActsOneByOne()`.
      *
      */
-    render(
+    async render(
+        //todo: change to renderPrompt? disallow controls-owns-screen APL and force it to happen via renderApplicationAPL?
         result: ControlResult,
         input: ControlInput,
         controlResponseBuilder: ControlResponseBuilder,
-    ): void | Promise<void> {
+    ): Promise<void> {
         renderActsInSequence(result.acts, input, controlResponseBuilder);
+        await this.renderApplicationAPL(result, input, controlResponseBuilder);
+    }
+
+    async renderApplicationAPL(
+        result: ControlResult,
+        input: ControlInput,
+        controlResponseBuilder: ControlResponseBuilder,
+    ): Promise<void> {
+        //default: nothing.
     }
 
     /**

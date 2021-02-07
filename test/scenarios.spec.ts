@@ -489,7 +489,7 @@ suite('== Custom Number APL Props ==', () => {
         }
     }
 
-    test('APL dataSource sends custom validationFailedMessage.', async () => {
+    test.skip('APL dataSource sends custom validationFailedMessage.', async () => {
         // Note: this test demonstrates the validationFailedMessage is correctly passed in the dataSource along with isValidValue
 
         const requestHandler = new ControlHandler(new NumberTestControlManager());
