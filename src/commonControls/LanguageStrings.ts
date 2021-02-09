@@ -318,10 +318,39 @@ export const defaultI18nResources: Resource = {
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE: 'Are you happy with all answers?',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE_TERSE: '',
 
-            // Content Act render prompts
-            UNUSABLEINPUTVALUEACT: `Sorry, {{value}}`,
-            ACKNOWLEDGEINPUTACT: 'OK.',
-            VALUESETACT: `OK, {{value}}`,
+            // Content Act default prompts
+            UNUSABLE_INPUT_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}}.`,
+            ACKNOWLEDGE_INPUT_ACT_DEFAULT_PROMPT: 'OK.',
+            VALUE_SET_ACT_DEFAULT_PROMPT: `OK, {{value}}.`,
+            VALUE_CHANGED_ACT_DEFAULT_PROMPT: `Ok, updated to {{value}}.`,
+            INVALID_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}}.`,
+            VALUE_CONFIRMED_ACT_DEFAULT_PROMPT: 'Great.',
+            VALUE_DISCONFIRMED_ACT_DEFAULT_PROMPT: 'My mistake.',
+            INFORM_CONFUSING_CONFIRMATION_ACT_DEFAULT_PROMPT: `I'm confused whether you want {{controlValue}} or {{value}}.`,
+            INFORM_CONFUSING_DISCONFIRMATION_ACT_DEFAULT_PROMPT: `I'm confused whether you want {{value}} or not.`,
+            PROBLEMATIC_INPUT_VALUE_ACT_DEFAULT_PROMPT: `I'm really sorry but I heard {{value}} again.`,
+            NON_UNDERSTANDING_ACT_DEFAULT_PROMPT: "Sorry I didn't understand that.",
+            LAUNCH_ACT_DEFAULT_PROMPT: 'Welcome.',
+            VALUE_ADDED_ACT_DEFAULT_PROMPT: `OK, added {{value}}.`,
+            VALUE_REMOVED_ACT_DEFAULT_PROMPT: `OK, removed {{value}}.`,
+            VALUE_CLEARED_ACT_DEFAULT_PROMPT: `OK, removed all {{value}}.`,
+            INVALID_REMOVE_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}} is not in the list.`,
+            CONTENT_ACT_ERROR_DEFAULT_PROMPT:
+                `Cannot directly render {{act}}} as payload.renderedReason is undefined. {{value}}. ` +
+                `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render().`,
+
+            // Initiative Act default prompts
+            REQUEST_VALUE_ACT_DEFAULT_PROMPT: `What value for {{value}}.`,
+            INITIATIVE_ACT_ERROR_DEFAULT_PROMPT:
+                `Cannot directly render {{act}} as payload.renderedTarget is undefined. {{value}}. ` +
+                `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
+            REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT: `What is the new value for {{value}}.`,
+            REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT: `What value for {{value}}? Choices include {{choices}}`,
+            REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT: `What is the new value for {{value}}? Choices include {{choices}}.`,
+            REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT: `What value to remove for {{value}}? Choices include {{choices}}.`,
+            CONFIRM_VALUE_ACT_DEFAULT_PROMPT: `Was that {{value}}.`,
+            SUGGEST_VALUE_ACT_DEFAULT_PROMPT: `Did you perhaps mean {{value}}?`,
+            SUGGEST_ACTION_ACT_DEFAULT_PROMPT: 'You can add or update values.',
 
             // ControlIntent Samples
 
