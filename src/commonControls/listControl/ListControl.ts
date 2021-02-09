@@ -10,7 +10,6 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
@@ -35,6 +34,7 @@ import { ControlInteractionModelGenerator } from '../../interactionModelGenerati
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
 import { Logger } from '../../logging/Logger';
+import { ControlAPLRenderProps } from '../../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InvalidValueAct,
@@ -1173,14 +1173,14 @@ export class ListControl extends Control implements InteractionModelContributor 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            if (
-                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            ) {
-                const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
-                const dataSource = this.evaluateAPLProp(act, input, this.props.apl.requestValue.dataSource);
-                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            }
+            // if (
+            //     this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+            //     getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+            // ) {
+            //     const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
+            //     const dataSource = this.evaluateAPLProp(act, input, this.props.apl.requestValue.dataSource);
+            //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+            // }
         } else if (act instanceof RequestChangedValueByListAct) {
             const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
             const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
@@ -1188,22 +1188,22 @@ export class ListControl extends Control implements InteractionModelContributor 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            if (
-                this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-                getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            ) {
-                const document = this.evaluateAPLProp(
-                    act,
-                    input,
-                    this.props.apl.requestChangedValue.document,
-                );
-                const dataSource = this.evaluateAPLProp(
-                    act,
-                    input,
-                    this.props.apl.requestChangedValue.dataSource,
-                );
-                builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            }
+            // if (
+            //     this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+            //     getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+            // ) {
+            //     const document = this.evaluateAPLProp(
+            //         act,
+            //         input,
+            //         this.props.apl.requestChangedValue.document,
+            //     );
+            //     const dataSource = this.evaluateAPLProp(
+            //         act,
+            //         input,
+            //         this.props.apl.requestChangedValue.dataSource,
+            //     );
+            //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+            // }
         } else if (act instanceof UnusableInputValueAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
@@ -1244,6 +1244,88 @@ export class ListControl extends Control implements InteractionModelContributor 
         } else {
             this.throwUnhandledActError(act);
         }
+    }
+
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        props.aplRenderContext.addLayout('ListControl-touchForward', {
+            type: 'Sequence',
+            scrollDirection: 'vertical',
+            data: '${listItems}',
+            width: '100%',
+            height: '100%',
+            paddingLeft: '0',
+            numbered: true,
+            items: [
+                {
+                    type: 'Container',
+                    items: [
+                        {
+                            type: 'AlexaSwipeToAction',
+                            touchForward: true,
+                            hideOrdinal: false,
+                            actionIconType: 'AVG',
+                            actionIcon: 'cancel',
+                            actionIconBackground: 'red',
+                            disabled: '${disableScreen}',
+                            primaryText: '${data.primaryText}',
+                            primaryAction: {
+                                type: 'Sequential',
+                                commands: [
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: ['${id}', 'Complete'],
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableScreen',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'debugText',
+                                        value: 'Done Selected',
+                                    },
+                                ],
+                            },
+                            onSwipeDone: {
+                                type: 'Sequential',
+                                commands: [
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: ['${id}', 'Remove', '${ordinal}'],
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableScreen',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'debugText',
+                                        value: 'removed ${ordinal}',
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        return {
+            type: 'ListControl-touchForward',
+            listItems: [
+                { primaryText: 'pirates' },
+                { primaryText: 'cartoon' },
+                { primaryText: 'fairies' },
+                { primaryText: 'monsters' },
+                { primaryText: 'animals' },
+            ],
+        };
     }
 
     // tsDoc - see Control

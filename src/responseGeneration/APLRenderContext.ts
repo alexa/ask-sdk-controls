@@ -11,18 +11,25 @@
  * permissions and limitations under the License.
  */
 
+//todo: For each map.  If a duplicate key is added: ensure data is identical (via lodash _.Equals / deepEquals)
+
 /**
  * Defines the mandatory props of a Control.
  */
 export class APLRenderContext {
     public dataSources: { [key: string]: any } = {};
     public styles: { [key: string]: any } = {};
+    public layouts: { [key: string]: any } = {};
 
     addDataSource(key: string, data: { [key: string]: any }) {
         this.dataSources[key] = data;
     }
 
     addStyle(key: string, data: { [key: string]: any }) {
-        this.dataSources[key] = data;
+        this.styles[key] = data;
+    }
+
+    addLayout(key: string, data: { [key: string]: any }) {
+        this.layouts[key] = data;
     }
 }

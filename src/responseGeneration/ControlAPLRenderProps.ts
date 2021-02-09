@@ -19,4 +19,5 @@ import { APLRenderContext } from './APLRenderContext';
  */
 export interface ControlAPLRenderProps {
     aplRenderContext: APLRenderContext;
+    renderStyle: 'voiceForward' | 'touchForward' | 'fullScreen';
 }
