@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import i18next from 'i18next';
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
@@ -69,7 +70,11 @@ export class UnusableInputValueAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedReason !== undefined) {
-            controlResponseBuilder.addPromptFragment(`Sorry, ${this.payload.renderedReason}.`);
+            controlResponseBuilder.addPromptFragment(
+                i18next.t('UNUSABLE_INPUT_VALUEACT', {
+                    value: this.payload.renderedReason,
+                }),
+            );
         } else {
             throw new Error(
                 `Cannot directly render UnusableInputAct as payload.renderedReason is undefined. ${this.toString()}. ` +
@@ -96,7 +101,7 @@ export class AcknowledgeInputAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment('OK.');
+        controlResponseBuilder.addPromptFragment(i18next.t('ACKNOWLEDGEINPUTACT'));
     }
 }
 
@@ -129,7 +134,11 @@ export class ValueSetAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`OK, ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('VALUESETACT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -160,102 +169,6 @@ export class ValueChangedAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(`OK, updated to ${this.payload.value}.`);
-    }
-}
-
-// TODO: refactor: DateRangeSetAct to be ValueSetAct<DateRangeValue>
-// TODO: refactor: DateRangeChangeAct to be ValueChangeAct<DateRangeValue>
-
-/**
- * Communicates that a date range was received and recorded.
- *
- * This act does not imply that the value is valid or otherwise meets
- * any requirements.  It merely communicates successful reception.
- *
- * This act implies that there was no significant ambiguity.  In situations were
- * ambiguity is present a more specific act should be created and issued to communicate
- * that clearly to the user.
- *
- * Default rendering (en-US): "OK, (value)".
- *
- * Usage:
- *  * If received value overrides a value previously obtained from the user
- *    it is preferable to issue a `ValueChangedAct` which is more specific to that case.
- *  * Typically issued when a Control elicits a value from the user and the
- *    user replies directly.
- *  * Also issued when the user provides data on their own initiative which
- *    can be interpreted unambiguously, e.g. "U: Send it on Thursday".
- */
-export class DateRangeSetAct extends ContentAct {
-    public readonly startDate: string | undefined;
-    public readonly endDate: string | undefined;
-    public readonly renderedStartDate: string | undefined;
-    public readonly renderedEndDate: string | undefined;
-
-    constructor(
-        control: Control,
-        start: string | undefined,
-        end: string | undefined,
-        renderedStartDate: string,
-        renderedEndDate: string,
-    ) {
-        super(control);
-        this.startDate = start;
-        this.endDate = end;
-        this.renderedStartDate = renderedStartDate;
-        this.renderedEndDate = renderedEndDate;
-    }
-
-    render(input: ControlInput, responseBuilder: ControlResponseBuilder): void {
-        throw new Error('This is not intended to be called. Rendering is controlled by the Control itself.');
-    }
-}
-
-/**
- * Communicates that a date range was received and recorded as a change to previously obtained information.
- *
- * This act does not imply that the value is valid or otherwise meets
- * any requirements.  It merely communicates successful reception.
- *
- * This act implies that there was no significant ambiguity.  In situations were
- * ambiguity is present a more specific act should be created and issued to communicate
- * that clearly to the user.
- *
- * Default rendering (en-US): "OK, updated to (value)."
- *
- * Usage:
- *  * Typically issued when a user explicitly changes a value, e.g. 'actually change it to tomorrow'.
- *  * Also issued when the user provides data on their own initiative which override previous data
- *    e.g. "U: Send it Monday" ... then later ...  "U: Send it on Thursday".
- */
-export class DateRangeChangedAct extends ContentAct {
-    public readonly startDate: string | undefined;
-    public readonly endDate: string | undefined;
-    public readonly renderedStartDate: string | undefined;
-    public readonly renderedEndDate: string | undefined;
-    public readonly priorStartDate: string | undefined;
-    public readonly priorEndDate: string | undefined;
-
-    constructor(
-        control: Control,
-        start: string | undefined,
-        end: string | undefined,
-        priorStart: string | undefined,
-        priorEnd: string | undefined,
-        renderedStartDate: string,
-        renderedEndDate: string,
-    ) {
-        super(control);
-        this.startDate = start;
-        this.renderedStartDate = renderedStartDate;
-        this.priorStartDate = priorStart;
-        this.endDate = end;
-        this.renderedEndDate = renderedEndDate;
-        this.priorEndDate = priorEnd;
-    }
-
-    render(input: ControlInput, responseBuilder: ControlResponseBuilder): void {
-        throw new Error('This is not intended to be called. Rendering is controlled by the Control itself.');
     }
 }
 

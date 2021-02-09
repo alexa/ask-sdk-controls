@@ -25,9 +25,9 @@ import {
     DateRangeControlIntent,
     DateRangeControlValidations,
     GeneralControlIntent,
-    ValueControlIntent,
     testE2E,
     TestInput,
+    ValueControlIntent,
 } from '../../src';
 import { Strings as $ } from '../../src/constants/Strings';
 import { ConjunctionControlIntent } from '../../src/intents/ConjunctionControlIntent';
@@ -154,7 +154,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -168,7 +168,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -272,7 +272,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -283,7 +283,7 @@ suite('DateRangeControl', () => {
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, { 'AMAZON.DATE': '2018' }),
                     ),
-                    'A: Got it. The start date is 2018-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2018-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -308,7 +308,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is 2015-01-01 and the end date is 2016-12-31.',
+                    'A: Got it. The date range is 2015-01-01 to 2016-12-31.',
                     'U: change date to 2017',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -317,7 +317,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE': '2017',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2017-01-01 and the end date is changed to 2017-12-31.',
+                    'A: Got it. The date range is changed to 2017-01-01 to 2017-12-31.',
                 ]);
             });
 
@@ -333,7 +333,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -349,14 +349,14 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: 2016',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2016-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2016-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -372,7 +372,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: set date to 2016',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -381,7 +381,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2016-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2016-01-01 to 2016-12-31.',
                 ]);
             });
         });
@@ -399,7 +399,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2020',
                         }),
                     ),
-                    "A: Got it. The start date is 2017-01-01 and the end date is 2020-12-31. Sorry but that's not a valid end date because the date cannot be greater than today. What should I change the end date to?",
+                    "A: Got it. The date range is 2017-01-01 to 2020-12-31. Sorry but that's not a valid end date because the date cannot be greater than today. What should I change the end date to?",
                     'U: 2018',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -451,7 +451,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2016-12-31. Sorry, invalid range because start date can not be greater than end date. What is the start date and end date you want?',
+                    'A: Got it. The date range is 2017-01-01 to 2016-12-31. Sorry, invalid range because start date can not be greater than end date. What is the start date and end date you want?',
                 ]);
             });
 
@@ -467,7 +467,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2017',
                         }),
                     ),
-                    'A: Got it. The start date is 2016-01-01 and the end date is 2017-12-31.',
+                    'A: Got it. The date range is 2016-01-01 to 2017-12-31.',
                     'U: change end date to 2015',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -492,7 +492,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: Change date',
                     TestInput.of(
                         GeneralControlIntent.of({
@@ -508,7 +508,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -522,7 +522,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: Change start date to 2015',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -558,7 +558,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: Change start date and end date',
                     TestInput.of(
                         ConjunctionControlIntent.of({
@@ -575,7 +575,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -589,7 +589,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: Change start date',
                     TestInput.of(
                         GeneralControlIntent.of({
@@ -620,7 +620,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: change',
                     TestInput.of(
                         GeneralControlIntent.of({
@@ -635,7 +635,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -651,7 +651,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: change start date to 2016',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -692,7 +692,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -708,7 +708,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2018',
                         }),
                     ),
-                    'A: Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: change photos',
                     TestInput.of(
                         GeneralControlIntent.of({
@@ -724,7 +724,7 @@ suite('DateRangeControl', () => {
                             'AMAZON.DATE.b': '2016',
                         }),
                     ),
-                    'A: Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
         });
@@ -747,7 +747,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2017-01-01 to 2018-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Great. Got it. The date range is 2017-01-01 to 2018-12-31.',
                 ]);
             });
 
@@ -784,7 +784,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2016-01-01 to 2016-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2016-01-01 and the end date is 2016-12-31.',
+                    'A: Great. Got it. The date range is 2016-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -815,7 +815,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2016-01-01 to 2016-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is changed to 2016-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Great. Got it. The date range is changed to 2016-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -836,7 +836,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2017-01-01 to 2018-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Great. Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: Change date',
                     TestInput.of(
                         GeneralControlIntent.of({
@@ -855,7 +855,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2015-01-01 to 2016-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is changed to 2015-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Great. Got it. The date range is changed to 2015-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -876,7 +876,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2017-01-01 to 2018-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Great. Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: change date to 2016',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -888,7 +888,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2016-01-01 to 2016-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is changed to 2016-01-01 and the end date is changed to 2016-12-31.',
+                    'A: Great. Got it. The date range is changed to 2016-01-01 to 2016-12-31.',
                 ]);
             });
 
@@ -909,7 +909,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2017-01-01 to 2018-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Great. Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: set start date to 2016',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -942,7 +942,7 @@ suite('DateRangeControl', () => {
                     'A: Was that 2017-01-01 to 2018-12-31?',
                     'U: Yes',
                     TestInput.intent(AmazonIntent.YesIntent),
-                    'A: Great. Got it. The start date is 2017-01-01 and the end date is 2018-12-31.',
+                    'A: Great. Got it. The date range is 2017-01-01 to 2018-12-31.',
                     'U: set start date to 2020',
                     TestInput.of(
                         ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -1049,7 +1049,7 @@ suite('DateRangeControl', () => {
                 'A: Was that (YYYY:MM:DD) 2017-01-01 to (YYYY:MM:DD) 2018-12-31?',
                 'U: Yes',
                 TestInput.intent(AmazonIntent.YesIntent),
-                'A: Great. Got it. The start date is YYYY:MM:DD :: 2017-01-01 and the end date is YYYY:MM:DD :: 2018-12-31.',
+                'A: Great. Got it. The date range is (YYYY:MM:DD) 2017-01-01 to (YYYY:MM:DD) 2018-12-31.',
             ]);
         });
     });

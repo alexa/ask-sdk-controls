@@ -14,7 +14,7 @@
 import { IntentRequest } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { ControlInputHandlingProps, InputUtil, ValueControlIntent, StringOrList } from '../..';
+import { ControlInputHandlingProps, InputUtil, StringOrList, ValueControlIntent } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     ContainerControl,
@@ -40,11 +40,11 @@ import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
-    DateRangeChangedAct,
-    DateRangeSetAct,
     InvalidValueAct,
+    ValueChangedAct,
     ValueConfirmedAct,
     ValueDisconfirmedAct,
+    ValueSetAct,
 } from '../../systemActs/ContentActs';
 import { ConfirmValueAct, RequestValueAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
@@ -381,9 +381,9 @@ export interface DateRangeControlPromptProps {
     startDate?: DateControlPromptProps;
     endDate?: DateControlPromptProps;
     requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList);
-    valueSet?: StringOrList | ((act: DateRangeSetAct, input: ControlInput) => StringOrList);
+    valueSet?: StringOrList | ((act: ValueSetAct<DateRange>, input: ControlInput) => StringOrList);
 
-    valueChanged?: StringOrList | ((act: DateRangeChangedAct, input: ControlInput) => StringOrList);
+    valueChanged?: StringOrList | ((act: ValueChangedAct<DateRange>, input: ControlInput) => StringOrList);
     invalidValue?: StringOrList | ((act: InvalidValueAct<string>, input: ControlInput) => StringOrList);
     valueDisaffirmed?:
         | StringOrList
@@ -575,15 +575,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 },
                 requestValue: (act: RequestValueAct) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
-                valueSet: (act: DateRangeSetAct) =>
+                valueSet: (act: ValueSetAct<DateRange>) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_SET', {
-                        start: act.renderedStartDate,
-                        end: act.renderedEndDate,
+                        value: act.payload.renderedValue,
                     }),
-                valueChanged: (act: DateRangeChangedAct) =>
+                valueChanged: (act: ValueChangedAct<DateRange>) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
-                        start: act.renderedStartDate,
-                        end: act.renderedEndDate,
+                        value: act.payload.renderedValue,
                     }),
                 invalidValue: (act: InvalidValueAct<string>) => {
                     if (act.payload.renderedReason !== undefined) {
@@ -662,15 +660,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 },
                 requestValue: (act: RequestValueAct) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
-                valueSet: (act: DateRangeSetAct) =>
+                valueSet: (act: ValueSetAct<DateRange>) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_SET', {
-                        start: act.renderedStartDate,
-                        end: act.renderedEndDate,
+                        value: act.payload.renderedValue,
                     }),
-                valueChanged: (act: DateRangeChangedAct) =>
+                valueChanged: (act: ValueChangedAct<DateRange>) =>
                     i18next.t('DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
-                        start: act.renderedStartDate,
-                        end: act.renderedEndDate,
+                        value: act.payload.renderedValue,
                     }),
                 invalidValue: (act: InvalidValueAct<string>) => {
                     if (act.payload.reasonCode !== undefined) {
@@ -1172,28 +1168,27 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 startDate: this.state.value.startDate!,
                 endDate: this.state.value.endDate!,
             };
-            // If it's the first time to set the value, DateRangeControl will send DateRangeSetAct
-            // And when there's an old value exist, DateRangeControl will send DateRangeChangedAct
+
+            const prevDateRange = {
+                startDate: this.state.previousStartDate,
+                endDate: this.state.previousEndDate,
+            };
+            // If it's the first time to set the value, DateRangeControl will send ValueSetAct<DateRange>
+            // And when there's an old value exist, DateRangeControl will send ValueChangedAct<DateRange>
             this.state.previousStartDate !== undefined && this.state.previousEndDate !== undefined
                 ? resultBuilder.addAct(
-                      new DateRangeChangedAct(
-                          this,
-                          this.state.value.startDate,
-                          this.state.value.endDate,
-                          this.state.previousStartDate,
-                          this.state.previousEndDate,
-                          this.props.valueRenderer(dateRange, 'START_DATE', input),
-                          this.props.valueRenderer(dateRange, 'END_DATE', input),
-                      ),
+                      new ValueChangedAct<DateRange>(this, {
+                          value: dateRange,
+                          previousValue: prevDateRange,
+                          renderedValue: this.props.valueRenderer(dateRange, 'RANGE', input),
+                          renderedPreviousValue: this.props.valueRenderer(prevDateRange, 'RANGE', input),
+                      }),
                   )
                 : resultBuilder.addAct(
-                      new DateRangeSetAct(
-                          this,
-                          this.state.value.startDate,
-                          this.state.value.endDate,
-                          this.props.valueRenderer(dateRange, 'START_DATE', input),
-                          this.props.valueRenderer(dateRange, 'END_DATE', input),
-                      ),
+                      new ValueSetAct<DateRange>(this, {
+                          value: dateRange,
+                          renderedValue: this.props.valueRenderer(dateRange, 'RANGE', input),
+                      }),
                   );
         }
     }
@@ -1226,10 +1221,10 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
             );
-        } else if (act instanceof DateRangeSetAct) {
+        } else if (act instanceof ValueSetAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
-        } else if (act instanceof DateRangeChangedAct) {
+        } else if (act instanceof ValueChangedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
