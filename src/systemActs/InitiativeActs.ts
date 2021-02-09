@@ -11,6 +11,8 @@
  * permissions and limitations under the License.
  */
 
+import i18next from 'i18next';
+import { UnusableInputValueAct } from '..';
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ListFormatting } from '../intl/ListFormat';
@@ -82,7 +84,7 @@ export class ActiveAPLInitiativeAct extends InitiativeAct {
  *    which is more specific to that case.
  *  * Typically issued when a Control gains the initiative for the first time and requests a value for the first time.
  */
-//TODO:i18n /or/ remove default render function.  The framework acts are not really
+//TODO: remove default render function.  The framework acts are not really
 //expected to be used this way.  Rather, we expect the Control.render() methods to do the
 //rendering.  Offering default rendering for the act on its own seems like over-engineering.
 export class RequestValueAct extends InitiativeAct {
@@ -94,11 +96,22 @@ export class RequestValueAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment(`What value for ${this.payload.renderedTarget}.`);
+            controlResponseBuilder.addPromptFragment(
+                i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                }),
+            );
+            controlResponseBuilder.addRepromptFragment(
+                i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                }),
+            );
         } else {
             throw new Error(
-                `Cannot directly render RequestValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -113,7 +126,6 @@ export class RequestValueAct extends InitiativeAct {
  * Usage:
  *  * Typically issued in response to the user saying they want to change a value, e.g. "U: Please change the event date."
  *
- * TODO: i18n
  */
 export class RequestChangedValueAct extends InitiativeAct {
     payload: RequestChangedValuePayload;
@@ -125,15 +137,21 @@ export class RequestChangedValueAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                `What is the new value for ${this.payload.renderedTarget}.`,
+                i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                }),
             );
             controlResponseBuilder.addRepromptFragment(
-                `What is the new value for ${this.payload.renderedTarget}.`,
+                i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                }),
             );
         } else {
             throw new Error(
-                `Cannot directly render RequestChangedValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -150,7 +168,6 @@ export class RequestChangedValueAct extends InitiativeAct {
  *  * If the system already has a value from the user it may be preferable to issue a `RequestChangedValueAct`
  *    which is more specific to that case.
  */
-//TODO:i18n
 export class RequestValueByListAct extends InitiativeAct {
     payload: RequestValueByListPayload;
 
@@ -161,15 +178,23 @@ export class RequestValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+                i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: this.payload.renderedChoices,
+                }),
             );
             controlResponseBuilder.addRepromptFragment(
-                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+                i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: this.payload.renderedChoices,
+                }),
             );
         } else {
             throw new Error(
-                `Cannot directly render RequestValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -186,7 +211,6 @@ export class RequestValueByListAct extends InitiativeAct {
  *  * If the system already has a value from the user it may be preferable to issue a `RequestChangedValueAct`
  *    which is more specific to that case.
  */
-//TODO:i18n
 export class RequestChangedValueByListAct extends InitiativeAct {
     payload: RequestChangedValueByListPayload;
 
@@ -197,19 +221,23 @@ export class RequestChangedValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                `What is the new value for ${
-                    this.payload.renderedTarget
-                }? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`,
+                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: ListFormatting.format(this.payload.choicesFromActivePage),
+                }),
             );
             controlResponseBuilder.addRepromptFragment(
-                `What is the new value for ${
-                    this.payload.renderedTarget
-                }? Choices include ${ListFormatting.format(this.payload.choicesFromActivePage)}.`,
+                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: ListFormatting.format(this.payload.choicesFromActivePage),
+                }),
             );
         } else {
             throw new Error(
-                `Cannot directly render RequestChangeValueByList as payload.renderedTarget is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -225,12 +253,23 @@ export class RequestRemovedValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
+                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: this.payload.renderedChoices,
+                }),
+            );
+            controlResponseBuilder.addRepromptFragment(
+                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedTarget,
+                    choices: this.payload.renderedChoices,
+                }),
             );
         } else {
             throw new Error(
-                `Cannot directly render RequestRemovedValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -241,7 +280,6 @@ export class RequestRemovedValueByListAct extends InitiativeAct {
  *
  * Default rendering (en-US): "Was that [value]?" for both prompt & reprompt
  */
-//TODO:i18n
 export class ConfirmValueAct<T> extends InitiativeAct {
     payload: ValueSetPayload<T>;
 
@@ -250,8 +288,16 @@ export class ConfirmValueAct<T> extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`Was that ${this.payload.value}?`);
-        controlResponseBuilder.addPromptFragment(`Was that ${this.payload.value}?`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
+        controlResponseBuilder.addRepromptFragment(
+            i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -287,7 +333,6 @@ export class LiteralInitiativeAct extends InitiativeAct {
  *
  * Default (en-US): "Did you perhaps mean [this.payload.value]?" for both prompt and reprompt
  */
-//TODO:i18n
 export class SuggestValueAct<T> extends InitiativeAct {
     payload: ValueSetPayload<T>;
 
@@ -296,9 +341,16 @@ export class SuggestValueAct<T> extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        // TODO: bug: change the message to i18n
-        controlResponseBuilder.addPromptFragment(`Did you perhaps mean ${this.payload.value}?`);
-        controlResponseBuilder.addRepromptFragment(`Did you perhaps mean ${this.payload.value}?`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
+        controlResponseBuilder.addRepromptFragment(
+            i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -311,32 +363,14 @@ export class SuggestActionAct<T> extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment('You can add or update values.');
+            controlResponseBuilder.addPromptFragment(i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'));
+            controlResponseBuilder.addRepromptFragment(i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'));
         } else {
             throw new Error(
-                `Cannot directly render SuggestActionAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
-            );
-        }
-    }
-}
-
-export class RequestReplacementValueByListAct extends InitiativeAct {
-    payload: RequestChangedValueByListPayload;
-
-    constructor(control: Control, payload: RequestChangedValueByListPayload) {
-        super(control);
-        this.payload = payload;
-    }
-    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                `What value for ${this.payload.renderedTarget}? Choices include ${this.payload.renderedChoices}.`,
-            );
-        } else {
-            throw new Error(
-                `Cannot directly render RequestReplacementValueByList as payload.renderedTarget and/or payload.renderedChoices is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }

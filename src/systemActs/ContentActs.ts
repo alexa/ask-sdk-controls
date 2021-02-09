@@ -71,14 +71,16 @@ export class UnusableInputValueAct<T> extends ContentAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedReason !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                i18next.t('UNUSABLE_INPUT_VALUEACT', {
+                i18next.t('UNUSABLE_INPUT_VALUE_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedReason,
                 }),
             );
         } else {
             throw new Error(
-                `Cannot directly render UnusableInputAct as payload.renderedReason is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('CONTENT_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -101,7 +103,7 @@ export class AcknowledgeInputAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(i18next.t('ACKNOWLEDGEINPUTACT'));
+        controlResponseBuilder.addPromptFragment(i18next.t('ACKNOWLEDGE_INPUT_ACT_DEFAULT_PROMPT'));
     }
 }
 
@@ -135,7 +137,7 @@ export class ValueSetAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(
-            i18next.t('VALUESETACT', {
+            i18next.t('VALUE_SET_ACT_DEFAULT_PROMPT', {
                 value: this.payload.value,
             }),
         );
@@ -168,7 +170,11 @@ export class ValueChangedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`OK, updated to ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('VALUE_CHANGED_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -196,11 +202,17 @@ export class InvalidValueAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedReason !== undefined) {
-            controlResponseBuilder.addPromptFragment(`Sorry, ${this.payload.renderedReason}.`);
+            controlResponseBuilder.addPromptFragment(
+                i18next.t('INVALID_VALUE_ACT_DEFAULT_PROMPT', {
+                    value: this.payload.renderedReason,
+                }),
+            );
         } else {
             throw new Error(
-                `Cannot directly render InvalidValueAct as payload.renderedReason is undefined. ${this.toString()}. ` +
-                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render()`,
+                i18next.t('CONTENT_ACT_ERROR_DEFAULT_PROMPT', {
+                    act: UnusableInputValueAct.name,
+                    value: this.toString(),
+                }),
             );
         }
     }
@@ -230,7 +242,7 @@ export class ValueConfirmedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment('Great.');
+        controlResponseBuilder.addPromptFragment(i18next.t('VALUE_CONFIRMED_ACT_DEFAULT_PROMPT'));
     }
 }
 
@@ -258,7 +270,7 @@ export class ValueDisconfirmedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment('My mistake.');
+        controlResponseBuilder.addPromptFragment(i18next.t('VALUE_DISCONFIRMED_ACT_DEFAULT_PROMPT'));
     }
 }
 
@@ -286,7 +298,10 @@ export class InformConfusingConfirmationAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(
-            `I'm confused whether you want ${this.control.state.value} or ${this.payload.value}.`,
+            i18next.t('INFORM_CONFUSING_CONFIRMATION_ACT', {
+                controlValue: this.control.state.value,
+                value: this.payload.value,
+            }),
         );
     }
 }
@@ -315,7 +330,9 @@ export class InformConfusingDisconfirmationAct<T> extends ContentAct {
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         controlResponseBuilder.addPromptFragment(
-            `I'm confused whether you want ${this.control.state.value} or not.`,
+            i18next.t('INFORM_CONFUSING_CONFIRMATION_ACT', {
+                value: this.control.state.value,
+            }),
         );
     }
 }
@@ -343,7 +360,11 @@ export class ProblematicInputValueAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`I'm really sorry but I heard ${this.payload.value} again.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('PROBLEMATIC_INPUT_VALUE_ACT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -371,7 +392,7 @@ export class NonUnderstandingAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment("Sorry I didn't understand that.");
+        controlResponseBuilder.addPromptFragment(i18next.t('NON_UNDERSTANDING_ACT'));
     }
 }
 
@@ -386,7 +407,7 @@ export class LaunchAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment('Welcome.');
+        controlResponseBuilder.addPromptFragment(i18next.t('LAUNCH_ACT_DEFAULT_PROMPT'));
     }
 }
 
@@ -429,7 +450,11 @@ export class ValueAddedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`OK, added ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('VALUE_ADDED_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -442,7 +467,11 @@ export class ValueRemovedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`OK, removed ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('VALUE_REMOVED_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -455,7 +484,11 @@ export class ValueClearedAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`OK, removed all ${this.payload.value}.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('VALUE_CLEARED_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
 
@@ -468,6 +501,10 @@ export class InvalidRemoveValueAct<T> extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(`Sorry, ${this.payload.value} is not in the list.`);
+        controlResponseBuilder.addPromptFragment(
+            i18next.t('INVALID_REMOVE_VALUE_ACT_DEFAULT_PROMPT', {
+                value: this.payload.value,
+            }),
+        );
     }
 }
