@@ -574,36 +574,48 @@ class ExceptionHandlingControlManager2 extends ControlManager {
 
 suite('== Top-level exception handling ==', () => {
     test('Top-level exception during canHandle can produce response.', async () => {
+        const spy = sinon.stub(Logger.prototype, 'error');
         const requestHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
         const response = await skill.invoke(TestInput.launchRequest());
         expect(response.prompt).equals('custom response prompt');
         expect(response.responseEnvelope.response.shouldEndSession).equals(true);
+
+        spy.restore();
     });
 
     test('Top-level exception during canHandle can return false.', async () => {
+        const spy = sinon.stub(Logger.prototype, 'error');
         const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         controlHandler.canHandleThrowBehavior = 'ReturnFalse';
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
         const response = await skill.invoke(TestInput.launchRequest());
         expect(response.prompt).equals('Unable to find a suitable request handler.');
         expect(response.responseEnvelope.response.shouldEndSession).equals(false);
+
+        spy.restore();
     });
 
     test('Top-level exception during canHandle can throw.', async () => {
+        const spy = sinon.stub(Logger.prototype, 'error');
         const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         controlHandler.canHandleThrowBehavior = 'Rethrow';
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
         const response = await skill.invoke(TestInput.launchRequest());
         expect(response.prompt).equals('synthetic error during createControlTree (ie. during canHandle)');
         expect(response.responseEnvelope.response.shouldEndSession).equals(false);
+
+        spy.restore();
     });
 
     test('Top-level exception during handle can end the session.', async () => {
+        const spy = sinon.stub(Logger.prototype, 'error');
         const requestHandler = new ControlHandler(new ExceptionHandlingControlManager2());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
         const response = await skill.invoke(TestInput.launchRequest());
         expect(response.prompt).equals('synthetic error during handle');
         expect(response.responseEnvelope.response.shouldEndSession).equals(true);
+
+        spy.restore();
     });
 });
