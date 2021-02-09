@@ -1,6 +1,6 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { Control } from '../../..//src/controls/Control';
-import { ControlInput, ControlResponseBuilder, ControlResult, InputUtil, NumberControl } from '../../../src';
+import { ControlInput, ControlResponseBuilder, ControlResult, NumberControl } from '../../../src';
 import { ControlManager } from '../../../src/controls/ControlManager';
 import { APLRenderContext } from '../../../src/responseGeneration/APLRenderContext';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
@@ -24,6 +24,9 @@ export namespace SinglePageApp {
                         requestValue: 'How old will you be?',
                         valueSet: (act, input) => `${act.payload.renderedValue} is a great age!`,
                     },
+                    apl: {
+                        title: 'Age of birthday person',
+                    },
                 })),
             );
 
@@ -44,6 +47,7 @@ export namespace SinglePageApp {
                     },
                     apl: {
                         validationFailedMessage: 'Maximum: 10',
+                        title: 'Number of guests',
                     },
                 })),
             );
@@ -71,7 +75,9 @@ export namespace SinglePageApp {
                     ComponentPlaceholderStyle: {
                         values: [
                             {
-                                backgroundColor: '#779977',
+                                borderColor: 'white',
+                                borderWidth: '2px',
+                                padding: '0',
                             },
                         ],
                     },
@@ -86,7 +92,7 @@ export namespace SinglePageApp {
                             },
                             {
                                 when: '${state.focused}',
-                                borderColor: 'green',
+                                // borderColor: 'green',
                                 borderStrokeWidth: 2,
                             },
                         ],
@@ -102,8 +108,15 @@ export namespace SinglePageApp {
                             },
                             {
                                 when: '${state.focused}',
-                                borderColor: 'green',
+                                // borderColor: 'green',
                                 borderStrokeWidth: 2,
+                            },
+                        ],
+                    },
+                    LabelStyle: {
+                        values: [
+                            {
+                                fontSize: '24dp',
                             },
                         ],
                     },
@@ -130,14 +143,25 @@ export namespace SinglePageApp {
                         ],
                         items: [
                             {
+                                id: 'label1',
+                                type: 'Text',
+                                style: 'LabelStyle',
+                                position: 'absolute',
+                                top: '250px',
+                                left: '50px',
+                                width: '400px',
+                                height: '100px',
+                                text: 'Your age:',
+                            },
+                            {
                                 id: 'ageComponent',
                                 type: 'Frame',
                                 position: 'absolute',
                                 style: 'ComponentPlaceholderStyle',
-                                top: '50vh',
-                                left: '100px',
+                                top: '300px',
+                                left: '50px',
                                 width: '400px',
-                                height: '180px',
+                                height: '100px',
                                 items: [
                                     this.ageControl.renderAPLComponent(
                                         {
@@ -149,14 +173,25 @@ export namespace SinglePageApp {
                                 ],
                             },
                             {
+                                id: 'label2',
+                                type: 'Text',
+                                style: 'LabelStyle',
+                                position: 'absolute',
+                                top: '450px',
+                                left: '50px',
+                                width: '400px',
+                                height: '100px',
+                                text: 'Number of guests:',
+                            },
+                            {
                                 id: 'guestsComponent',
                                 type: 'Frame',
                                 position: 'absolute',
                                 style: 'ComponentPlaceholderStyle',
-                                top: '30vh',
-                                left: '600px',
+                                top: '500px',
+                                left: '50px',
                                 width: '400px',
-                                height: '60vh',
+                                height: '100px',
                                 items: [
                                     this.guestsControl.renderAPLComponent(
                                         {
