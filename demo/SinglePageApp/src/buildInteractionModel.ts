@@ -51,6 +51,54 @@ export namespace SinglePageAppIM {
                         synonyms: ['number of guests'],
                     },
                 },
+                {
+                    id: 'theme',
+                    name: {
+                        value: 'theme',
+                        synonyms: ['party theme'],
+                    },
+                },
+            ],
+        })
+
+        .addOrMergeSlotType({
+            name: 'PartyTheme',
+            values: [
+                {
+                    id: 'pirate',
+                    name: {
+                        value: 'pirate',
+                        synonyms: ['pirates'],
+                    },
+                },
+                {
+                    id: 'cartoon',
+                    name: {
+                        value: 'cartoon',
+                        synonyms: ['cartoons'],
+                    },
+                },
+                {
+                    id: 'fairy',
+                    name: {
+                        value: 'fairy',
+                        synonyms: ['fairies'],
+                    },
+                },
+                {
+                    id: 'monster',
+                    name: {
+                        value: 'monster',
+                        synonyms: ['monsters'],
+                    },
+                },
+                {
+                    id: 'animal',
+                    name: {
+                        value: 'animal',
+                        synonyms: ['animals'],
+                    },
+                },
             ],
         })
         .buildCoreModelForControls(new SinglePageApp.DemoControlManager());

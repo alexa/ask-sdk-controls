@@ -34,7 +34,6 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
-import { APLRenderContext } from '../../responseGeneration/APLRenderContext';
 import { ControlAPLRenderProps } from '../../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
@@ -667,7 +666,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                             grow: 1,
                             validCharacters: '-0-9',
                             text: this.state.value?.toString(),
-                            hint: title,
+                            hint: '[number]',
                             hintWeight: 'normal',
                             fontSize: '34px',
                         },

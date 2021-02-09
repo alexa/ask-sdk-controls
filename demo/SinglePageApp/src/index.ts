@@ -58,8 +58,20 @@ export namespace SinglePageApp {
             rootControl.addChild(
                 (this.partyThemeControl = new ListControl({
                     id: 'partyThemeControl',
-                    listItemIDs: ['pirates', 'cartoon', 'fairies', 'monsters'],
+                    listItemIDs: ['pirate', 'cartoon', 'fairy', 'monster'],
                     slotType: 'PartyTheme',
+                    valueRenderer: (value: string) => {
+                        return ({
+                            pirate: 'Pirates!',
+                            cartoon: 'Cartoons',
+                            fairy: 'Fairies',
+                            monster: 'Monsters',
+                        } as { [key: string]: string })[value];
+                    },
+                    apl: {},
+                    interactionModel: {
+                        targets: ['builtin_choice', 'builtin_it', 'theme'],
+                    },
                 })),
             );
 
@@ -201,9 +213,9 @@ export namespace SinglePageApp {
                                 type: 'Frame',
                                 position: 'absolute',
                                 style: 'ComponentPlaceholderStyle',
-                                top: '500px',
+                                top: '400px',
                                 left: '50px',
-                                width: '400px',
+                                width: '200px',
                                 height: '100px',
                                 items: [
                                     this.guestsControl.renderAPLComponent(
@@ -257,8 +269,8 @@ export namespace SinglePageApp {
                                     type: 'SendEvent',
                                     arguments: ['goBack'],
                                 },
-                                headerTitle: 'hello',
-                                headerSubtitle: 'world',
+                                headerTitle: 'Chucky Cheese',
+                                headerSubtitle: 'Birthday booking',
                             },
                             {
                                 type: 'AlexaButton',
