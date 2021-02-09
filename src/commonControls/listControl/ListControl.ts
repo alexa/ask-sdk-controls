@@ -200,7 +200,7 @@ export class ListControlInteractionModelProps {
      * values `action = change` and `target = time`.  Only controls that are
      * registered with the `time` target should offer to handle this intent.
      *
-     * Default: `['builtin_it']`
+     * Default: `['builtin_choice', 'builtin_it']`
      *
      * Usage:
      * - If this prop is defined, it replaces the default; it is not additive to
@@ -1246,84 +1246,98 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        // Create a Layout.
         props.aplRenderContext.addLayout('ListControl-touchForward', {
-            type: 'Sequence',
-            scrollDirection: 'vertical',
-            data: '${listItems}',
-            width: '100%',
-            height: '100%',
-            paddingLeft: '0',
-            numbered: true,
+            parameters: [
+                {
+                    name: 'controlId',
+                    type: 'string',
+                },
+                {
+                    name: 'listItems',
+                    type: 'array',
+                },
+            ],
             items: [
                 {
-                    type: 'Container',
+                    type: 'Sequence',
+                    scrollDirection: 'vertical',
+                    data: '${listItems}',
+                    width: '100%',
+                    height: '100%',
+                    paddingLeft: '0',
+                    numbered: true,
                     items: [
                         {
-                            type: 'AlexaSwipeToAction',
-                            touchForward: true,
-                            hideOrdinal: false,
-                            actionIconType: 'AVG',
-                            actionIcon: 'cancel',
-                            actionIconBackground: 'red',
-                            disabled: '${disableScreen}',
-                            primaryText: '${data.primaryText}',
-                            primaryAction: {
-                                type: 'Sequential',
-                                commands: [
-                                    {
-                                        type: 'SendEvent',
-                                        arguments: ['${id}', 'Complete'],
+                            type: 'Container',
+                            items: [
+                                {
+                                    type: 'AlexaSwipeToAction',
+                                    touchForward: true,
+                                    hideOrdinal: false,
+                                    actionIconType: 'AVG',
+                                    actionIcon: 'cancel',
+                                    actionIconBackground: 'red',
+                                    disabled: '${disableScreen}',
+                                    primaryText: '${data.primaryText}',
+                                    primaryAction: {
+                                        type: 'Sequential',
+                                        commands: [
+                                            {
+                                                type: 'SendEvent',
+                                                arguments: ['${controlId}', '${ordinal}'],
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'disableScreen',
+                                                value: true,
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'debugText',
+                                                value: 'Done Selected',
+                                            },
+                                        ],
                                     },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'disableScreen',
-                                        value: true,
+                                    onSwipeDone: {
+                                        type: 'Sequential',
+                                        commands: [
+                                            {
+                                                type: 'SendEvent',
+                                                arguments: ['${id}', 'Remove', '${ordinal}'],
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'disableScreen',
+                                                value: true,
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'debugText',
+                                                value: 'removed ${ordinal}',
+                                            },
+                                        ],
                                     },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'debugText',
-                                        value: 'Done Selected',
-                                    },
-                                ],
-                            },
-                            onSwipeDone: {
-                                type: 'Sequential',
-                                commands: [
-                                    {
-                                        type: 'SendEvent',
-                                        arguments: ['${id}', 'Remove', '${ordinal}'],
-                                    },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'disableScreen',
-                                        value: true,
-                                    },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'debugText',
-                                        value: 'removed ${ordinal}',
-                                    },
-                                ],
-                            },
+                                },
+                            ],
                         },
                     ],
                 },
             ],
         });
 
+        const itemIds: string[] = this.evaluateFunctionProp(this.props.listItemIDs, input);
+        // Create the inline document, which instantiates the Layout
+        const listItems = itemIds.map((x) => ({ primaryText: this.props.valueRenderer(x, input) }));
+
         return {
             type: 'ListControl-touchForward',
-            listItems: [
-                { primaryText: 'pirates' },
-                { primaryText: 'cartoon' },
-                { primaryText: 'fairies' },
-                { primaryText: 'monsters' },
-                { primaryText: 'animals' },
-            ],
+            controlId: this.id,
+            listItems,
         };
     }
 
@@ -1353,4 +1367,17 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     // TODO: feature: consider using slot elicitation when requesting.
+
+    private evaluateFunctionProp<T>(prop: T | ((input: ControlInput) => T), input: ControlInput): T {
+        if (typeof prop !== 'function') {
+            return prop;
+        }
+        const func = prop as FunctionProp<T>;
+        return func(input);
+    }
+}
+type FunctionProp<T> = (input: ControlInput) => T;
+
+interface APLListItem {
+    primaryText: string;
 }
