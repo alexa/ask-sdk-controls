@@ -237,10 +237,9 @@ export const defaultI18nResources: Resource = {
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_AFFIRMED: 'Great.',
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_END_DATE_DISAFFIRMED: 'My mistake.',
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE: 'What is the start date and end date you want?',
-            DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_SET:
-                'Got it. The start date is {{start}} and the end date is {{end}}.',
+            DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'Got it. The date range is {{value}}.',
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED:
-                'Got it. The start date is changed to {{start}} and the end date is changed to {{end}}.',
+                'Got it. The date range is changed to {{value}}.',
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_START_WITH_REASON:
                 "Sorry but that's not a valid start date because {{reason}}.",
             DATE_RANGE_CONTROL_DEFAULT_PROMPT_INVALID_END_WITH_REASON:
@@ -275,10 +274,9 @@ export const defaultI18nResources: Resource = {
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_END_DATE_DISAFFIRMED: 'My mistake.',
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE:
                 'What is the start date and end date you want?',
-            DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_SET:
-                'Got it. The start date is {{start}} and the end date is {{end}}.',
+            DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'Got it. The date range is {{value}}.',
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED:
-                'Got it. The start date is changed to {{start}} and the end date is changed to {{end}}.',
+                'Got it. The date range is changed to {{value}}.',
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_START_WITH_REASON:
                 "Sorry but that's not a valid start date because {{reason}}.",
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_INVALID_END_WITH_REASON:
@@ -292,8 +290,6 @@ export const defaultI18nResources: Resource = {
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
             DATE_RANGE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
-
-            DATE_RANGE_CONTROL_DEFAULT_STATE_VALUE_FOR_START_AND_END: '{{start}} to {{end}}',
 
             // QuestionnaireControl
             QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_QUESTION_ANSWERED_LOW_RISK_OF_MISUNDERSTANDING: '',
@@ -321,6 +317,11 @@ export const defaultI18nResources: Resource = {
                 'No problem. Just let me know when you are done.',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE: 'Are you happy with all answers?',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE_TERSE: '',
+
+            // Content Act render prompts
+            UNUSABLEINPUTVALUEACT: `Sorry, {{value}}`,
+            ACKNOWLEDGEINPUTACT: 'OK.',
+            VALUESETACT: `OK, {{value}}`,
 
             // ControlIntent Samples
 
