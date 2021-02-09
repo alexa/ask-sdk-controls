@@ -38,6 +38,7 @@ import { unpackValueControlIntent, ValueControlIntent } from '../../intents/Valu
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ListFormatting } from '../../intl/ListFormat';
 import { Logger } from '../../logging/Logger';
+import { ControlAPLRenderProps } from '../../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InvalidValueAct,
@@ -1242,6 +1243,88 @@ export class ListControl extends Control implements InteractionModelContributor 
             this.props.slotType,
             this.props.interactionModel.slotValueConflictExtensions.filteredSlotType,
         ];
+    }
+
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        props.aplRenderContext.addLayout('ListControl-touchForward', {
+            type: 'Sequence',
+            scrollDirection: 'vertical',
+            data: '${listItems}',
+            width: '100%',
+            height: '100%',
+            paddingLeft: '0',
+            numbered: true,
+            items: [
+                {
+                    type: 'Container',
+                    items: [
+                        {
+                            type: 'AlexaSwipeToAction',
+                            touchForward: true,
+                            hideOrdinal: false,
+                            actionIconType: 'AVG',
+                            actionIcon: 'cancel',
+                            actionIconBackground: 'red',
+                            disabled: '${disableScreen}',
+                            primaryText: '${data.primaryText}',
+                            primaryAction: {
+                                type: 'Sequential',
+                                commands: [
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: ['${id}', 'Complete'],
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableScreen',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'debugText',
+                                        value: 'Done Selected',
+                                    },
+                                ],
+                            },
+                            onSwipeDone: {
+                                type: 'Sequential',
+                                commands: [
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: ['${id}', 'Remove', '${ordinal}'],
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableScreen',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'debugText',
+                                        value: 'removed ${ordinal}',
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        return {
+            type: 'ListControl-touchForward',
+            listItems: [
+                { primaryText: 'pirates' },
+                { primaryText: 'cartoon' },
+                { primaryText: 'fairies' },
+                { primaryText: 'monsters' },
+                { primaryText: 'animals' },
+            ],
+        };
     }
 
     // tsDoc - see Control

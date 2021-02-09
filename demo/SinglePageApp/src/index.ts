@@ -1,6 +1,12 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { Control } from '../../..//src/controls/Control';
-import { ControlInput, ControlResponseBuilder, ControlResult, NumberControl } from '../../../src';
+import {
+    ControlInput,
+    ControlResponseBuilder,
+    ControlResult,
+    ListControl,
+    NumberControl,
+} from '../../../src';
 import { ControlManager } from '../../../src/controls/ControlManager';
 import { APLRenderContext } from '../../../src/responseGeneration/APLRenderContext';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
@@ -10,6 +16,7 @@ export namespace SinglePageApp {
     export class DemoControlManager extends ControlManager {
         ageControl: NumberControl;
         guestsControl: NumberControl;
+        partyThemeControl: ListControl;
 
         createControlTree(): Control {
             const rootControl = new DemoRootControl({ id: 'root' });
@@ -23,9 +30,6 @@ export namespace SinglePageApp {
                     prompts: {
                         requestValue: 'How old will you be?',
                         valueSet: (act, input) => `${act.payload.renderedValue} is a great age!`,
-                    },
-                    apl: {
-                        title: 'Age of birthday person',
                     },
                 })),
             );
@@ -47,8 +51,15 @@ export namespace SinglePageApp {
                     },
                     apl: {
                         validationFailedMessage: 'Maximum: 10',
-                        title: 'Number of guests',
                     },
+                })),
+            );
+
+            rootControl.addChild(
+                (this.partyThemeControl = new ListControl({
+                    id: 'partyThemeControl',
+                    listItemIDs: ['pirates', 'cartoon', 'fairies', 'monsters'],
+                    slotType: 'PartyTheme',
                 })),
             );
 
@@ -121,7 +132,9 @@ export namespace SinglePageApp {
                         ],
                     },
                 },
-
+                layouts: {
+                    // placeholder
+                },
                 mainTemplate: {
                     parameters: ['wrapper'],
                     item: {
@@ -147,9 +160,9 @@ export namespace SinglePageApp {
                                 type: 'Text',
                                 style: 'LabelStyle',
                                 position: 'absolute',
-                                top: '250px',
+                                top: '150px',
                                 left: '50px',
-                                width: '400px',
+                                width: '200px',
                                 height: '100px',
                                 text: 'Your age:',
                             },
@@ -158,15 +171,15 @@ export namespace SinglePageApp {
                                 type: 'Frame',
                                 position: 'absolute',
                                 style: 'ComponentPlaceholderStyle',
-                                top: '300px',
+                                top: '200px',
                                 left: '50px',
-                                width: '400px',
+                                width: '200px',
                                 height: '100px',
                                 items: [
                                     this.ageControl.renderAPLComponent(
                                         {
                                             aplRenderContext,
-                                            size: 'small',
+                                            renderStyle: 'touchForward',
                                         },
                                         input,
                                     ),
@@ -177,9 +190,9 @@ export namespace SinglePageApp {
                                 type: 'Text',
                                 style: 'LabelStyle',
                                 position: 'absolute',
-                                top: '450px',
+                                top: '350px',
                                 left: '50px',
-                                width: '400px',
+                                width: '200px',
                                 height: '100px',
                                 text: 'Number of guests:',
                             },
@@ -196,12 +209,43 @@ export namespace SinglePageApp {
                                     this.guestsControl.renderAPLComponent(
                                         {
                                             aplRenderContext,
-                                            size: 'large',
+                                            renderStyle: 'touchForward',
                                         },
                                         input,
                                     ),
                                 ],
                             },
+                            {
+                                id: 'label3',
+                                type: 'Text',
+                                style: 'LabelStyle',
+                                position: 'absolute',
+                                top: '150px',
+                                left: '300px',
+                                width: '200px',
+                                height: '100px',
+                                text: 'Theme:',
+                            },
+                            {
+                                id: 'birthdayThemeComponent',
+                                type: 'Frame',
+                                position: 'absolute',
+                                style: 'ComponentPlaceholderStyle',
+                                top: '200px',
+                                left: '300px',
+                                width: '700px',
+                                height: '360px',
+                                items: [
+                                    this.partyThemeControl.renderAPLComponent(
+                                        {
+                                            aplRenderContext,
+                                            renderStyle: 'touchForward',
+                                        },
+                                        input,
+                                    ),
+                                ],
+                            },
+
                             {
                                 type: 'AlexaHeader',
                                 style: 'ComponentPlaceholderStyle',
@@ -251,7 +295,10 @@ export namespace SinglePageApp {
                 },
             };
 
-            //TODO: add styles into the doc.
+            aplDoc.layouts = aplRenderContext.layouts;
+            //aplDoc.styles = aplRenderContext.styles;
+
+            //TODO: factor out the adding of context.style / context.dataSources / templates
             controlResponseBuilder.addAPLRenderDocumentDirective(
                 'token',
                 aplDoc,

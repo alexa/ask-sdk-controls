@@ -63,11 +63,6 @@ import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
-export class NumberControlAPLRenderProps implements ControlAPLRenderProps {
-    aplRenderContext: APLRenderContext;
-    size: 'small' | 'large';
-}
-
 /**
  * Props for a NumberControl.
  */
@@ -635,7 +630,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    renderAPLComponent(props: NumberControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
         const dataSourceId = this.id + 'Data';
         const validationFailureMessage = this.evaluateAPLValidationFailedMessage(this.state.value);
         const title = this.evaluateFunctionProp(this.props.apl.title, input);
