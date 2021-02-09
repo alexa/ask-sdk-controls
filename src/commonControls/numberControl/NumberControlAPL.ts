@@ -13,40 +13,42 @@
 
 import i18next from 'i18next';
 import { ControlInput } from '../..';
-import { DeepRequired } from '../../utils/DeepRequired';
-import { NumberControl, NumberControlAPLProps } from './NumberControl';
+import { NumberControl } from './NumberControl';
 
 export namespace NumberControlAPLPropsBuiltIns {
     /*
      * Default NumberControl APL props
      */
-    export const Default: DeepRequired<NumberControlAPLProps> = {
-        enabled: true,
-        validationFailedMessage: (value?: number | string) =>
-            i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', {
-                value,
-            }),
-        requestValue: (control: NumberControl, input: ControlInput, validationFailedMessage: string) => {
-            const aplContent = {
-                document: numberPadDocumentGenerator(),
-                dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
-                customHandlingFuncs: [],
-            };
-            return aplContent;
-        },
-        requestChangedValue: (
-            control: NumberControl,
-            input: ControlInput,
-            validationFailedMessage: string,
-        ) => {
-            const aplContent = {
-                document: numberPadDocumentGenerator(),
-                dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
-                customHandlingFuncs: [],
-            };
-            return aplContent;
-        },
-    };
+    export function createDefault() {
+        return {
+            enabled: true,
+            validationFailedMessage: (value?: number | string) =>
+                i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', {
+                    value,
+                }),
+            requestValue: (control: NumberControl, input: ControlInput, validationFailedMessage: string) => {
+                const aplContent = {
+                    document: numberPadDocumentGenerator(),
+                    dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
+                    customHandlingFuncs: [],
+                };
+                return aplContent;
+            },
+            requestChangedValue: (
+                control: NumberControl,
+                input: ControlInput,
+                validationFailedMessage: string,
+            ) => {
+                const aplContent = {
+                    document: numberPadDocumentGenerator(),
+                    dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
+                    customHandlingFuncs: [],
+                };
+                return aplContent;
+            },
+            title: '[title]',
+        };
+    }
 
     /**
      * The APL dataSource to use when requesting a number value.

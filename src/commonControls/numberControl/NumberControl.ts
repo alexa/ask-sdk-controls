@@ -301,6 +301,8 @@ export class NumberControlAPLProps {
      * The message to show on screen if validation fails.
      */
     validationFailedMessage?: string | ((value?: number) => string);
+
+    title?: string | ((input: ControlInput) => string);
 }
 
 interface LastInitiativeState {
@@ -373,7 +375,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     constructor(props: NumberControlProps) {
         super(props.id);
         this.rawProps = props;
-        this.props = NumberControl.mergeWithDefaultProps(props);
+        this.props = this.mergeWithDefaultProps(props);
         this.state.lastInitiative = {};
     }
 
@@ -382,7 +384,7 @@ export class NumberControl extends Control implements InteractionModelContributo
      *
      * Any property defined by the user-provided data overrides the defaults.
      */
-    static mergeWithDefaultProps(props: NumberControlProps): DeepRequired<NumberControlProps> {
+    mergeWithDefaultProps(props: NumberControlProps): DeepRequired<NumberControlProps> {
         const defaults: DeepRequired<NumberControlProps> = {
             id: 'placeholder',
             interactionModel: {
@@ -482,7 +484,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 [19, 90],
             ], // TODO: generalize the default. in english it should suggest (113 <-> 130) etc.
             required: true,
-            apl: NumberControlAPLPropsBuiltIns.Default,
+            apl: NumberControlAPLPropsBuiltIns.createDefault(),
             inputHandling: {
                 customHandlingFuncs: [],
             },
@@ -636,22 +638,20 @@ export class NumberControl extends Control implements InteractionModelContributo
     renderAPLComponent(props: NumberControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
         const dataSourceId = this.id + 'Data';
         const validationFailureMessage = this.evaluateAPLValidationFailedMessage(this.state.value);
-
-        // props.aplRenderContext.addDataSource(dataSourceId, {
-        //     controlId: this.id,
-        //     value: this.state.value,
-        //     isValidValue: this.state.isValidValue
-        // });
+        const title = this.evaluateFunctionProp(this.props.apl.title, input);
 
         return {
             id: this.id,
-            type: 'Frame',
+            type: 'Container',
             style: 'NumberControlFrameStyle',
+            width: '100%',
+            height: '100%',
             items: [
                 {
                     type: 'Container',
+                    width: '100%',
+                    height: '100%',
                     direction: 'column',
-                    //parameters: [dataSourceId], // needs to be placed in the mainTemplate, not here.
                     items: [
                         {
                             type: 'EditText',
@@ -659,13 +659,6 @@ export class NumberControl extends Control implements InteractionModelContributo
                             style: 'EditStyle',
                             keyboardType: 'numberPad',
                             submitKeyType: 'go',
-                            // // bind: [
-                            // //     {
-                            // //         name: 'NumberValue',
-                            // //         value: '${NumberValue}',
-                            // //         type: 'number',
-                            // //     },
-                            // ],
                             onSubmit: [
                                 {
                                     type: 'Sequential',
@@ -680,22 +673,19 @@ export class NumberControl extends Control implements InteractionModelContributo
                             accessibilityLabel: 'Enter a number',
                             minWidth: '100%',
                             maxWidth: '100%',
-                            minHeight: '70%',
-                            maxHeight: '70%',
+                            grow: 1,
                             validCharacters: '-0-9',
                             text: this.state.value?.toString(),
-                            hint: 'Enter a number',
+                            hint: title,
                             hintWeight: 'normal',
                             fontSize: '34px',
                         },
                         {
                             type: 'Text',
-                            text: validationFailureMessage,
-                            when: !this.state.isValidValue,
+                            text: this.state.isValidValue ? '' : validationFailureMessage,
                             minWidth: '100%',
                             maxWidth: '100%',
-                            minHeight: '30%',
-                            maxHeight: '30%',
+                            height: '30px',
                             fontSize: '24px',
                             color: 'red',
                         },
@@ -822,18 +812,19 @@ export class NumberControl extends Control implements InteractionModelContributo
         try {
             okIf(this.state.value !== undefined);
             return (
+                // todo: isFeedbackNoWithoutConfirmation
                 this.isValueInRejectedValues(input) ||
                 this.isBareNoWhenConfirmingValue(input) ||
                 this.isFeedbackNoAndValueUndefinedWhenConfirmingValue(input) ||
                 this.isFeedbackNoAndValueNotChangedWhenConfirmingValue(input) ||
-                this.isFeedbackNoAndValueChangedWhenConfirmingValue(input) ||
                 this.isBareYesConfirmingValue(input) ||
                 this.isFeedbackYesAndValueChangedWhenConfirmingValue(input) ||
                 this.isFeedbackYesAndValueNotChangedWhenConfirmingValue(input) ||
                 this.isFeedbackYesAndValueUndefinedWhenConfirmingValue(input) ||
                 this.isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input) ||
                 this.isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input) ||
-                this.isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input)
+                this.isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input) ||
+                this.isValueChanged(input)
             );
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -968,7 +959,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         await this.commonHandlerWhenValueRejected(input, resultBuilder);
     }
 
-    private isFeedbackNoAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
+    // applies for any situation that causes a change.
+    // TODO: add more specific ones if the user says "No." or otherwise indicates Alexa
+    // it wrong.
+    private isValueChanged(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
             const { feedback, action, target, values } = unpackValueControlIntent(
@@ -982,18 +976,19 @@ export class NumberControl extends Control implements InteractionModelContributo
                 ]),
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsFalse(feedback));
+            //okIf(InputUtil.feedbackIsFalse(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            //okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             okIf(this.state.value !== Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackNoAndValueChangedWhenConfirmingValue;
+            this.handleFunc = this.handleValueChanged;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
 
-    private async handleFeedbackNoAndValueChangedWhenConfirmingValue(
+    // applies whether a confirmation question is being asked or not.
+    private async handleValueChanged(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
@@ -1424,7 +1419,18 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
         return this.props.apl.validationFailedMessage;
     }
+
+    private evaluateFunctionProp<T>(prop: T | ((input: ControlInput) => T), input: ControlInput): T {
+        if (typeof prop !== 'function') {
+            return prop;
+        }
+        const func = prop as FunctionProp<T>;
+        return func(input);
+    }
 }
+
+type Function<T> = () => T;
+type FunctionProp<T> = (input: ControlInput) => T;
 
 /**
  * Creates an elicit-slot directive for the provided slotType.
