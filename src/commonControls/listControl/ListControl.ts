@@ -26,7 +26,11 @@ import {
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
+import {
+    evaluateValidationProp,
+    StateValidationFunction,
+    ValidationFailure,
+} from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/OrdinalControlIntent';
@@ -1000,7 +1004,10 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
-        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
+        if (
+            this.state.value !== undefined &&
+            (await evaluateValidationProp(this.props.validation, this.state, input)) !== true
+        ) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -1028,7 +1035,11 @@ export class ListControl extends Control implements InteractionModelContributor 
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
     ): Promise<void> {
-        const validationResult: true | ValidationFailure = await this.validate(input);
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -1067,26 +1078,6 @@ export class ListControl extends Control implements InteractionModelContributor 
             this.askElicitationQuestion(input, resultBuilder, elicitationAction);
         }
         return;
-    }
-
-    //TODO: delete in favor of common evaluateValidationProp
-    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
-        const listOfValidationFunc: Array<StateValidationFunction<ListControlState>> =
-            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
-        for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
-            if (validationResult !== true) {
-                log.debug(
-                    `ListControl.validate(): validation failed. Reason: ${JSON.stringify(
-                        validationResult,
-                        null,
-                        2,
-                    )}.`,
-                );
-                return validationResult;
-            }
-        }
-        return true;
     }
 
     private askElicitationQuestion(

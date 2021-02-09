@@ -29,7 +29,11 @@ import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
+import {
+    evaluateValidationProp,
+    StateValidationFunction,
+    ValidationFailure,
+} from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
@@ -322,7 +326,7 @@ export class NumberControlState implements ControlState {
      * Tracks whether the value is valid.
      * TODO: remove this and allow async prop functions.
      */
-    isValidValue: boolean = true;
+    isValidValue: boolean = false;
 
     /**
      * Tracks the last initiative act from the control
@@ -702,10 +706,15 @@ export class NumberControl extends Control implements InteractionModelContributo
         this.setValue(value);
         this.state.isValueConfirmed = true;
 
-        const validationResult: true | ValidationFailure = await this.validateNumber(input);
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
         if (validationResult !== true) {
             await this.fixInvalidValue(input, resultBuilder);
         } else {
+            this.state.isValidValue = true;
             resultBuilder.addAct(
                 new ValueSetAct(this, { value, renderedValue: this.props.valueRenderer(value, input) }),
             );
@@ -1147,7 +1156,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const validationResult = await this.validateNumber(input);
+        const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
         if (validationResult !== true) {
             this.state.rejectedValues.push(this.state.value!);
             resultBuilder.addAct(
@@ -1162,6 +1171,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             resultBuilder.addAct(new RequestValueAct(this));
         } else if (!this.isConfirmationRequired(input)) {
+            this.state.isValidValue = true;
             this.state.isValueConfirmed = true;
             this.state.lastInitiative.actName = undefined;
             resultBuilder.addAct(
@@ -1174,6 +1184,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 }),
             );
         } else {
+            this.state.isValidValue = true;
             this.state.lastInitiative.actName = ConfirmValueAct.name;
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
@@ -1201,9 +1212,10 @@ export class NumberControl extends Control implements InteractionModelContributo
         if (ambiguousPartner !== undefined && !this.state.rejectedValues.includes(ambiguousPartner)) {
             const previousValue = this.state.value;
             this.state.value = ambiguousPartner;
-            const validationResult = await this.validateNumber(input);
+            const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
             if (validationResult === true) {
                 // this is to confirm from users for the suggestedValue
+                this.state.isValidValue = true;
                 this.state.lastInitiative.actName = ConfirmValueAct.name;
                 resultBuilder.addAct(
                     new SuggestValueAct(this, {
@@ -1239,8 +1251,13 @@ export class NumberControl extends Control implements InteractionModelContributo
         if (!this.evaluateBooleanProp(this.props.required, input) || this.state.value === undefined) {
             return false;
         }
-        const validationResult: true | ValidationFailure = await this.validateNumber(input);
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
         if (validationResult === true) {
+            this.state.isValidValue = true;
             return false;
         }
 
@@ -1249,7 +1266,11 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        const validationResult = await this.validateNumber(input);
+        const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
+        if (validationResult === true) {
+            this.state.isValidValue = true;
+        }
+
         resultBuilder.addAct(
             new InvalidValueAct(this, {
                 value: this.state.value!,
@@ -1283,27 +1304,6 @@ export class NumberControl extends Control implements InteractionModelContributo
                     this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
         );
-    }
-
-    public async validateNumber(input: ControlInput): Promise<true | ValidationFailure> {
-        const listOfValidationFunc: Array<StateValidationFunction<NumberControlState>> =
-            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
-        for (const validationFunction of listOfValidationFunc) {
-            const validationResult: boolean | ValidationFailure = await validationFunction(this.state, input);
-            if (validationResult !== true) {
-                this.state.isValidValue = false;
-                log.debug(
-                    `NumberControl.validate(): validation failed. Reason: ${JSON.stringify(
-                        validationResult,
-                        null,
-                        2,
-                    )}.`,
-                );
-                return validationResult;
-            }
-        }
-        this.state.isValidValue = true;
-        return true;
     }
 
     private isConfirmationRequired(input: ControlInput) {

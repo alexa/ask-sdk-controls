@@ -24,7 +24,7 @@ import {
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
+import { evaluateValidationProp, StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import { unpackValueControlIntent, ValueControlIntent } from '../intents/ValueControlIntent';
@@ -743,7 +743,11 @@ export class DateControl extends Control implements InteractionModelContributor 
         elicitationAction: string,
     ): Promise<void> {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationFailure = await this.validate(input);
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
         if (validationResult === true) {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -807,7 +811,10 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
-        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
+        if (
+            this.state.value !== undefined &&
+            (await evaluateValidationProp(this.props.validation, this.state, input)) !== true
+        ) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -816,25 +823,6 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
-    }
-
-    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
-        const listOfValidationFunc: Array<StateValidationFunction<DateControlState>> =
-            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
-        for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
-            if (validationResult !== true) {
-                log.debug(
-                    `DateControl.validate(): validation failed. Reason: ${JSON.stringify(
-                        validationResult,
-                        null,
-                        2,
-                    )}.`,
-                );
-                return validationResult;
-            }
-        }
-        return true;
     }
 
     /**
