@@ -422,7 +422,7 @@ suite('== Custom List APL Props ==', () => {
         expect(houseControlState.state.value).eq('Hufflepuff');
     });
 
-    test('APL custom mapper for slotIds.', async () => {
+    test('APL custom mapper for slotIds', async () => {
         const requestHandler = new ControlHandler(new ListSelector());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
         const testUserEvent: UserEvent = {
@@ -440,7 +440,7 @@ suite('== Custom List APL Props ==', () => {
             token: 'houseButtonToken',
         };
         const expectedDataSource = {
-            general: { headerTitle: 'Please select...', headerSubtitle: '', controlId: 'hogwarts' },
+            general: { headerTitle: 'Please select', headerSubtitle: '', controlId: 'hogwarts' },
             choices: {
                 listItems: [
                     { primaryText: 'Wizard House: Gryffindor' },

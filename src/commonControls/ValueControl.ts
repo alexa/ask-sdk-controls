@@ -26,7 +26,7 @@ import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
-import { StateValidationFunction, ValidationFailure } from '../controls/Validation';
+import { evaluateValidationProp, StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/GeneralControlIntent';
 import { unpackValueControlIntent, ValueControlIntent } from '../intents/ValueControlIntent';
@@ -799,7 +799,11 @@ export class ValueControl extends Control implements InteractionModelContributor
         elicitationAction: string,
     ): Promise<void> {
         this.state.elicitationAction = elicitationAction;
-        const validationResult: true | ValidationFailure = await this.validate(input);
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
         if (typeof validationResult === 'boolean') {
             if (elicitationAction === $.Action.Change) {
                 // if elicitationAction == 'change', then the previousValue must be defined.
@@ -838,30 +842,6 @@ export class ValueControl extends Control implements InteractionModelContributor
             this.askElicitationQuestion(input, resultBuilder, elicitationAction);
         }
         return;
-    }
-
-    /**
-     * Determine if the value is valid.
-     *
-     * @param input - Input.
-     */
-    private async validate(input: ControlInput): Promise<true | ValidationFailure> {
-        const listOfValidationFunc: Array<StateValidationFunction<ValueControlState>> =
-            typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
-        for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
-            if (validationResult !== true) {
-                log.debug(
-                    `ValueControl.validate(): validation failed. Reason: ${JSON.stringify(
-                        validationResult,
-                        null,
-                        2,
-                    )}.`,
-                );
-                return validationResult;
-            }
-        }
-        return true;
     }
 
     /**
@@ -904,7 +884,10 @@ export class ValueControl extends Control implements InteractionModelContributor
      * @param input - Input
      */
     private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
-        if (this.state.value !== undefined && (await this.validate(input)) !== true) {
+        if (
+            this.state.value !== undefined &&
+            (await evaluateValidationProp(this.props.validation, this.state, input)) !== true
+        ) {
             this.initiativeFunc = this.fixInvalidValue;
             return true;
         }
@@ -1062,8 +1045,7 @@ export class ValueControl extends Control implements InteractionModelContributor
      */
     public static generateSlotElicitationDetails(slotType: string): { intent: Intent; slotName: string } {
         const intent: Intent = {
-            // TODO: refactor: use ValueControlIntent.intentName
-            name: `${slotType}_ValueControlIntent`.replace('.', '_'),
+            name: ValueControlIntent.intentName(slotType),
             slots: {
                 [slotType]: { name: slotType, value: '', confirmationStatus: 'NONE' },
                 feedback: { name: 'feedback', value: '', confirmationStatus: 'NONE' },
