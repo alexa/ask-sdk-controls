@@ -112,12 +112,15 @@ export class ControlHandler implements RequestHandler {
         const stateMap = await this.controlManager.loadControlStateMap(handlerInput);
         this.controlManager.reestablishControlStates(this.rootControl, stateMap);
 
+        const aplMode = this.controlManager.aplMode;
+
         // create the input object for use in the main processing.
         const controlsMap = ControlHandler.createControlMap(this.rootControl, {});
         this.controlInput = new ControlInput(
             handlerInput,
             this.additionalSessionContext.turnNumber,
             controlsMap,
+            aplMode,
         );
 
         // userAgent setup

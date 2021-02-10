@@ -23,8 +23,10 @@ import {
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
+import { APLMode } from '../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
+import { DeepRequired } from '../utils/DeepRequired';
 import { ControlInput } from './ControlInput';
 import { ControlResult } from './ControlResult';
 import { isContainerControl } from './interfaces/IContainerControl';
@@ -110,6 +112,8 @@ export abstract class ControlManager implements IControlManager {
      */
     static DEFAULT_CONTROL_STATE_ATTRIBUTE_KEY = '__controlState';
 
+    aplMode: APLMode;
+
     /**
      * The custom props provided during construction
      */
@@ -118,13 +122,14 @@ export abstract class ControlManager implements IControlManager {
     /**
      * The complete props used during construction.
      */
-    props: Readonly<Required<ControlManagerProps>>;
+    props: Readonly<DeepRequired<ControlManagerProps>>;
 
     /**
      * Creates an instance of a Control Manager.
      * @param props - props
      */
-    constructor(props?: ControlManagerProps) {
+    constructor(props?: ControlManagerProps, aplMode?: APLMode) {
+        this.aplMode = aplMode ?? APLMode.DIRECT;
         this.rawProps = props;
         this.props = ControlManager.mergeWithDefaultProps(props);
         const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
@@ -137,7 +142,7 @@ export abstract class ControlManager implements IControlManager {
      * Any property defined by the user-provided data overrides the defaults.
      */
     static mergeWithDefaultProps(props: ControlManagerProps | undefined): Required<ControlManagerProps> {
-        const defaults: Required<ControlManagerProps> = {
+        const defaults: DeepRequired<ControlManagerProps> = {
             locale: 'en-US',
             i18nResources: {},
         };

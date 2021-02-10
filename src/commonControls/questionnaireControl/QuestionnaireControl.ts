@@ -15,6 +15,7 @@ import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
+import { ControlAPLRenderProps } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     Control,
@@ -1293,13 +1294,17 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.askQuestionAct, input),
             );
-            this.addStandardAPL(input, builder);
+            if (input.aplMode === 'Direct') {
+                this.addStandardAPL(input, builder);
+            }
         } else if (act instanceof AskIfCompleteAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.askIfComplete, input));
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.askIfComplete, input),
             );
-            this.addStandardAPL(input, builder);
+            if (input.aplMode === 'Direct') {
+                this.addStandardAPL(input, builder);
+            }
         } else if (act instanceof AskIfCompleteTerseAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.askIfCompleteTerse, input),
@@ -1307,7 +1312,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.askIfCompleteTerse, input),
             );
-            this.addStandardAPL(input, builder);
+            if (input.aplMode === 'Direct') {
+                this.addStandardAPL(input, builder);
+            }
         }
 
         // content acts.
@@ -1344,6 +1351,10 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         } else {
             this.throwUnhandledActError(act);
         }
+    }
+
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        throw new Error('not implemented');
     }
 
     private addStandardAPL(input: ControlInput, builder: ControlResponseBuilder) {

@@ -16,6 +16,7 @@ import { Request } from 'ask-sdk-model';
 import _ from 'lodash';
 import { IControlInput } from './interfaces/IControlInput';
 import { IControl } from './interfaces/IControl';
+import { APLMode } from '../responseGeneration/AplMode';
 
 /**
  * Defines an expanded input object passed around during processing by Controls.
@@ -55,10 +56,21 @@ export class ControlInput implements IControlInput {
      */
     readonly controls: { [index: string]: IControl };
 
-    constructor(handlerInput: HandlerInput, turnNumber: number, controlMap: { [index: string]: IControl }) {
+    /**
+     * APL rendering mode
+     */
+    readonly aplMode: APLMode;
+
+    constructor(
+        handlerInput: HandlerInput,
+        turnNumber: number,
+        controlMap: { [index: string]: IControl },
+        aplMode: APLMode,
+    ) {
         this.handlerInput = handlerInput;
         this.request = this.handlerInput.requestEnvelope.request;
         this.turnNumber = turnNumber;
         this.controls = controlMap;
+        this.aplMode = aplMode;
     }
 }

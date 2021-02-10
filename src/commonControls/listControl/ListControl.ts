@@ -1167,23 +1167,27 @@ export class ListControl extends Control implements InteractionModelContributor 
     // tsDoc - see Control
     renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
         if (act instanceof RequestValueByListAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
-            );
+            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestValue, input);
+            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestValue, input);
 
-            const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
-            this.addStandardAPL(input, builder, renderedAPL);
+            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
+            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
+
+            if (input.aplMode === 'Direct') {
+                const renderAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
+                this.addStandardAPL(input, builder, renderAPL);
+            }
         } else if (act instanceof RequestChangedValueByListAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
-            );
+            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
+            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
 
-            const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestChangedValue, input);
-            this.addStandardAPL(input, builder, renderedAPL);
+            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
+            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
+
+            if (input.aplMode === 'Direct') {
+                const renderAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
+                this.addStandardAPL(input, builder, renderAPL);
+            }
         } else if (act instanceof UnusableInputValueAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),

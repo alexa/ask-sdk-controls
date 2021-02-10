@@ -12,6 +12,8 @@
  */
 
 import { HandlerInput } from 'ask-sdk-core';
+import { ControlManagerProps, DeepRequired } from '../..';
+import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import { IControl } from './IControl';
 import { IControlInput } from './IControlInput';
@@ -24,6 +26,17 @@ import { IControlResult } from './IControlResult';
  * See `ControlManager` for the actual class used by implementations.
  */
 export interface IControlManager {
+    /**
+     * The complete props used during construction.
+     */
+    props: Readonly<DeepRequired<ControlManagerProps>>;
+
+    /**
+     * APL rendering mode.
+     * Default = Direct
+     */
+    aplMode: APLMode;
+
     /**
      * Creates the tree of controls to handle state management and dialog
      * decisions for the skill.
