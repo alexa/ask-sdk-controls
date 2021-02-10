@@ -16,6 +16,7 @@ import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import { assert } from 'chai';
 import i18next from 'i18next';
 import _ from 'lodash';
+import { ControlAPLRenderProps } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     Control,
@@ -1281,7 +1282,13 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.throwUnhandledActError(act);
         }
 
-        this.addStandardAPL(input, builder); // re-render APL Screen
+        if (input.aplMode === 'Direct') {
+            this.addStandardAPL(input, builder); // re-render APL Screen
+        }
+    }
+
+    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+        throw new Error('not implemented');
     }
 
     // tsDoc - see Control

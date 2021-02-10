@@ -21,7 +21,7 @@ import {
 } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces, LaunchRequest, Request, RequestEnvelope } from 'ask-sdk-model';
 import { expect } from 'chai';
-import _ from 'lodash';
+import _, { truncate } from 'lodash';
 import { Control } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
@@ -29,6 +29,7 @@ import { IControl } from '../../controls/interfaces/IControl';
 import { IControlInput } from '../../controls/interfaces/IControlInput';
 import { IControlResult } from '../../controls/interfaces/IControlResult';
 import { Logger } from '../../logging/Logger';
+import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlHandler } from '../../runtime/ControlHandler';
 import { IntentBuilder } from '../IntentUtils';
 import { SkillInvoker, TestResponseObject } from './SkillInvoker';
@@ -396,6 +397,7 @@ function dummyControlInput(request?: Request): ControlInput {
         request: handlerInput.requestEnvelope.request,
         turnNumber: TestInput.turnNumber,
         controls: {},
+        aplMode: APLMode.DIRECT, // TODO: get this wired up from the test configuration.
     };
 }
 const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({

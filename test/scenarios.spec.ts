@@ -489,7 +489,7 @@ suite('== Custom Number APL Props ==', () => {
         }
     }
 
-    test.skip('APL dataSource sends custom validationFailedMessage.', async () => {
+    test('APL dataSource sends custom validationFailedMessage.', async () => {
         // Note: this test demonstrates the validationFailedMessage is correctly passed in the dataSource along with isValidValue
 
         const requestHandler = new ControlHandler(new NumberTestControlManager());
@@ -516,10 +516,13 @@ suite('== Custom Number APL Props ==', () => {
             },
         };
         const response = await skill.invoke(TestInput.userEvent(testUserEvent));
-        expect(response.directive?.length).eq(2);
-        expect((response as any).directive[0].type).eq('Dialog.ElicitSlot');
-        expect((response as any).directive[0].slotToElicit).eq('AMAZON.NUMBER');
-        const dataSource = (response as any).directive[1].datasources;
+        expect(response.directive?.length).eq(1);
+
+        //note: slot elicitation turned off in NumberControl
+        //expect((response as any).directive[0].type).eq('Dialog.ElicitSlot');
+        //expect((response as any).directive[0].slotToElicit).eq('AMAZON.NUMBER');
+
+        const dataSource = (response as any).directive[0].datasources;
 
         expect(response.prompt).eq(
             "Sorry but that's not a valid choice because the value must be even. What number?",

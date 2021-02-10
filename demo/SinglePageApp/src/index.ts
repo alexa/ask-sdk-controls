@@ -7,7 +7,8 @@ import {
     ListControl,
     NumberControl,
 } from '../../../src';
-import { ControlManager } from '../../../src/controls/ControlManager';
+import { ControlManager, ControlManagerProps } from '../../../src/controls/ControlManager';
+import { APLMode } from '../../../src/responseGeneration/AplMode';
 import { APLRenderContext } from '../../../src/responseGeneration/APLRenderContext';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
 import { DemoRootControl } from '../../Common/src/DemoRootControl';
@@ -17,6 +18,10 @@ export namespace SinglePageApp {
         ageControl: NumberControl;
         guestsControl: NumberControl;
         partyThemeControl: ListControl;
+
+        constructor(props?: ControlManagerProps) {
+            super(props, APLMode.WHOLE_APP);
+        }
 
         createControlTree(): Control {
             const rootControl = new DemoRootControl({ id: 'root' });

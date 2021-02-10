@@ -540,9 +540,13 @@ export class NumberControl extends Control implements InteractionModelContributo
                 this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
             );
 
-            //const slotElicitation = generateSlotElicitation();
-            //builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
-            //this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            // Disabling slot-elicitation.. it doesn't seem to be necessary.
+            // NOTE: if reinstated, the __conjunction slot must be set.  perhaps others too.
+            // const slotElicitation = generateSlotElicitation();
+            // builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
+            if (input.aplMode === 'Direct') {
+                this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            }
         } else if (act instanceof RequestChangedValueAct) {
             const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
             const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
@@ -550,7 +554,9 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            //this.addStandardAPL(input, builder, this.props.apl.requestChangedValue);
+            if (input.aplMode === 'Direct') {
+                this.addStandardAPL(input, builder, this.props.apl.requestChangedValue);
+            }
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
@@ -809,7 +815,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 this.isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input) ||
                 this.isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input) ||
                 this.isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input) ||
-                this.isValueChanged(input)
+                this.isUpdatedValue(input)
             );
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -947,7 +953,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     // applies for any situation that causes a change.
     // TODO: add more specific ones if the user says "No." or otherwise indicates Alexa
     // it wrong.
-    private isValueChanged(input: ControlInput): boolean {
+    private isUpdatedValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
             const { feedback, action, target, values } = unpackValueControlIntent(
@@ -961,11 +967,8 @@ export class NumberControl extends Control implements InteractionModelContributo
                 ]),
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            //okIf(InputUtil.feedbackIsFalse(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            //okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value !== Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleValueChanged;
+            this.handleFunc = this.handleUpdatedValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -973,7 +976,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     // applies whether a confirmation question is being asked or not.
-    private async handleValueChanged(
+    private async handleUpdatedValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
@@ -1445,6 +1448,7 @@ function generateSlotElicitation(): { intent: Intent; slotName: string } {
             head: { name: 'head', value: '', confirmationStatus: 'NONE' },
             tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
             preposition: { name: 'preposition', value: '', confirmationStatus: 'NONE' },
+            //conjunction: { name: 'conjunction', value: '', confirmationStatus: 'NONE' },
         },
         confirmationStatus: 'NONE',
     };

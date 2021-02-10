@@ -10,6 +10,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
@@ -1173,14 +1174,20 @@ export class ListControl extends Control implements InteractionModelContributor 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            // if (
-            //     this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-            //     getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            // ) {
-            //     const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
-            //     const dataSource = this.evaluateAPLProp(act, input, this.props.apl.requestValue.dataSource);
-            //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            // }
+            if (input.aplMode === 'Direct') {
+                if (
+                    this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+                    getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+                ) {
+                    const document = this.evaluateAPLProp(act, input, this.props.apl.requestValue.document);
+                    const dataSource = this.evaluateAPLProp(
+                        act,
+                        input,
+                        this.props.apl.requestValue.dataSource,
+                    );
+                    builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+                }
+            }
         } else if (act instanceof RequestChangedValueByListAct) {
             const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
             const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
@@ -1188,22 +1195,24 @@ export class ListControl extends Control implements InteractionModelContributor 
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            // if (
-            //     this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
-            //     getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
-            // ) {
-            //     const document = this.evaluateAPLProp(
-            //         act,
-            //         input,
-            //         this.props.apl.requestChangedValue.document,
-            //     );
-            //     const dataSource = this.evaluateAPLProp(
-            //         act,
-            //         input,
-            //         this.props.apl.requestChangedValue.dataSource,
-            //     );
-            //     builder.addAPLRenderDocumentDirective('Token', document, dataSource);
-            // }
+            if (input.aplMode === 'Direct') {
+                if (
+                    this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+                    getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+                ) {
+                    const document = this.evaluateAPLProp(
+                        act,
+                        input,
+                        this.props.apl.requestChangedValue.document,
+                    );
+                    const dataSource = this.evaluateAPLProp(
+                        act,
+                        input,
+                        this.props.apl.requestChangedValue.dataSource,
+                    );
+                    builder.addAPLRenderDocumentDirective('Token', document, dataSource);
+                }
+            }
         } else if (act instanceof UnusableInputValueAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
