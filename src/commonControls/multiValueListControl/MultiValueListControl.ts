@@ -171,6 +171,7 @@ export interface MultiValueListControlProps extends ControlProps {
      *
      * Default: returns the value unchanged.
      */
+    //TODO: probably nicer to have this be a singular renderer
     valueRenderer?: (value: string[], input: ControlInput) => string[];
 
     /**
@@ -683,7 +684,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         },
         {
             name: 'SelectChoiceByTouch (built-in)',
-            canHandle: this.isSelectChoiceByTouch,
+            canHandle: this.isSelectOrToggleByTouch,
             handle: this.handleSelectChoiceByTouch,
         },
         {
@@ -884,7 +885,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return;
     }
 
-    private isSelectChoiceByTouch(input: ControlInput): boolean {
+    private isSelectOrToggleByTouch(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isAPLUserEventWithMatchingControlId(input, this.id));
             const userEvent = input.request as interfaces.alexa.presentation.apl.UserEvent;
@@ -893,12 +894,12 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             okIf(userEvent.arguments.length === 3);
             const controlId = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![0] as string;
-            const action = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![1] as string;
             const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![2] as number;
             okIf(controlId === this.id);
-            okIf(action === 'Select');
+            okIf(['Select', 'Toggle'].includes(touchAction));
             okIf(choiceIndex >= -1 && choiceIndex <= content.length);
             return true;
         } catch (e) {
@@ -912,16 +913,46 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         assert(choiceIndex !== undefined);
         const content = this.getChoicesList(input);
         const choiceId = content[choiceIndex - 1];
-        this.addValue({
-            id: choiceId,
-            erMatch: true,
-        });
-        resultBuilder.addAct(
-            new ValueAddedAct(this, {
-                value: choiceId,
-                renderedValue: this.evaluateRenderedValue(choiceId, input),
-            }),
-        );
+
+        const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            .arguments![1] as string;
+
+        if (touchAction === 'Select') {
+            this.addValue({
+                id: choiceId,
+                erMatch: true,
+            });
+            resultBuilder.addAct(
+                new ValueAddedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else if (touchAction === 'Toggle') {
+            if (!this.state.value.some((x) => x.id === choiceId)) {
+                this.addValue({
+                    id: choiceId,
+                    erMatch: true,
+                });
+
+                resultBuilder.addAct(
+                    new ValueAddedAct(this, {
+                        value: choiceId,
+                        renderedValue: this.evaluateRenderedValue(choiceId, input),
+                    }),
+                );
+            } else {
+                this.state.value = this.state.value.filter((x) => x.id !== choiceId);
+
+                resultBuilder.addAct(
+                    new ValueRemovedAct(this, {
+                        value: choiceId,
+                        renderedValue: this.evaluateRenderedValue(choiceId, input),
+                    }),
+                );
+            }
+        }
+
         return;
     }
 
@@ -1288,7 +1319,131 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
-        throw new Error('not implemented');
+        props.aplRenderContext.addLayout('MultiValueListSelector', {
+            parameters: [
+                {
+                    name: 'controlId',
+                    type: 'string',
+                },
+                {
+                    name: 'listItems',
+                    type: 'object',
+                },
+            ],
+            items: [
+                {
+                    type: 'Sequence',
+                    scrollDirection: 'vertical',
+                    data: '${listItems}',
+                    width: '100%',
+                    height: '100%',
+                    paddingLeft: '0',
+                    numbered: true,
+                    items: [
+                        {
+                            type: 'Container',
+                            items: [
+                                {
+                                    type: 'TouchWrapper',
+                                    item: {
+                                        type: 'Container',
+                                        direction: 'row',
+                                        items: [
+                                            {
+                                                type: 'Text',
+                                                paddingLeft: '32px',
+                                                style: 'textStyleBody',
+                                                text: '${data.primaryText}',
+                                                textAlignVertical: 'center',
+                                                grow: 1,
+                                            },
+                                            {
+                                                type: 'AlexaCheckbox',
+                                                id: '${checkboxId}',
+                                                checkboxHeight: '64px',
+                                                checkboxWidth: '64px',
+                                                selectedColor: '${selectedColor}',
+                                                checked: '${data.checked}',
+                                                disabled: '${disabled}',
+                                                isIndeterminate: '${isIndeterminate}',
+                                                onPress: [
+                                                    {
+                                                        type: 'Sequential',
+                                                        commands: [
+                                                            {
+                                                                type: 'SendEvent',
+                                                                arguments: [
+                                                                    '${controlId}',
+                                                                    'Toggle',
+                                                                    '${ordinal}',
+                                                                ],
+                                                            },
+                                                            {
+                                                                type: 'SetValue',
+                                                                componentId: 'root',
+                                                                property: 'disableScreen',
+                                                                value: true,
+                                                            },
+                                                            {
+                                                                type: 'SetValue',
+                                                                componentId: 'root',
+                                                                property: 'debugText',
+                                                                value: 'Selected ${ordinal}',
+                                                            },
+                                                        ],
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                    onPress: [
+                                        {
+                                            type: 'Sequential',
+                                            commands: [
+                                                {
+                                                    type: 'SendEvent',
+                                                    arguments: ['${controlId}', 'Toggle', '${ordinal}'],
+                                                },
+                                                {
+                                                    type: 'SetValue',
+                                                    componentId: 'root',
+                                                    property: 'disableScreen',
+                                                    value: true,
+                                                },
+                                                {
+                                                    type: 'SetValue',
+                                                    componentId: 'root',
+                                                    property: 'debugText',
+                                                    value: 'Selected ${ordinal}',
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const listItems: Array<{
+            primaryText: string;
+            checked: boolean;
+        }> = [];
+        const choices = this.getChoicesList(input);
+        for (const item of choices) {
+            listItems.push({
+                primaryText: this.props.valueRenderer([item], input)[0],
+                checked: this.getSlotIds().includes(item),
+            });
+        }
+
+        return {
+            type: 'MultiValueListSelector',
+            controlId: this.id,
+            listItems,
+        };
     }
 
     // tsDoc - see Control

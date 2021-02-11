@@ -1,12 +1,7 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { Control } from '../../..//src/controls/Control';
-import {
-    ControlInput,
-    ControlResponseBuilder,
-    ControlResult,
-    ListControl,
-    NumberControl,
-} from '../../../src';
+import { ControlInput, ControlResponseBuilder, ControlResult, NumberControl } from '../../../src';
+import { MultiValueListControl } from '../../../src/commonControls/multiValueListControl/MultiValueListControl';
 import { ControlManager, ControlManagerProps } from '../../../src/controls/ControlManager';
 import { APLMode } from '../../../src/responseGeneration/AplMode';
 import { APLRenderContext } from '../../../src/responseGeneration/APLRenderContext';
@@ -17,7 +12,7 @@ export namespace SinglePageApp {
     export class DemoControlManager extends ControlManager {
         ageControl: NumberControl;
         guestsControl: NumberControl;
-        partyThemeControl: ListControl;
+        partyThemeControl: MultiValueListControl;
 
         constructor(props?: ControlManagerProps) {
             super(props, APLMode.WHOLE_APP);
@@ -61,18 +56,10 @@ export namespace SinglePageApp {
             );
 
             rootControl.addChild(
-                (this.partyThemeControl = new ListControl({
+                (this.partyThemeControl = new MultiValueListControl({
                     id: 'partyThemeControl',
                     listItemIDs: ['pirate', 'cartoon', 'fairy', 'monster'],
                     slotType: 'PartyTheme',
-                    valueRenderer: (value: string) => {
-                        return ({
-                            pirate: 'Pirates!',
-                            cartoon: 'Cartoons',
-                            fairy: 'Fairies',
-                            monster: 'Monsters',
-                        } as { [key: string]: string })[value];
-                    },
                     apl: {},
                     interactionModel: {
                         targets: ['builtin_choice', 'builtin_it', 'theme'],
