@@ -45,20 +45,20 @@
 
 <h1>User Guide - Controls Framework (Beta) </h3>
 
-The Controls Framework for ASK-SDK is offered as a beta and may change as we receive
+The Controls Framework for ASK SDK is offered as a beta and may change as we receive
 feedback and iterate on the feature. If you have questions or feedback please create
-issues directly in the github repository.
+issues directly in the GitHub repository.
 
-This guide assumes familiarity with building Custom Skills for Alexa using the ASK-SDK v2
+This guide assumes familiarity with building Custom Skills for Alexa using the ASK SDK v2
 for Node.js. For background information on building skills and getting started with the
-ASK-SDK for Node.js please see [Understanding Custom
+ASK SDK for Node.js please see [Understanding Custom
 Skills](https://developer.amazon.com/en-US/docs/alexa/custom-skills/understanding-custom-skills.html)
 and [Using the ASK SDKs to create Alexa
 Skills](https://developer.amazon.com/en-US/docs/alexa/quick-reference/use-sdks-quick-reference.html)
 on the Amazon developer portal.
 
 For per-class and per-method documentation, please see the [Technical
-documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
+Documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
 
 <h1>Table of Contents</h3>
 
@@ -76,13 +76,13 @@ documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
     - [2.5. Creating a launch configuration for vscode launch.json](#25-creating-a-launch-configuration-for-vscode-launchjson)
     - [2.6. Run the regression tests](#26-run-the-regression-tests)
     - [2.7. Build the interaction model for the skill](#27-build-the-interaction-model-for-the-skill)
-- [3. Exploring the HelloWorld Controls skill](#3-exploring-the-helloworld-controls-skill)
+- [3. Exploring the Hello World Controls skill](#3-exploring-the-helloworld-controls-skill)
     - [3.1. Code overview](#31-code-overview)
     - [3.2. Interaction model](#32-interaction-model)
     - [3.3. Deploying Hello World](#33-deploying-hello-world)
     - [3.4. Live testing with local debugging](#34-live-testing-with-local-debugging)
     - [3.5. Running the regression tests](#35-running-the-regression-tests)
-- [4. Exploring the FruitShop demo skill](#4-exploring-the-fruitshop-demo-skill)
+- [4. Exploring the Fruit Shop demo skill](#4-exploring-the-fruitshop-demo-skill)
     - [4.1. Code overview](#41-code-overview)
     - [4.2. Category control](#42-category-control)
     - [4.3. Checkout control](#43-checkout-control)
@@ -165,7 +165,7 @@ that developers face. Developers can easily create new Controls and build new hi
 Controls from low-level ones.
 
 Another goal is to help developers to follow the best practices of conversational design
-and to provide a natural way to implement that concepts of [situational
+and to provide a natural way to implement the concepts of [situational
 design](https://developer.amazon.com/en-US/alexa/alexa-skills-kit/situational-design).
 
 Finally, the Controls Framework is designed to integrate seamlessly with existing skills
@@ -229,7 +229,7 @@ channel](https://amazonalexa.slack.com/archives/C018QMP3K33).
 ## 2.3. Creating “Hello, World” in Controls
 
 Install the ASK CLI v2. If you already have the ASK CLI v1, please see [the CLI migration
-guide](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-v1-to-v2-migration-guide.html)
+guide](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-v1-to-v2-migration-guide.html).
 
 ```bash
 npm i -g ask-cli
@@ -237,10 +237,10 @@ npm i -g ask-cli
 
 Create a new skill based on the `Hello, World! (with Controls)` demo skill. When choosing
 a hosting method please note that with the new local debugging support you do not need to
-deploy your skill to test a skill end-to-end with a device - the code can simply run on
-your local machine and attached to the VScode debugger. If you are unsure which hosting
+deploy your skill to test a skill end-to-end with a device — the code can simply run on
+your local machine and attached to the VS Code debugger. If you are unsure which hosting
 method to choose, please see [Creating new skill with
-ASK-CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill)
+ASK CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/ask-cli-intro.html#create-new-skill)
 for more information. If you want `Alexa-hosted skills` it's necessary to create a skill
 through the [developer portal](https://developer.amazon.com/alexa/console/ask).
 
@@ -252,14 +252,14 @@ ask new
 ```
 
 Install the Node.js dependencies for the skill, which includes the Controls Framework for
-ASK-SDK
+ASK SDK.
 
 ```bash
  cd lambda
  npm install
 ```
 
-Either deploy your skill with `ask deploy` or set up local debugging (See section ["Live testing with local debugging"](#34-live-testing-with-local-debugging)).
+Either deploy your skill with `ask deploy` or set up local debugging (See section "[Live testing with local debugging](#34-live-testing-with-local-debugging)").
 
 Once your skill is ready for testing, use the testing page of the developer portal
 (https://developer.amazon.com/alexa/console/ask/test/{SkillID}/development/en_US/) or `ask dialog` to test it out.
@@ -269,11 +269,11 @@ U: Alexa, open Hello Controls
 A: Hello! Welcome to your first Controls skill.
 ```
 
-See the section 'Exploring the hello world skill' for a discussion of how the skill works.
+See the section "[Exploring the Hello World (Controls) skill](#3-exploring-the-helloworld-controls-skill)" for a discussion of how the skill works.
 
-Once you have taken a look around the Hello World, we recommend repeating the process with
+Once you have taken a look around the Hello World skill, we recommend repeating the process with
 the Fruit Shop demonstration skill to start exploring a more interesting skill. Section
-'Exploring the Fruit shop skill' provides a discussion.
+"[Exploring the Fruit Shop demo skill](#4-exploring-the-fruitshop-demo-skill)" provides a discussion.
 
 ## 2.4. Getting diagnostics and tracking the runtime call flow
 
@@ -300,7 +300,7 @@ cd lambda
 npm run test
 ```
 
-Alternatively, run the unit tests in vscode via the `Launch Tests` launch target described
+Alternatively, run the unit tests in VS Code via the `Launch Tests` launch target described
 above. In either case, set the `DEBUG` environment variable if you wish to see detailed
 diagnostic output.
 
@@ -321,14 +321,14 @@ cd lambda
 node src/build_interaction_model.js
 ```
 
-If you wish to launch the builder script in vscode, see the `ide/` folder for an example
+If you wish to launch the builder script in VS Code, see the `ide/` folder for an example
 launch.json file with suitable targets.
 
-# 3. Exploring the HelloWorld (Controls) skill
+# 3. Exploring the Hello World (Controls) skill
 
 The _Hello World (Controls)_ skill is a minimal skill that uses the Controls Framework,
 written in JavaScript. In response to a `LaunchRequest` it says hello and then closes the
-session. See the "Getting Started" section for details on how to create a local copy of
+session. See the "[Getting Started](#2-getting-started)" section for details on how to create a local copy of
 the Hello World skill.
 
 ## 3.1. Code overview
@@ -374,18 +374,18 @@ Points of interest:
     input _AND_ which has been chosen as the winner in cases where multiple controls can
     handle an input. Much more will be said about this!
 -   **Line 10**: The framework separates response logic from rendering. A _system act_ is
-    a simple object representing "something to communicate to the user". In this case the
+    a simple object representing "something to communicate to the user." In this case the
     `LiteralContentAct` is used to communicate some arbitrary literal content. The
-    framework defines various system acts that have precise purposes and developers can
-    create new ones too. System acts are an intermediate representation that are converted
+    framework defines various system acts that have precise purposes, and developers can
+    create new ones, too. System acts are an intermediate representation that are converted
     to a complete `Response` during the rendering phase; in this skill the default
     rendering logic is sufficient and causes the `LiteralContentAct` to add its literal
     content to the `Response.outputSpeech`.
 -   **Line 15**: A `ControlManager` is a high-level organizer authored by the skill
     developer. It interfaces directly with the framework's runtime (`ControlHandler`) and
-    takes care of high-level behaviors. One key task is to creates the _tree of controls_
+    takes care of high-level behaviors. One key task is to create the _tree of controls_
     at the start of each turn. Here, the control tree comprises exactly one control. Note
-    that every control instance must have an id. Our control has `id = rootControl`.
+    that every control instance must have an ID. Our control has `id = rootControl`.
 -   **Line 20**: The framework provides the `ControlHandler` which is a `RequestHandler`.
     The ControlHandler can be added just like any other `RequestHandler`. Skills can
     freely mix-and-match regular request handlers with control handlers.
@@ -425,7 +425,7 @@ The main class is `ControlInteractionModelGenerator()` which provides the method
 necessary to build up an interaction model in memory then write it to disk. In a skill
 with more interesting controls we will make use of
 `ControlInteractionModelGenerator.buildCoreModelForControls()` to extract interaction
-model content directly from the control tree but for HelloWorld that is not necessary. If
+model content directly from the control tree but for Hello World that is not necessary. If
 you already have a `model.JSON` file, it can be loaded into the generator with
 `ControlInteractionModelGenerator.loadFromFile()`.
 
@@ -449,7 +449,7 @@ deploy the code to your AWS account.
 ask deploy
 ```
 
-After this completes you can test the skill in the Alexa Developer Portal
+After this completes you can test the skill in the Alexa Developer Portal.
 
 If you prefer to use Alexa Hosted skills, please create a hosted skill directly through
 the Alexa Developer Portal, then update with the Hello World code and interaction model.
@@ -463,12 +463,12 @@ steps outlined in [Test your local Alexa
 skill](https://developer.amazon.com/en-US/docs/alexa/ask-toolkit/vs-code-ask-skills.html#test).
 
 We recommend using local-debugging when doing initial live testing of your skills as it
-provides fast and easy access to log messages and the ability to hit breakpoints can prove
+provides fast and easy access to log messages, and the ability to hit breakpoints can prove
 invaluable.
 
 ## 3.5. Running the regression tests
 
-The HelloWorld skill, simple as it is, has two(!) regression tests. The tests are in
+The Hello World skill, simple as it is, has two(!) regression tests. The tests are in
 `lambda/test/test1.js` and a launch configuration is in `/ide/vscode/launch.json`. Select
 the "Run tests" target and press `F5` to run the tests. The test code is:
 
@@ -500,22 +500,22 @@ Points of interest:
 
 -   **Line 1-5**: These tests use `mocha`, `chai` and `sinon` for the test harness.
 -   **Line 7**: The `waitForDebugger` utility adds a pause to give the Visual Studio Code
-    debugger time to attach. This is not necessary for vscode version 1.41.1 and above.
+    debugger time to attach. This is not necessary for VS Code version 1.41.1 and above.
 -   **Line 11**: The Controls Framework provides testing support. Here a `SkillTester` is
     initialized with a reference to a `ControlHandler` of `HelloManager`.
 -   **Line 12**: The `SkillTester` can run a turn through the skill code and validate that
     a particular prompt is produced. `SkillTester.testTurn()` takes three parameters: the
-    first is simply for documentation purposes to help reader-comprehension of multi-turn
+    first is simply for documentation purposes to help reader comprehension of multi-turn
     tests. The second parameter is a `ControlInput` that will be the input for the turn.
     The `TestInput` class has utilities to create the most common kinds of input such as
     an `IntentRequest`, `LaunchRequest` and APL `UserEvent`. The third parameter is the
-    prompt that the skill is expected to be produce.
+    prompt that the skill is expected to produce.
 -   **Line 13**: After testing a turn, further validations can be made by inspecting
     various objects. Here we ensure that the session is being ended.
 -   **Line 16-20**: This test mimics the situation when a user invokes the skill with "U:
-    Tell Hello World hi!". Line 18 in particular demonstrates creating a simple
+    Tell Hello World hi!" Line 18 in particular demonstrates creating a simple
     `ControlInput` that wraps an `IntentRequest`. The expected skill behavior is identical
-    as the first test.
+    to the first test.
 
 Regression tests of this kind are extremely useful for validating a multi-turn skill and
 preventing regressions. We recommend a workflow that uses regression tests to validate key
@@ -524,9 +524,9 @@ scenarios and then live testing to verify integrations and explore new dialog pa
 The Fruit Shop skill uses all the same techniques as Hello World and dials them all up
 considerably.
 
-# 4. Exploring the FruitShop demo skill
+# 4. Exploring the Fruit Shop demo skill
 
-The Fruit Shop skill uses the Controls Framework to build a shopping-cart experience that
+The Fruit Shop skill uses the Controls Framework to build a shopping cart experience that
 demonstrates:
 
 -   Reuse and customization of built-in controls, specifically the `ListControl`,
@@ -536,9 +536,9 @@ demonstrates:
 -   Using APL and voice for input with the `ListControl` and the custom
     `ShoppingCartControl`.
 
-See the "Getting Started" section for details on how to create a local copy of the Fruit
-Shop skill. Also, consider skimming this section on a first read, then return to it after
-reading [Section 5. Developing with Controls](#5-developing-with-controls)
+See the "[Getting Started](#2-getting-started)" section for details on how to create a local copy of the
+Fruit Shop skill. Also, consider skimming this section on a first read, then return to it after
+reading [Section 5. Developing with Controls](#5-developing-with-controls).
 
 ## 4.1. Code overview
 
@@ -579,12 +579,12 @@ The `index.ts` for Fruit Shop introduces some new ideas:
 -   **Line 4**: `FruitShopControlManager.createControlTree()` instantiates a
     `FruitShopControl` which internally instantiates child controls and thus creates an
     entire tree. We could define the entire tree right here in `createControlTree()` but
-    that would break encapsulation; better is to instantiate only the root control and
+    that would break encapsulation; it's better to instantiate only the root control and
     have it keep the details of any child controls private.
 -   **Line 8**: `render()` uses the default logic by calling `renderActsInSequence()` and
     it adds some additional code to ensure that there is always some APL produced for
     screen-enabled devices. This avoids leaving stale APL on the screen if a response
-    doesn't not include any new content.
+    doesn't include any new content.
 -   **Line 18-23, 28**: A `RequestInterceptor` is used to initialize an
     internationalization module with the user's locale. The `i18n` module is used
     throughout the code to translate strings.
@@ -593,8 +593,8 @@ In total, `FruitShopManager.createControlTree()` builds up the following tree:
 
 ![Fruit Shop](img/fruitShopControlTree.png 'Fruit Shop Control tree')
 
-The four leaf controls are all instances of built-in controls that are customized what is
-the for their usage in this skill while the containers are custom controls that are unique
+The four leaf controls are all instances of built-in controls that are customized 
+for their usage in this skill, while the containers are custom controls that are unique
 to this skill. This is a common pattern as built-in controls are generic and encapsulate
 domain-agnostic functionality such as "obtain a date from the user" while custom controls
 provide the higher-level and application-specific behaviors.
@@ -628,7 +628,7 @@ A good way to explore this skill further is to dive into the code and trace thro
 regression tests with the framework logging turned on. The code has many comments to help
 explain nuances and patterns.
 
-You can also deploy the skill or hook up local-debugging to test out the user-experience
+You can also deploy the skill or hook up local-debugging to test out the user experience
 with the Skill simulator in the Alexa Developer Portal or on a device.
 
 ## 4.2. Category control
@@ -651,15 +651,15 @@ Minimal configuration:
 7. );
 ```
 
--   **Line 1**: This control is customized instance of the `ListControl` which "obtains a
-    value from the user by presenting a list with voice and APL". The rest of the props
+-   **Line 1**: This control is a customized instance of the `ListControl` which "obtains a
+    value from the user by presenting a list with voice and APL." The rest of the props
     for `ListControl` are optional and have defaults that allow the control to be used
-    "out of the box" and then customized as needed.
--   **Line 3**: Every control has an id.
+    "out of the box" and then be customized as needed.
+-   **Line 3**: Every control has an ID.
 -   **Line 4**: A `ListControl` is configured with the name of slot type that defines the
-    values and synonyms can use with the control. By declaring the slot type, this control
+    values and synonyms that may be used with the control. By declaring the slot type, this control
     is able to recognize voice inputs that should be handled.
--   **Line 5**: A `ListControl` needs to know the list of slot-value-ids.
+-   **Line 5**: A `ListControl` needs to know the list of slot value IDs.
 
 As development of the skill proceeded, additional props on the control were customized in
 order to make the skill more robust and to improve the user experience:
@@ -721,7 +721,7 @@ Final configuration:
     regulates which inputs will be handled. [Section 5.7. Interaction
     Model](#57-interaction-model) has more information.
 
-    The framework defines various standard `actions` and `targets` with ids and standard
+    The framework defines various standard `actions` and `targets` with IDs and standard
     synonyms and these are used as the defaults. The defaults for the `ListControl` are:
 
     ```js
@@ -744,15 +744,15 @@ Final configuration:
 -   **Line 10**: The `ListControl` has two _action capabilities_, called "set" and
     "change". There may be different verbs associated with these capabilities and line 10
     shows how to set the list of verbs associated with the "set" capability. This line
-    declares that if the user says "set", "add", or "select", or one of their synonyms,
+    declares that if the user says "set", "select", or one of their synonyms,
     the control should interpret it as an effort to set the value of this control. So, for
     example, if the user says "U: Select fruit please" this control will respond
     `canHandle = true` and set `this.state.value = "fruit"` during `handle()`. Each item
-    in the array is the ID of an slot value for the Action slot type. New action slot
+    in the array is the ID of a slot value for the Action slot type. New action slot
     value IDs should be added for semantically different verbs and synonyms can be added
-    when the is not major semantic difference. So, for example, the action-slot-value for
+    when there are not major semantic differences. So, for example, the action slot value for
     "select" has the synonym "choose". If the user says "U: I choose fruit", it will
-    arrive as `action = "select"` and be recognized by this control. All controls test the
+    arrive as `action = "set"` and be recognized by this control. All controls test the
     `action` and `target` of an input to determine whether the input is relevant. If there
     is not a match the control will return `canHandle = false`.
 
@@ -763,16 +763,16 @@ Final configuration:
 -   **Line 13-22**: Every control knows how to communicate with the user. "What" to say is
     encoded as `SystemActs` and "how" to say it is determined during the render phase.
     Each control knows about a set of system acts and defines a default
-    prompt/reprompt/apl for each but skill developers can override the defaults by setting
-    the prompt prop. There are other opportunities to override the prompts too:
-    `Control.renderAct()` and `ControlManager.render()` method can be overridden to
+    prompt/reprompt/apl for each, but skill developers can override the defaults by setting
+    the prompt prop. There are other opportunities to override the prompts too: The
+    `Control.renderAct()` and `ControlManager.render()` methods can be overridden to
     provide even greater flexibility.
 -   **Line 14**: When the control wants to ask the user for a value, it produces a
     `RequestValueAct`. This line provides a new phrasing and uses the `i18next` library to
     allow easy localization.
 -   **Line 15**: When a `ListControl` obtains a value from the user, it produces a
     `ValueSetAct` to communicate back to the user that the value was received
-    successfully. By default this system act is rendered to a prompt like "A: OK,
+    successfully. By default this system act is rendered as a prompt like "A: OK,
     {value}", but it isn't always necessary to be this verbose, particularly if subsequent
     dialog will convey this information.
 -   **Line 16**: Override of the prompt to produce when validation fails.
@@ -855,7 +855,7 @@ ensure a smooth user experience. The `canHandle()` for `ShoppingCartControl` is:
     also directly handles higher-level inputs such as `AddItemIntent` which carries both a
     product and an item count. This is the general pattern for dealing with intents that
     comprise many pieces of information: a `ContainerControl` explicitly handles complex
-    inputs and distribute the information as necessary but delegates simple inputs to the
+    inputs and distributes the information as necessary but delegates simple inputs to the
     child controls whenever possible.
 -   **Line 4-9**: It is usual to check all the specific things that the container can
     handle directly before asking the children.
@@ -888,12 +888,12 @@ The start of the `ShoppingCartControl.handle()` function is:
     `canHandleByChild` returned `true`. Thus we can either call the `handleFunc` directly
     or delegate to the selected child via `this.handleByChild`.
 -   **Lines 12+**: The rest of the handle function comprises "things to do after core
-    input handling is complete". One task of this post-handling code in
-    `ShoppingCartControl` is to ensure that the category and product are in sync: e.g. if
+    input handling is complete." One task of this post-handling code in
+    `ShoppingCartControl` is to ensure that the category and product are in sync: E.g. if
     handling caused the product to change from 'carrots' to 'apples' then the
     `categoryControl.state.value` must be coerced to 'fruits'. The post-handling code also
     commits a new record to the shopping cart once both the product control and the number
-    control have a value, _AND_ neither of them has any follow questions to ask.
+    control have a value, _AND_ neither of them has any follow-up questions to ask.
 
 ## 4.5. Root control
 
@@ -925,9 +925,9 @@ with:
 -   **Lines 2-5**: All container controls should ask if their children can handle the
     input. In this case we happen to ask the children first; the ordering only matters if
     there are inputs that can be recognized by both the container and its children.
--   **Lines 6-13**: The root control will often take care of application life-cycle inputs
+-   **Lines 6-13**: The root control will often take care of application lifecycle inputs
     such as a `LaunchRequest` and `SessionEndedRequest`.
--   **Lines 14+**: The root control handles various other intents - see the code for
+-   **Lines 14+**: The root control handles various other intents — see the code for
     details.
 
 ## 4.6. Interaction model
@@ -1008,7 +1008,7 @@ The Fruit Shop skill needs an interaction model, and it is generated programmati
 -   **Line 15-19**: `CheckCartIntent`, `AddItemIntent`, and `AddProductIntent` are
     domain-specific and will be handled by the `ShoppingCartControl`. The definitions
     follow the usual JSON encoding for an Intent.
--   **Line 24-31**: The `Category`, `Product` and `Cart` slot types are domain specific.
+-   **Line 24-31**: The `Category`, `Product` and `Cart` slot types are domain-specific.
     `Category` and `Product` are used in auto-generated intents that are created by
     `ListControl`. `Cart` is used in the `CheckCartIntent`.
 -   **Line 36-39**: The built-in controls use intents that include a `target` slot. This
@@ -1025,7 +1025,7 @@ The Fruit Shop skill needs an interaction model, and it is generated programmati
 
 ## 4.7. Regression tests
 
-The fruit shop skill includes regression tests that demonstrate functionality and which
+The Fruit Shop skill includes regression tests that demonstrate functionality and which
 can be used for stepping through the code and observing how things operate. To use them
 for learning purposes, mark one at a time with `test.only()` and launch in your IDE. The
 file `ide/vscode/launch.json` provides launch targets that can be copied to `.vscode`.
@@ -1039,17 +1039,17 @@ should not take a direct dependency on their environment. However, the end devel
 make trade-offs as they wish between purity and convenience. For example, it is quite
 possible to do cross-validation in a _NumberControl_ by peeking at the state of a sibling
 control. This may be significantly simpler than having a parent perform cross-validations
-and pushing state updates around. The Fruit Shop skill demonstrate such peeking:
+and pushing state updates around. The Fruit Shop skill demonstrates such peeking:
 specifically, the _ProductControl_ peeks at the _CategoryControl_ to choose which products
 to recommend.
 
-In general, it is good to think of leaf controls as pure data-gatherers that blindly
+In general, it is good to think of leaf controls as pure data gatherers that blindly
 obtain data for their parent to use in business functions. Leaf controls can be _pure_ in
 this sense that they truly are unaware of their environment but in the interests of
 convenience the developer may relax this purity and allow them to peek at external data.
 The risk of impurity is that controls will become over-coupled and the code will be less
 comprehensible and maintainable as a result. We recommend being disciplined when relaxing
-data-purity. For example, a rule that any peeking be restricted to sibling controls is a
+data purity. For example, a rule that any peeking be restricted to sibling controls is a
 good place to start.
 
 ---
@@ -1065,18 +1065,18 @@ how controls should interact.
 Building a skill using Controls can take a bit of a mental adjustment for developers who
 are used to implementing skills with a list of `RequestHandlers`. The payoff for this leap
 is that dialog-rich skills can be built using structured and extensible patterns. A
-further payoff is that general-purpose and customizable controls can be built shared with
+further payoff is that general-purpose and customizable controls can be built and shared with
 other developers and projects.
 
 ## 5.1. What is a Control?
 
 Controls collect information, make inferences, resolve confusion/ambiguity, and ask
 questions. Low-level controls obtain reliable information that higher-level controls can
-use and the higher-level controls do interesting things with the information and talk to
+use, and the higher-level controls do interesting things with the information and talk to
 the user about the results.
 
 Simple controls might only obtain a single item of data but they nonetheless have to do
-more than simply capture a slot-value. For example, a skill may want to obtain a number
+more than simply capture a slot value. For example, a skill may want to obtain a number
 representing the _quantity_ of something. It would make sense to have a `QuantityControl`
 that obtains this information and it would have the responsibility to ask for, record,
 validate, confirm, update and respond to questions about the quantity. The rest of the
@@ -1118,21 +1118,21 @@ A: I've updated it from ninety to eighty items.
    ... The fact `items = 80` is now available to other controls ...
 ```
 
-Thus controls have a much more specific job than a generic `RequestHandler` -- controls
-_manages information gathering and responses to that information_ and by abstracting these
-problem away from the rest of the application we can scale skill complexity more reliably.
+Thus controls have a much more specific job than a generic `RequestHandler` — controls
+_manage information gathering and responses to that information_ and by abstracting these
+problems away from the rest of the application we can scale skill complexity more reliably.
 
 In full, each control will have some or all of the following responsibilities:
 
 1. Ask the user for some information.
 1. Track the information and any pertinent metadata as dynamic state.
 1. Validate the information against business rules.
-1. Provide feedback to the about what was captured and any violations.
+1. Provide feedback to the user about what was captured and any violations.
 1. Explicitly confirm the information if appropriate.
 1. Run business functions using the obtained information and communicate results.
 1. React to additional commands regarding the information: change, inspect, delete, and so
    on.
-1. Make the information available to other parts of the application particularly the
+1. Make the information available to other parts of the application, particularly the
    parent control.
 
 After a control has completed its work its parent may clear out its state and repeat the
@@ -1159,24 +1159,25 @@ what specific inputs they will need to react to.
 
 A control will generally need to handle many different inputs including various intents.
 For example, many controls ask the user yes/no questions and so many controls are
-listening for "AMAZON.YesIntent" and "AMAZON.NoIntent". In a skill built with controls,
+listening for `AMAZON.YesIntent` and `AMAZON.NoIntent`. In a skill built with controls,
 there is no single "YesIntent handler" - every control can be listening for that event if
 it wishes. However, controls live in a collaborative environment and they must not be
-over-eager to handle an input that isn't appropriate for the controls current state. So,
+over-eager to handle an input that isn't appropriate for their current state. So,
 for example, if a control has just asked the user a yes/no question it is appropriate for
 that control to reply `canHandle = true` if the next input is a `YesIntent`. Other
-controls that have not just asked a question should instead respond with `canHandle = false`. There may be situations where it is reasonable for two or more controls to respond
+controls that have not just asked a question should instead respond with `canHandle = false`.
+There may be situations where it is reasonable for two or more controls to respond
 with `canHandle = true`: in these cases a parent control must pick a winner.
 
-Regarding "what information to collect", low-level controls collect simple things such as
-a single date representing a birth-date or perhaps the date of an upcoming event. The
-built-in **DateControl**, for example, is a control that collects a single date from the
+Regarding "what information to collect," low-level controls collect simple things such as
+a single date representing a birthdate or perhaps the date of an upcoming event. The
+built-in `DateControl`, for example, is a control that collects a single date from the
 user. It normally receives a date via a single `AMAZON.DATE` slot but it can be extended
 to implement other strategies such as asking for the year, month, and day in sequence. The
 `DateControl` can validate whether an obtained date is suitable for use and uses inference
-to deal with ambiguous dates. For example, if an user answers "A: what date?" with "U:
+to deal with ambiguous dates. For example, if a user answers "A: what date?" with "U:
 2019" it may be reasonable to infer they mean Jan-1-2019 whereas in other cases it might
-be more appropriate to infer they means today's date, but for 2019. The `DateControl`
+be more appropriate to infer they mean today's date, but for 2019. The `DateControl`
 abstracts and packages logic of this kind so that the parent control and the rest of the
 application can be freed from these details.
 
@@ -1184,9 +1185,9 @@ application can be freed from these details.
 controls and implement higher-level logic to manage a more complex piece of information
 such as a complete address. The built-in `DateRangeControl` is an example of a
 higher-level control that is configurable and reusable. The `DateRangeControl` delegates
-any inputs to do with just the 'stateDate' or the 'endDate' to child controls, each of
-which is a regular `DateControl`. Any input or situation that affect both the start- and
-end- date are managed by the `DateRangeControl` itself. The higher-level control provides
+any inputs to do with just the 'startDate' or the 'endDate' to child controls, each of
+which is a regular `DateControl`. Any input or situation that affect both the start and
+end date are managed by the `DateRangeControl` itself. The higher-level control provides
 the same interface to its parent as the low-level controls. That is, it abstracts away the
 fact that child controls are participating. Every parent control should interact with its
 children as though they are leaf controls.
@@ -1199,10 +1200,10 @@ incorporated into an existing one. The `ControlHandler` drives the processing of
 as a sequence of phases:
 
 1. **_Initialization phase_**: Constructs a tree of controls and deserializes their state.
-2. **_'Can Handle' phase_**: Determines a specific chain of controls in the tree that will
+2. **_CanHandle phase_**: Determines a specific chain of controls in the tree that will
    handle the input.
 3. **_Handle phase_**: Walks the handling chain to make state updates, call business
-   functions, and produce results for the user.
+   functions, and produces results for the user.
 4. **_Initiative phase (if needed)_**. Determines a chain of control to _take the
    initiative_ and continue the dialog. This phase runs if the handle phase did not take
    or continue the initiative.
@@ -1229,8 +1230,8 @@ The canHandle phase analyzes the input and skill state to determine the chain of
 that will _handle_ the input. To begin, the `ControlHandler` calls
 `rootControl.canHandle(input)`. The root control will generally check for a delegation
 opportunity by querying its children with `this.canHandleByChild()`. If exactly one child
-replies `canHandle=true` then the rootControl can simply return `true` but if more than
-one child replies `canHandle=true` then a decision must be made. The `ContainerControl`
+replies `canHandle = true` then the rootControl can simply return `true` but if more than
+one child replies `canHandle = true` then a decision must be made. The `ContainerControl`
 abstract base class provides a general pattern to deal with this by defining
 `ContainerControl.decideHandlingChild()` which is called with the list of all candidate
 children. The `decideHandlingChild()` function implements the decision logic to deal with
@@ -1240,7 +1241,7 @@ behavior which is described in the tech docs for Container Control.
 
 Eventually a result is returned to the `ControlHandler` and passed back the the
 `CustomSkill` driver. Assuming the root control returns `canHandle = true`, a
-_handling-chain_ can be identified by walking the tree and observing the planned
+_handling chain_ can be identified by walking the tree and observing the planned
 delegations. The handling chain describes which controls will participate during `handle`
 and the delegations they will make. The chain can terminate on an internal container node
 if the container is not planning to perform a simple delegation.
@@ -1254,13 +1255,13 @@ dialog:
 ```
 
 Assume that on the previous turn the `ProductControl` took the initiative and issued a
-`RequestValueAct` that was rendered as "What type of fruit would you like?". When the user
-replies with "Apples" the Product control determines that the user is answering its
+`RequestValueAct` that was rendered as "What type of fruit would you like?" When the user
+replies with "Apples" the `ProductControl` determines that the user is answering its
 question and returns `canHandle = true` to its parent. Before returning, the
 `ProductControl` takes a memo that it will use `.setWithValue()` if it does in fact get
-chosen to handle the input. The category & item-count controls return `canHandle = false`
+chosen to handle the input. The category & item count controls return `canHandle = false`
 as they don't recognize intents with the product slot type (and do not have any questions
-pending an answer). Given that one child responded positively, the Shopping cart returns
+pending an answer). Given that one child responded positively, the Shopping Cart returns
 `canHandle = true` and takes a memo that it will forward to the Product control. In
 diagram form:
 
@@ -1285,7 +1286,7 @@ Assuming the control handler returns `canHandle = true` then the `CustomSkill` d
 call `ControlHandler.handle()` to actually do the work.
 
 During the handle phase the input is passed down to the tail of the handling chain and
-work is performed as the stack unwinds back to the root. As the call-stack unwinds each
+work is performed as the stack unwinds back to the root. As the call stack unwinds each
 control in the chain has the opportunity to observe the state changes in its subtree and
 make any further updates. In this way the work of actually handling an input starts low in
 the tree and works its way back up until the root control has the final opportunity to
@@ -1304,7 +1305,7 @@ Overall, each control in the handling chain will perform the following:
 
 1. Delegate to the next control in the chain by calling `child.handle()`.
 
-then, when `child.handle()` returns:
+Then, when `child.handle()` returns:
 
 2. Update state variables in `this.state`. Containers may also manipulate the state of
    their children to make everything consistent. This is how sibling controls can be
@@ -1319,7 +1320,7 @@ then, when `child.handle()` returns:
 The handling controls are not required to produce a question or other _initiative_ act.
 However, if any of the handling controls has a useful followup it should add it directly
 during _handle()_ to ensure the dialog stays on topic. If, however, there are no further
-questions or follow ups on the active topic the handling controls should not produce an
+questions or follow-ups on the active topic the handling controls should not produce an
 initiative act. A common pattern is add
 
 ```js
@@ -1344,7 +1345,7 @@ The initiative phase runs if the handle phase did not generate an initiative act
 purpose is to identify a control that _can_ take the initiative. Choosing a control to
 take the initiative follows the same basic shape as the canHandle phase:
 
-1. the `ControlHandler` calls `rootControl.canTakeInitiative()` which either directly
+1. The `ControlHandler` calls `rootControl.canTakeInitiative()` which either directly
    replies or queries its children via `this.canTakeInitiativeByChild()`. If multiple
    child controls want the initiative a decision is made by
    `this.decideInitiativeChild(candidates)`.
@@ -1367,7 +1368,7 @@ A: Great! we have lots of them.  How many would you like?
   [ from acts in Handle phase ] [ from Initiative phase ]
 ```
 
-The input for this turn, "U: Add some bananas", is handled by the chain `FruitShopControl -> ShoppingCartControl -> ItemCountControl`. In this case the value is accepted and a
+The input for this turn, "U: Add some bananas", is handled by the chain `FruitShopControl -> ShoppingCartControl -> ProductControl`. In this case the value is accepted and a
 `ValueSetAct` is produced. Validation passes and the Product control has no further
 questions for the user. Thus, handling the input finishes without an initiative act and so
 the initiative phase runs. During the initiative phase the initiative chain is determined
@@ -1392,7 +1393,7 @@ system acts describing information to be communicated to the user. Unless the se
 ending, the `ControlResult` is expected to contain an initiative act.
 
 It is interesting to note that the initiative control may be very distant in the tree from
-the handling control. This type of situation can arises if the user takes a wide detour
+the handling control. This type of situation can arise if the user takes a wide detour
 such as in the following:
 
 ```text
@@ -1487,9 +1488,9 @@ system acts are the intermediate representation between the handling phases and 
 
 Every system act comprises:
 
-1. a name that describes its general meaning
-2. a payload of data that further specifies its precise meaning
-3. a reference to a specific control.
+1. A name that describes its general meaning.
+2. A payload of data that further specifies its precise meaning.
+3. A reference to a specific control.
 
 These three components, `(name, payload, control)`, should together fully describe the
 meaning of a `SystemAct` instance.
@@ -1513,13 +1514,13 @@ the test of time.
 The name should clearly and succinctly represent the purpose so that other developers can
 write rendering code and reuse them in other contexts. Always look to see if an existing
 system act meets a need before defining a new one, but don't use an act that doesn't
-precisely represent what needs to be communicated -- it is better to create a new act in
+precisely represent what needs to be communicated — it is better to create a new act in
 such situations.
 
 ### 5.4.1. Content acts
 
-Content acts describe "something to tell the user". A common content act is `ValueSetAct`
-which means "tell the user that a value was received and recorded". The default rendering
+Content acts describe "something to tell the user." A common content act is `ValueSetAct`
+which means "tell the user that a value was received and recorded." The default rendering
 is "OK, {value}" but it could equally be rendered as nothing at all. `ValueSetAct` is used
 to provide feedback to the user so that they are aware things are going well and can also
 provide "implicit confirmation" if the rendered prompt includes the value itself. Note the
@@ -1559,29 +1560,29 @@ The content acts defined by the Framework controls include:
 
 ### 5.4.2. Initiative acts
 
-Initiative acts "ask the user a question" or "suggest what the user can/should do next".
+Initiative acts "ask the user a question" or "suggest what the user can/should do next."
 These acts propel the dialog forward and give the user a strong sense of engagement.
 
 As with content acts, the initiative acts have factual semantics and do not attempt to
-provide an ontology for dialog-functions or otherwise provide coverage of all possible
+provide an ontology for dialog functions or otherwise provide coverage of all possible
 needs. The built-in initiative acts are sufficient for the built-in controls to function
 and can be reused in other contexts. Developers should create new initiative acts if none
-of the built-ins is a good match for their need.
+of the built-ins are a good match for their need.
 
 The special `LiteralInitiativeAct` is a catch-all with no semantics that can be used when
 creating a new act is not warranted.
 
 The initiative acts defined by the framework include:
 
--   **RequestValueAct**: Ask the user for a value with an open question. e.g. "When is
+-   **RequestValueAct**: Ask the user for a value with an open question, e.g. "When is
     your event?"
 -   **RequestChangedValueAct**: Ask the user for a _new_ value with an open question.
 -   **RequestValueByListAct**: Ask the user for a value by presenting them a list.
 -   **RequestChangedValueByListAct**: Ask the user for a _new_ value by presenting them a
     list.
--   **ConfirmValueAct**: Ask the user if a value has been captured correctly. e.g. "Was
+-   **ConfirmValueAct**: Ask the user if a value has been captured correctly, e.g. "Was
     that five?"
--   **SuggestValueAct**: Suggest a specific value by means of a yes/no question. e.g. "Is
+-   **SuggestValueAct**: Suggest a specific value by means of a yes/no question, e.g. "Is
     the table for five?"
 -   LiteralInitiativeAct: A catch-all with no specific semantics that simply represents
     some literal content.
