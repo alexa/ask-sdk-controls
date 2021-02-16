@@ -408,6 +408,8 @@ export class ListControlState implements ControlState {
     lastInitiative: LastInitiativeState;
 }
 
+const FEEDBACK_TYPES = [$.Feedback.Affirm, $.Feedback.Disaffirm];
+
 /**
  * A Control that obtains a single value from the user by presenting a list of
  * available options using voice and/or APL.
@@ -653,7 +655,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
@@ -679,7 +681,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithoutValue;
             return true;
@@ -703,7 +705,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithValue;
             return true;
@@ -729,7 +731,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 (input.request as IntentRequest).intent,
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
             this.handleFunc = this.handleChangeWithoutValue;
             return true;
@@ -899,7 +901,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             const { feedback, action, target, 'AMAZON.Ordinal': value } = unpackOrdinalControlIntent(
                 (input.request as IntentRequest).intent,
             );
-            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, this.getFeedBackTypes()));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatchOrUndefined(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(value));
@@ -1242,9 +1244,6 @@ export class ListControl extends Control implements InteractionModelContributor 
         ];
     }
 
-    private getFeedBackTypes(): string[] {
-        return [$.Feedback.Affirm, $.Feedback.Disaffirm];
-    }
     // tsDoc - see Control
     updateInteractionModel(generator: ControlInteractionModelGenerator, imData: ModelData) {
         generator.addControlIntent(new GeneralControlIntent(), imData);
