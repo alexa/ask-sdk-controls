@@ -77,10 +77,8 @@ export class UnusableInputValueAct<T> extends ContentAct {
             );
         } else {
             throw new Error(
-                i18next.t('CONTENT_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render UnusableInputValueAct as payload.renderedReason is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -209,10 +207,8 @@ export class InvalidValueAct<T> extends ContentAct {
             );
         } else {
             throw new Error(
-                i18next.t('CONTENT_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render InvalidValueAct as payload.renderedReason is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }

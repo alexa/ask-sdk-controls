@@ -335,15 +335,9 @@ export const defaultI18nResources: Resource = {
             VALUE_REMOVED_ACT_DEFAULT_PROMPT: `OK, removed {{value}}.`,
             VALUE_CLEARED_ACT_DEFAULT_PROMPT: `OK, removed all {{value}}.`,
             INVALID_REMOVE_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}} is not in the list.`,
-            CONTENT_ACT_ERROR_DEFAULT_PROMPT:
-                `Cannot directly render {{act}}} as payload.renderedReason is undefined. {{value}}. ` +
-                `Either provide a renderedReason when creating the act, or render the act in control.render() or controlManager.render().`,
 
             // Initiative Act default prompts
             REQUEST_VALUE_ACT_DEFAULT_PROMPT: `What value for {{value}}.`,
-            INITIATIVE_ACT_ERROR_DEFAULT_PROMPT:
-                `Cannot directly render {{act}} as payload.renderedTarget is undefined. {{value}}. ` +
-                `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT: `What is the new value for {{value}}.`,
             REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT: `What value for {{value}}? Choices include {{choices}}`,
             REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT: `What is the new value for {{value}}? Choices include {{choices}}.`,

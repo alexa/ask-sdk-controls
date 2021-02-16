@@ -12,7 +12,6 @@
  */
 
 import i18next from 'i18next';
-import { UnusableInputValueAct } from '..';
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ListFormatting } from '../intl/ListFormat';
@@ -108,10 +107,8 @@ export class RequestValueAct extends InitiativeAct {
             );
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render RequestValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -148,10 +145,8 @@ export class RequestChangedValueAct extends InitiativeAct {
             );
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render RequestChangedValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -191,10 +186,8 @@ export class RequestValueByListAct extends InitiativeAct {
             );
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render RequestValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -234,10 +227,8 @@ export class RequestChangedValueByListAct extends InitiativeAct {
             );
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render RequestChangedValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -266,10 +257,8 @@ export class RequestRemovedValueByListAct extends InitiativeAct {
             );
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render RequestRemovedValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
@@ -367,10 +356,8 @@ export class SuggestActionAct<T> extends InitiativeAct {
             controlResponseBuilder.addRepromptFragment(i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'));
         } else {
             throw new Error(
-                i18next.t('INITIATIVE_ACT_ERROR_DEFAULT_PROMPT', {
-                    act: UnusableInputValueAct.name,
-                    value: this.toString(),
-                }),
+                `Cannot directly render SuggestActionAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
+                    `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }
