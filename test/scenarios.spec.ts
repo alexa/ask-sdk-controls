@@ -510,7 +510,7 @@ suite('== Custom Number APL Props ==', () => {
             numPadData: {
                 controlId: 'numItems',
                 headerTitle: 'Enter a number...',
-                isValidValue: false,
+                isValidValue: true,
                 validationFailedMessage: 'The value must be even.',
             },
         };

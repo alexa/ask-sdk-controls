@@ -329,7 +329,7 @@ export class NumberControlState implements ControlState {
      * Tracks whether the value is valid.
      * TODO: remove this and allow async prop functions.
      */
-    isValidValue: boolean = false;
+    isValidValue: boolean = true;
 
     /**
      * Tracks the last initiative act from the control
@@ -639,7 +639,6 @@ export class NumberControl extends Control implements InteractionModelContributo
         const dataSourceId = this.id + 'Data';
         const validationFailureMessage = this.evaluateAPLValidationFailedMessage(this.state.value);
         const title = this.evaluateFunctionProp(this.props.apl.title, input);
-
         return {
             id: this.id,
             type: 'Container',
