@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-import { interfaces } from 'ask-sdk-model';
 import { APLRenderContext } from './APLRenderContext';
 
 /**
@@ -19,5 +18,5 @@ import { APLRenderContext } from './APLRenderContext';
  */
 export interface ControlAPLRenderProps {
     aplRenderContext: APLRenderContext;
-    renderStyle: 'voiceForward' | 'touchForward' | 'fullScreen';
+    renderStyle: 'voiceForward' | 'touchForward' | 'fullScreen' | 'aggregateDuplicates';
 }

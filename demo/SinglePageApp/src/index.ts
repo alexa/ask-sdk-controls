@@ -243,8 +243,8 @@ export namespace SinglePageApp {
                                     this.partyThemeControl.renderAPLComponent(
                                         {
                                             aplRenderContext,
-                                            //renderStyle: 'touchForward',
-                                            renderStyle: 'fullScreen',
+                                            renderStyle: 'aggregateDuplicates',
+                                            //renderStyle: 'fullScreen',
                                         },
                                         input,
                                     ),

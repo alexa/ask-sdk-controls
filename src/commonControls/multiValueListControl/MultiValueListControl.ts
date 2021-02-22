@@ -114,6 +114,17 @@ export interface MultiValueListControlProps extends ControlProps {
      */
     validation?: SlotValidationFunction | SlotValidationFunction[];
 
+    // /**
+    // TODO
+    //  * Determines if the Control needs to count and aggregate duplicate item selections.
+    //  *
+    //  *  - If `true` the Control APL renders the list items with a total count
+    //  *  and an option to increment and decrement.
+    //  *  - If `false` the Control list duplicate selections as individual list items.
+    //  */
+
+    // aggregateDuplicates?: boolean | ((input: ControlInput) => boolean);
+
     /**
      * List of slot-value IDs that will be presented to the user as a list.
      */
@@ -1616,6 +1627,173 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                 type: 'MultiValueListSelector',
                 controlId: this.id,
                 payload,
+            };
+        } else if (props.renderStyle === 'aggregateDuplicates') {
+            props.aplRenderContext.addLayout('MultiValueListSelector', {
+                parameters: [
+                    {
+                        name: 'controlId',
+                        type: 'string',
+                    },
+                    {
+                        name: 'listItems',
+                        type: 'object',
+                    },
+                ],
+                items: [
+                    {
+                        type: 'Sequence',
+                        id: 'root',
+                        scrollDirection: 'vertical',
+                        data: '${listItems}',
+                        width: '100%',
+                        height: '100%',
+                        paddingLeft: '0',
+                        numbered: true,
+                        items: [
+                            {
+                                type: 'Container',
+                                items: [
+                                    {
+                                        type: 'TouchWrapper',
+                                        item: {
+                                            type: 'Container',
+                                            direction: 'row',
+                                            items: [
+                                                {
+                                                    type: 'Text',
+                                                    paddingLeft: '32px',
+                                                    style: 'textStyleBody',
+                                                    text: '${data.primaryText}',
+                                                    textAlignVertical: 'center',
+                                                    grow: 1,
+                                                },
+                                                {
+                                                    type: 'Text',
+                                                    paddingTop: '12px',
+                                                    id: 'counter-${ordinal}',
+                                                    textAlign: 'center',
+                                                    text: '${data.value}',
+                                                },
+                                                {
+                                                    type: 'AlexaIconButton',
+                                                    buttonSize: '72dp',
+                                                    disabled: '${disableContent}',
+                                                    vectorSource:
+                                                        'M21 11h-8V3C13 2.45 12.55 2 12 2 11.45 2 11 2.45 11 3v8H3C2.45 11 2 11.45 2 12 2 12.55 2.45 13 3 13h8v8C11 21.55 11.45 22 12 22 12.55 22 13 21.55 13 21v-8h8C21.55 13 22 12.55 22 12 22 11.45 21.55 11 21 11z',
+                                                    primaryAction: {
+                                                        type: 'Sequential',
+                                                        commands: [
+                                                            {
+                                                                type: 'SendEvent',
+                                                                arguments: [
+                                                                    '${controlId}',
+                                                                    'Select',
+                                                                    '${ordinal}',
+                                                                ],
+                                                            },
+                                                            {
+                                                                type: 'SetValue',
+                                                                componentId: 'root',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                                {
+                                                    type: 'AlexaIconButton',
+                                                    buttonSize: '72dp',
+                                                    disabled: '${data.value <=0 || disableContent}',
+                                                    vectorSource:
+                                                        'M21 13H3C2.45 13 2 12.55 2 12 2 11.45 2.45 11 3 11h18C21.55 11 22 11.45 22 12 22 12.55 21.55 13 21 13z',
+                                                    primaryAction: {
+                                                        type: 'Sequential',
+                                                        commands: [
+                                                            {
+                                                                type: 'SendEvent',
+                                                                arguments: [
+                                                                    '${controlId}',
+                                                                    'Remove',
+                                                                    '${ordinal}',
+                                                                ],
+                                                            },
+                                                            {
+                                                                type: 'SetValue',
+                                                                componentId: 'root',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                        onPress: [
+                                            {
+                                                type: 'Sequential',
+                                                commands: [
+                                                    {
+                                                        type: 'SendEvent',
+                                                        arguments: ['${controlId}', 'Select', '${ordinal}'],
+                                                    },
+                                                    {
+                                                        type: 'SetValue',
+                                                        componentId: 'root',
+                                                        property: 'disableContent',
+                                                        value: true,
+                                                    },
+                                                    {
+                                                        type: 'SetValue',
+                                                        componentId: 'root',
+                                                        property: 'debugText',
+                                                        value: 'Selected ${ordinal}',
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const listItems: Array<{
+                primaryText: string;
+                value: number;
+            }> = [];
+            const aggregateValues: { [key: string]: any } = {};
+            const selections = this.getSlotIds();
+            // const aggregateValues = choices.reduce((map, value) => {
+            //     map[value] = (map[value] || 0) + 1;
+            //     return map;
+            // }, map);
+            selections.forEach((x) => {
+                aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
+            });
+
+            // for (const key in aggregateValues) {
+            //     if (Object.hasOwnProperty.call(aggregateValues, key) === true) {
+            //         listItems.push({
+            //             primaryText: this.props.valueRenderer([key], input)[0],
+            //             value: aggregateValues[key],
+            //         });
+            //     }
+            // }
+
+            const choices = this.getChoicesList(input);
+            for (const item of choices) {
+                listItems.push({
+                    primaryText: this.props.valueRenderer([item], input)[0],
+                    value: aggregateValues[item] ?? 0,
+                });
+            }
+            return {
+                type: 'MultiValueListSelector',
+                controlId: this.id,
+                listItems,
             };
         } else {
             throw Error('Invalid renderStyle');
