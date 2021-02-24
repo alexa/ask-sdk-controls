@@ -21,7 +21,7 @@ import {
     ControlInputHandler,
     ControlInputHandlingProps,
     ControlProps,
-    ControlState
+    ControlState,
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
@@ -29,7 +29,7 @@ import { InteractionModelContributor } from '../../controls/mixins/InteractionMo
 import {
     evaluateValidationProp,
     StateValidationFunction,
-    ValidationFailure
+    ValidationFailure,
 } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
@@ -46,13 +46,13 @@ import {
     ValueChangedAct,
     ValueConfirmedAct,
     ValueDisconfirmedAct,
-    ValueSetAct
+    ValueSetAct,
 } from '../../systemActs/ContentActs';
 import {
     ConfirmValueAct,
     InitiativeAct,
     RequestChangedValueByListAct,
-    RequestValueByListAct
+    RequestValueByListAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
@@ -1377,22 +1377,23 @@ export class ListControl extends Control implements InteractionModelContributor 
                                     type: 'TouchWrapper',
                                     width: '100%',
                                     height: '170px',
-                                    onPress: [{
-                                        
-                                        type: 'Sequential',
-                                        commands: [
-                                            {
-                                                type: 'SendEvent',
-                                                arguments: ['${controlId}', '${ordinal}'],
-                                            },
-                                            {
-                                                type: 'SetValue',
-                                                componentId: 'root',
-                                                property: 'disableScreen',
-                                                value: true,
-                                            }                                            
-                                        ],                                        
-                                    }],
+                                    onPress: [
+                                        {
+                                            type: 'Sequential',
+                                            commands: [
+                                                {
+                                                    type: 'SendEvent',
+                                                    arguments: ['${controlId}', '${ordinal}'],
+                                                },
+                                                {
+                                                    type: 'SetValue',
+                                                    componentId: 'root',
+                                                    property: 'disableScreen',
+                                                    value: true,
+                                                },
+                                            ],
+                                        },
+                                    ],
                                     item: {
                                         type: 'Container',
                                         width: '100%',
