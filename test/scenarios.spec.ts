@@ -370,7 +370,11 @@ suite('== Custom List APL Props ==', () => {
                         },
                     ],
                 },
-                valueRenderer: (x: string, input) => `Wizard House: ${x}`,
+                valueRenderer: (x: string, input) => {
+                    return {
+                        prompt: `Wizard House: ${x}`,
+                    };
+                },
             });
 
             function getCategoriesList(): string[] {

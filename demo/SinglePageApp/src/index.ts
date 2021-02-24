@@ -64,6 +64,17 @@ export namespace SinglePageApp {
                     interactionModel: {
                         targets: ['builtin_choice', 'builtin_it', 'theme'],
                     },
+                    /**
+                     * Uncomment below to use ImageListControl functionality
+                     */
+                    // valueRenderer: (value, input) => {
+                    //     return {
+                    //         primaryText: value,
+                    //         secondaryText: '[Description of the deal]',
+                    //         imageSource: 'https://tiny.amazon.com/av777qp9/encrgstaimag.png',
+                    //         prompt: value,
+                    //     };
+                    // },
                 })),
             );
 
@@ -243,8 +254,10 @@ export namespace SinglePageApp {
                                     this.partyThemeControl.renderAPLComponent(
                                         {
                                             aplRenderContext,
-                                            renderStyle: 'aggregateDuplicates',
-                                            //renderStyle: 'fullScreen',
+                                            renderStyle: 'touchForward',
+                                            //renderStyle: 'aggregateDuplicates', // MultiValueList with counters
+                                            //renderStyle: 'fullScreen', // MultiValueList with list (choices|selections)
+                                            //renderStyle: 'imageList', //ImageListControl
                                         },
                                         input,
                                     ),

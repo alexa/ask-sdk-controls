@@ -1,6 +1,6 @@
 import i18next from 'i18next';
 import { ControlInput } from '../../controls/ControlInput';
-import { AplContent, ListControl } from './ListControl';
+import { AplContent, ListControl, ListControlRenderedItem } from './ListControl';
 
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -32,7 +32,7 @@ export namespace ListControlAPLPropsBuiltIns {
          *
          * Default: returns the value unchanged.
          */
-        valueRenderer: (value: string, input: ControlInput) => string;
+        valueRenderer: (value: string, input: ControlInput) => ListControlRenderedItem;
     }
 
     export function defaultSelectValueAPLContent(
@@ -62,7 +62,7 @@ export namespace ListControlAPLPropsBuiltIns {
         const choices = control.getChoicesList(input);
         for (const item of choices) {
             listOfChoices.push({
-                primaryText: contentProps.valueRenderer(item, input),
+                primaryText: contentProps.valueRenderer(item, input).prompt!,
             });
         }
         return {
