@@ -14,7 +14,7 @@ import { getSupportedInterfaces } from 'ask-sdk-core';
 import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { ModelData } from '../..';
+import { APLRenderContext, ModelData } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
     Control,
@@ -365,6 +365,12 @@ export class ListControlAPLProps {
     requestChangedValue?: AplDocumentPropNewStyle;
 }
 
+export class ListControlAPLRenderProps implements ControlAPLRenderProps {
+    aplRenderContext: APLRenderContext;
+    renderStyle: 'voiceForward' | 'touchForward' | 'fullScreen' | 'aggregateDuplicates' | 'imageList';
+    highlightSelected: boolean;
+}
+
 interface LastInitiativeState {
     /**
      * Tracks the last act initiated from the control.
@@ -574,7 +580,10 @@ export class ListControl extends Control implements InteractionModelContributor 
             valueRenderer:
                 props.valueRenderer ??
                 ((value: string, input) => {
-                    return { prompt: value };
+                    return {
+                        prompt: value,
+                        primaryText: value,
+                    };
                 }),
             apl: {
                 enabled: true,
@@ -1277,7 +1286,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         ];
     }
 
-    renderAPLComponent(props: ControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
+    renderAPLComponent(props: ListControlAPLRenderProps, input: ControlInput): { [key: string]: any } {
         // Create a Layout.
         if (props.renderStyle === 'touchForward') {
             props.aplRenderContext.addLayout('ListControl-touchForward', {
@@ -1341,7 +1350,9 @@ export class ListControl extends Control implements InteractionModelContributor 
 
             const itemIds: string[] = this.evaluateFunctionProp(this.props.listItemIDs, input);
             // Create the inline document, which instantiates the Layout
-            const listItems = itemIds.map((x) => ({ primaryText: this.props.valueRenderer(x, input) }));
+            const listItems = itemIds.map((x) => ({
+                primaryText: this.props.valueRenderer(x, input).primaryText,
+            }));
 
             return {
                 type: 'ListControl-touchForward',
@@ -1407,48 +1418,54 @@ export class ListControl extends Control implements InteractionModelContributor 
                                                 text: '',
                                             },
                                             {
-                                                type: 'Container',
-                                                width: '100%',
-                                                height: '100%',
-                                                direction: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                items: [
-                                                    {
-                                                        width: '70%',
-                                                        height: '100%',
-                                                        type: 'Container',
-                                                        direction: 'column',
-                                                        justifyContent: 'center',
-                                                        items: [
-                                                            {
-                                                                type: 'Text',
-                                                                text: '${data.primaryText}',
-                                                                fontSize: '@fontSizeSmall',
-                                                            },
-                                                            {
-                                                                type: 'Text',
-                                                                text: '${data.secondaryText}',
-                                                                fontSize: '@fontSizeXSmall',
-                                                            },
-                                                        ],
-                                                    },
-                                                    {
-                                                        type: 'Container',
-                                                        direction: 'column',
-                                                        width: '30%',
-                                                        height: '100%',
-                                                        items: [
-                                                            {
-                                                                type: 'Image',
-                                                                borderRadius: '90',
-                                                                width: '150px',
-                                                                height: '150px',
-                                                                source: '${data.imageSource}',
-                                                            },
-                                                        ],
-                                                    },
-                                                ],
+                                                type: 'Frame',
+                                                backgroundColor: '${data.backgroundColor}',
+                                                item: {
+                                                    type: 'Container',
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    direction: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    items: [
+                                                        {
+                                                            width: '70%',
+                                                            height: '100%',
+                                                            type: 'Container',
+                                                            direction: 'column',
+                                                            justifyContent: 'center',
+                                                            items: [
+                                                                {
+                                                                    type: 'Text',
+                                                                    text: '${data.primaryText}',
+                                                                    fontSize: '@fontSizeSmall',
+                                                                    color: '${data.fontColor}',
+                                                                },
+                                                                {
+                                                                    type: 'Text',
+                                                                    text: '${data.secondaryText}',
+                                                                    fontSize: '@fontSizeXSmall',
+                                                                    color: '${data.fontColor}',
+                                                                },
+                                                            ],
+                                                        },
+                                                        {
+                                                            type: 'Container',
+                                                            direction: 'column',
+                                                            width: '30%',
+                                                            height: '100%',
+                                                            items: [
+                                                                {
+                                                                    type: 'Image',
+                                                                    borderRadius: '90',
+                                                                    width: '150px',
+                                                                    height: '150px',
+                                                                    source: '${data.imageSource}',
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
                                             },
                                         ],
                                     },
@@ -1467,6 +1484,16 @@ export class ListControl extends Control implements InteractionModelContributor 
                     primaryText: renderedItem.primaryText,
                     secondaryText: renderedItem.secondaryText,
                     imageSource: renderedItem.imageSource,
+                    fontColor: props.highlightSelected
+                        ? this.state.value === x
+                            ? 'white'
+                            : '#777777'
+                        : 'white',
+                    backgroundColor: props.highlightSelected
+                        ? this.state.value === x
+                            ? 'blue'
+                            : '#222222'
+                        : '#222222',
                 };
             });
 
