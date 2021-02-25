@@ -1324,7 +1324,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                                             commands: [
                                                 {
                                                     type: 'SendEvent',
-                                                    arguments: ['${controlId}', '${ordinal}'],
+                                                    arguments: ['${controlId}', '${ordinal - 1}'],
                                                 },
                                                 {
                                                     type: 'SetValue',
