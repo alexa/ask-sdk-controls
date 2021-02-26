@@ -981,7 +981,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![2] as number;
             okIf(controlId === this.id);
-            okIf(action === 'Remove');
+            okIf(['Remove', 'Reduce'].includes(action));
             okIf(choiceIndex >= -1 && choiceIndex <= content.length);
             return true;
         } catch (e) {
@@ -992,15 +992,38 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private handleRemoveChoiceByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![2];
         assert(choiceIndex !== undefined);
+        const action = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![1] as string;
         const content = this.getSlotIds();
-        const choiceId = content[choiceIndex - 1];
-        this.state.value?.splice(choiceIndex - 1, 1);
-        resultBuilder.addAct(
-            new ValueRemovedAct(this, {
-                value: choiceId,
-                renderedValue: this.evaluateRenderedValue(choiceId, input),
-            }),
-        );
+        if (action === 'Remove') {
+            const choiceId = content[choiceIndex - 1];
+            this.state.value?.splice(choiceIndex - 1, 1);
+            resultBuilder.addAct(
+                new ValueRemovedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else if (action === 'Reduce') {
+            const aggregateValues: { [key: string]: any } = {};
+            const selections = this.getChoicesList(input);
+
+            selections.forEach((x) => {
+                aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
+            });
+
+            const choiceId = Array.from(Object.keys(aggregateValues))[choiceIndex - 1] as string;
+            const removeIndex = content.indexOf(choiceId);
+            this.state.value?.splice(removeIndex, 1);
+
+            resultBuilder.addAct(
+                new ValueRemovedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else {
+            throw new Error('Invalid action from Ordinal to remove items');
+        }
         return;
     }
 
@@ -1650,6 +1673,13 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                         height: '100%',
                         paddingLeft: '0',
                         numbered: true,
+                        bind: [
+                            {
+                                name: 'disableContent',
+                                value: false,
+                                type: 'boolean',
+                            },
+                        ],
                         items: [
                             {
                                 type: 'Container',
@@ -1685,18 +1715,17 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                                                         type: 'Sequential',
                                                         commands: [
                                                             {
+                                                                type: 'SetValue',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                            {
                                                                 type: 'SendEvent',
                                                                 arguments: [
                                                                     '${controlId}',
                                                                     'Select',
                                                                     '${ordinal}',
                                                                 ],
-                                                            },
-                                                            {
-                                                                type: 'SetValue',
-                                                                componentId: 'root',
-                                                                property: 'disableContent',
-                                                                value: true,
                                                             },
                                                         ],
                                                     },
@@ -1711,18 +1740,17 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                                                         type: 'Sequential',
                                                         commands: [
                                                             {
+                                                                type: 'SetValue',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                            {
                                                                 type: 'SendEvent',
                                                                 arguments: [
                                                                     '${controlId}',
-                                                                    'Remove',
+                                                                    'Reduce',
                                                                     '${ordinal}',
                                                                 ],
-                                                            },
-                                                            {
-                                                                type: 'SetValue',
-                                                                componentId: 'root',
-                                                                property: 'disableContent',
-                                                                value: true,
                                                             },
                                                         ],
                                                     },
@@ -1734,20 +1762,13 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                                                 type: 'Sequential',
                                                 commands: [
                                                     {
-                                                        type: 'SendEvent',
-                                                        arguments: ['${controlId}', 'Select', '${ordinal}'],
-                                                    },
-                                                    {
                                                         type: 'SetValue',
-                                                        componentId: 'root',
                                                         property: 'disableContent',
                                                         value: true,
                                                     },
                                                     {
-                                                        type: 'SetValue',
-                                                        componentId: 'root',
-                                                        property: 'debugText',
-                                                        value: 'Selected ${ordinal}',
+                                                        type: 'SendEvent',
+                                                        arguments: ['${controlId}', 'Select', '${ordinal}'],
                                                     },
                                                 ],
                                             },
@@ -1766,22 +1787,10 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             }> = [];
             const aggregateValues: { [key: string]: any } = {};
             const selections = this.getSlotIds();
-            // const aggregateValues = choices.reduce((map, value) => {
-            //     map[value] = (map[value] || 0) + 1;
-            //     return map;
-            // }, map);
+
             selections.forEach((x) => {
                 aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
             });
-
-            // for (const key in aggregateValues) {
-            //     if (Object.hasOwnProperty.call(aggregateValues, key) === true) {
-            //         listItems.push({
-            //             primaryText: this.props.valueRenderer([key], input)[0],
-            //             value: aggregateValues[key],
-            //         });
-            //     }
-            // }
 
             const choices = this.getChoicesList(input);
             for (const item of choices) {
