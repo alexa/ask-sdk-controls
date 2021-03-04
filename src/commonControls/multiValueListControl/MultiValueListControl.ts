@@ -16,8 +16,10 @@ import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import { assert } from 'chai';
 import i18next from 'i18next';
 import _ from 'lodash';
+import { ModelData, StringOrList } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
+    APLComponentProps,
     Control,
     ControlInitiativeHandler,
     ControlInputHandler,
@@ -36,9 +38,9 @@ import {
     ValueControlIntent,
 } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { ListFormatting } from '../../intl/ListFormat';
 import { Logger } from '../../logging/Logger';
+import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InvalidRemoveValueAct,
@@ -55,12 +57,15 @@ import {
     SuggestActionAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
-import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
-import { MultiValueListControlAPLPropsBuiltIns } from './MultiValueListControlAPL';
+import {
+    MultiValueListControlAPLPropsBuiltIns,
+    MultiValueListControlComponentAPLBuiltIns,
+    MultiValueListStyles,
+} from './MultiValueListControlAPL';
 
 const log = new Logger('AskSdkControls:MultiValueListControl');
 
@@ -403,6 +408,21 @@ interface LastInitiativeState {
      * A list of values which are used in last initiative act.
      */
     valueIds?: string[];
+}
+
+export interface MultiValueListAPLComponentProps extends APLComponentProps {
+    /**
+     * Defines the render style of APL component produced by the control.
+     */
+    renderStyle: MultiValueListStyles;
+
+    /**
+     * Function that maps the MultiValueListControlState.value to rendered value that
+     * will be presented to the user as a list.
+     *
+     * Default: returns the value unchanged.
+     */
+    valueRenderer?: (value: string[], input: ControlInput) => string[];
 }
 
 /**
@@ -892,12 +912,12 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             okIf(userEvent.arguments.length === 3);
             const controlId = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![0] as string;
-            const action = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![1] as string;
             const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![2] as number;
             okIf(controlId === this.id);
-            okIf(action === 'Select');
+            okIf(['Select', 'Toggle'].includes(touchAction));
             okIf(choiceIndex >= -1 && choiceIndex <= content.length);
             return true;
         } catch (e) {
@@ -911,16 +931,44 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         assert(choiceIndex !== undefined);
         const content = this.getChoicesList(input);
         const choiceId = content[choiceIndex - 1];
-        this.addValue({
-            id: choiceId,
-            erMatch: true,
-        });
-        resultBuilder.addAct(
-            new ValueAddedAct(this, {
-                value: choiceId,
-                renderedValue: this.evaluateRenderedValue(choiceId, input),
-            }),
-        );
+        const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            .arguments![1] as string;
+
+        if (touchAction === 'Select') {
+            this.addValue({
+                id: choiceId,
+                erMatch: true,
+            });
+            resultBuilder.addAct(
+                new ValueAddedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else if (touchAction === 'Toggle') {
+            if (!this.state.value.some((x) => x.id === choiceId)) {
+                this.addValue({
+                    id: choiceId,
+                    erMatch: true,
+                });
+
+                resultBuilder.addAct(
+                    new ValueAddedAct(this, {
+                        value: choiceId,
+                        renderedValue: this.evaluateRenderedValue(choiceId, input),
+                    }),
+                );
+            } else {
+                this.state.value = this.state.value.filter((x) => x.id !== choiceId);
+
+                resultBuilder.addAct(
+                    new ValueRemovedAct(this, {
+                        value: choiceId,
+                        renderedValue: this.evaluateRenderedValue(choiceId, input),
+                    }),
+                );
+            }
+        }
         return;
     }
 
@@ -928,18 +976,14 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         try {
             okIf(InputUtil.isAPLUserEventWithMatchingControlId(input, this.id));
             const userEvent = input.request as interfaces.alexa.presentation.apl.UserEvent;
-            const content = this.getSlotIds();
             okIf(userEvent.arguments !== undefined);
             okIf(userEvent.arguments.length === 3);
             const controlId = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![0] as string;
-            const action = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
                 .arguments![1] as string;
-            const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent)
-                .arguments![2] as number;
             okIf(controlId === this.id);
-            okIf(action === 'Remove');
-            okIf(choiceIndex >= -1 && choiceIndex <= content.length);
+            okIf(['Remove', 'Reduce'].includes(touchAction));
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -949,15 +993,39 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private handleRemoveChoiceByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![2];
         assert(choiceIndex !== undefined);
+        const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            .arguments![1] as string;
         const content = this.getSlotIds();
-        const choiceId = content[choiceIndex - 1];
-        this.state.value?.splice(choiceIndex - 1, 1);
-        resultBuilder.addAct(
-            new ValueRemovedAct(this, {
-                value: choiceId,
-                renderedValue: this.evaluateRenderedValue(choiceId, input),
-            }),
-        );
+        if (touchAction === 'Remove') {
+            const choiceId = content[choiceIndex - 1];
+            this.state.value?.splice(choiceIndex - 1, 1);
+            resultBuilder.addAct(
+                new ValueRemovedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else if (touchAction === 'Reduce') {
+            const aggregateValues: { [key: string]: any } = {};
+            const selections = this.getChoicesList(input);
+
+            selections.forEach((x) => {
+                aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
+            });
+
+            const choiceId = Array.from(Object.keys(aggregateValues))[choiceIndex - 1] as string;
+            const removeIndex = content.indexOf(choiceId);
+            this.state.value?.splice(removeIndex, 1);
+
+            resultBuilder.addAct(
+                new ValueRemovedAct(this, {
+                    value: choiceId,
+                    renderedValue: this.evaluateRenderedValue(choiceId, input),
+                }),
+            );
+        } else {
+            throw new Error('Invalid touchAction from Ordinal to remove items');
+        }
         return;
     }
 
@@ -1281,7 +1349,22 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.throwUnhandledActError(act);
         }
 
-        this.addStandardAPL(input, builder); // re-render APL Screen
+        if (builder.aplMode !== APLMode.COMPONENT) {
+            this.addStandardAPL(input, builder); // re-render APL Screen
+        }
+    }
+
+    renderAPLComponent(
+        props: MultiValueListAPLComponentProps,
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ): { [key: string]: any } {
+        return MultiValueListControlComponentAPLBuiltIns.renderComponent(
+            this,
+            { ...props, valueRenderer: this.props.valueRenderer },
+            input,
+            resultBuilder,
+        );
     }
 
     // tsDoc - see Control
