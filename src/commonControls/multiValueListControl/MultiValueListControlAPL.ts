@@ -1,6 +1,8 @@
 import i18next from 'i18next';
+import { ControlResponseBuilder } from '../..';
 import { ControlInput } from '../../controls/ControlInput';
-import { AplContent, MultiValueListControl } from './MultiValueListControl';
+import { assert } from '../../utils/AssertionUtils';
+import { AplContent, MultiValueListAPLComponentProps, MultiValueListControl } from './MultiValueListControl';
 
 /*
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -378,5 +380,473 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
                 },
             },
         };
+    }
+}
+
+export type MultiValueListStyles = 'checkBoxes' | 'dualList' | 'aggregateDuplicates';
+
+export namespace MultiValueListControlComponentAPLBuiltIns {
+    export function renderComponent(
+        control: MultiValueListControl,
+        props: MultiValueListAPLComponentProps,
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ) {
+        assert(props.valueRenderer !== undefined);
+        if (props.renderStyle === 'checkBoxes') {
+            resultBuilder.addAPLDocumentLayout('MultiValueListSelector', {
+                parameters: [
+                    {
+                        name: 'controlId',
+                        type: 'string',
+                    },
+                    {
+                        name: 'listItems',
+                        type: 'object',
+                    },
+                ],
+                items: [
+                    {
+                        type: 'Sequence',
+                        scrollDirection: 'vertical',
+                        data: '${listItems}',
+                        width: '100%',
+                        height: '100%',
+                        paddingLeft: '0',
+                        numbered: true,
+                        items: [
+                            {
+                                type: 'Container',
+                                items: [
+                                    {
+                                        type: 'TouchWrapper',
+                                        disabled: '${disabled}',
+                                        item: {
+                                            type: 'Container',
+                                            direction: 'row',
+                                            items: [
+                                                {
+                                                    type: 'Text',
+                                                    paddingLeft: '32px',
+                                                    style: 'textStyleBody',
+                                                    text: '${data.primaryText}',
+                                                    textAlignVertical: 'center',
+                                                    grow: 1,
+                                                },
+                                                {
+                                                    type: 'AlexaCheckbox',
+                                                    id: '${checkboxId}',
+                                                    checkboxHeight: '64px',
+                                                    checkboxWidth: '64px',
+                                                    selectedColor: '${selectedColor}',
+                                                    checked: '${data.checked}',
+                                                    disabled: '${disabled}',
+                                                    onPress: [
+                                                        {
+                                                            type: 'Sequential',
+                                                            commands: [
+                                                                {
+                                                                    type: 'SendEvent',
+                                                                    arguments: [
+                                                                        '${controlId}',
+                                                                        'Toggle',
+                                                                        '${ordinal}',
+                                                                    ],
+                                                                },
+                                                                {
+                                                                    type: 'SetValue',
+                                                                    componentId: 'root',
+                                                                    property: 'disableScreen',
+                                                                    value: true,
+                                                                },
+                                                                {
+                                                                    type: 'SetValue',
+                                                                    componentId: 'root',
+                                                                    property: 'debugText',
+                                                                    value: 'Selected ${ordinal}',
+                                                                },
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
+                                            ],
+                                        },
+                                        onPress: [
+                                            {
+                                                type: 'Sequential',
+                                                commands: [
+                                                    {
+                                                        type: 'SendEvent',
+                                                        arguments: ['${controlId}', 'Toggle', '${ordinal}'],
+                                                    },
+                                                    {
+                                                        type: 'SetValue',
+                                                        componentId: 'root',
+                                                        property: 'disableScreen',
+                                                        value: true,
+                                                    },
+                                                    {
+                                                        type: 'SetValue',
+                                                        componentId: 'root',
+                                                        property: 'debugText',
+                                                        value: 'Selected ${ordinal}',
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const listItems: Array<{
+                primaryText: string;
+                checked: boolean;
+            }> = [];
+            const choices = control.getChoicesList(input);
+            for (const item of choices) {
+                listItems.push({
+                    primaryText: props.valueRenderer([item], input)[0],
+                    checked: control.getSlotIds().includes(item),
+                });
+            }
+            return {
+                type: 'MultiValueListSelector',
+                controlId: control.id,
+                listItems,
+            };
+        } else if (props.renderStyle === 'dualList') {
+            resultBuilder.addAPLDocumentLayout('MultiValueListSelector', {
+                parameters: [
+                    {
+                        name: 'controlId',
+                        type: 'string',
+                    },
+                    {
+                        name: 'payload',
+                        type: 'object',
+                    },
+                ],
+                items: [
+                    {
+                        type: 'Container',
+                        direction: 'row',
+                        width: '100%',
+                        height: '100%',
+                        items: [
+                            {
+                                type: 'Container',
+                                width: '50%',
+                                items: [
+                                    {
+                                        type: 'Sequence',
+                                        data: '${payload.choices.listItems}',
+                                        numbered: true,
+                                        grow: 1,
+                                        paddingLeft: '10px',
+                                        items: [
+                                            {
+                                                type: 'AlexaTextListItem',
+                                                hideHorizontalMargin: true,
+                                                primaryText: '${data.primaryText}',
+                                                primaryAction: {
+                                                    type: 'Sequential',
+                                                    commands: [
+                                                        {
+                                                            type: 'SetValue',
+                                                            componentId: 'root',
+                                                            property: 'debugText',
+                                                            value: '${ordinal}',
+                                                        },
+                                                        {
+                                                            type: 'SendEvent',
+                                                            arguments: [
+                                                                '${payload.general.controlId}',
+                                                                'Select',
+                                                                '${ordinal}',
+                                                            ],
+                                                        },
+                                                    ],
+                                                },
+                                                touchForward: true,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                            {
+                                type: 'Container',
+                                width: '50%',
+                                items: [
+                                    {
+                                        type: 'AlexaBackground',
+                                        backgroundColor: 'white',
+                                    },
+                                    {
+                                        type: 'Text',
+                                        style: 'textStyleMetadata',
+                                        color: 'black',
+                                        textAlign: 'center',
+                                        textAlignVertical: 'center',
+                                        maxLines: 1,
+                                        paddingTop: '@spacingXSmall',
+                                        text: '${payload.general.selectionListTitle}',
+                                    },
+                                    {
+                                        type: 'Text',
+                                        style: 'textStyleMetadataAlt',
+                                        color: 'black',
+                                        textAlign: 'center',
+                                        textAlignVertical: 'center',
+                                        maxLines: 1,
+                                        text: '${payload.general.selectionListSubtitle}',
+                                    },
+                                    {
+                                        type: 'Sequence',
+                                        scrollDirection: 'vertical',
+                                        data: '${payload.selections.listItems}',
+                                        numbered: true,
+                                        grow: 1,
+                                        items: [
+                                            {
+                                                type: 'Container',
+                                                items: [
+                                                    {
+                                                        type: 'AlexaSwipeToAction',
+                                                        touchForward: true,
+                                                        hideOrdinal: true,
+                                                        theme: 'light',
+                                                        actionIconType: 'AVG',
+                                                        actionIcon: 'cancel',
+                                                        actionIconBackground: 'red',
+                                                        primaryText: '${data.primaryText}',
+                                                        onSwipeDone: {
+                                                            type: 'Sequential',
+                                                            commands: [
+                                                                {
+                                                                    type: 'SetValue',
+                                                                    componentId: 'root',
+                                                                    property: 'debugText',
+                                                                    value: '${ordinal}',
+                                                                },
+                                                                {
+                                                                    type: 'SendEvent',
+                                                                    arguments: [
+                                                                        '${payload.general.controlId}',
+                                                                        'Remove',
+                                                                        '${ordinal}',
+                                                                    ],
+                                                                },
+                                                            ],
+                                                        },
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+            const listOfChoices = [];
+            const selectedChoices = [];
+
+            const choices = control.getChoicesList(input);
+            for (const item of choices) {
+                listOfChoices.push({
+                    primaryText: props.valueRenderer([item], input)[0],
+                });
+            }
+
+            const selections = control.getSlotIds();
+            for (const item of selections) {
+                selectedChoices.push({
+                    primaryText: props.valueRenderer([item], input)[0],
+                });
+            }
+
+            const payload = {
+                general: {
+                    headerTitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
+                    headerSubtitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
+                    selectionListTitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
+                    selectionListSubtitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
+                    controlId: control.id,
+                },
+                choices: {
+                    listItems: listOfChoices,
+                },
+                selections: {
+                    listItems: selectedChoices,
+                },
+            };
+
+            return {
+                type: 'MultiValueListSelector',
+                controlId: control.id,
+                payload,
+            };
+        } else if (props.renderStyle === 'aggregateDuplicates') {
+            resultBuilder.addAPLDocumentLayout('MultiValueListSelector', {
+                parameters: [
+                    {
+                        name: 'controlId',
+                        type: 'string',
+                    },
+                    {
+                        name: 'listItems',
+                        type: 'object',
+                    },
+                ],
+                items: [
+                    {
+                        type: 'Sequence',
+                        id: 'root',
+                        scrollDirection: 'vertical',
+                        data: '${listItems}',
+                        width: '100%',
+                        height: '100%',
+                        paddingLeft: '0',
+                        numbered: true,
+                        bind: [
+                            {
+                                name: 'disableContent',
+                                value: false,
+                                type: 'boolean',
+                            },
+                        ],
+                        items: [
+                            {
+                                type: 'Container',
+                                items: [
+                                    {
+                                        type: 'TouchWrapper',
+                                        disabled: '${disabled}',
+                                        item: {
+                                            type: 'Container',
+                                            direction: 'row',
+                                            items: [
+                                                {
+                                                    type: 'Text',
+                                                    paddingLeft: '32px',
+                                                    style: 'textStyleBody',
+                                                    text: '${data.primaryText}',
+                                                    textAlignVertical: 'center',
+                                                    grow: 1,
+                                                },
+                                                {
+                                                    type: 'Text',
+                                                    paddingTop: '12px',
+                                                    id: 'counter-${ordinal}',
+                                                    textAlign: 'center',
+                                                    text: '${data.value}',
+                                                },
+                                                {
+                                                    type: 'AlexaIconButton',
+                                                    buttonSize: '72dp',
+                                                    disabled: '${disableContent}',
+                                                    vectorSource:
+                                                        'M21 11h-8V3C13 2.45 12.55 2 12 2 11.45 2 11 2.45 11 3v8H3C2.45 11 2 11.45 2 12 2 12.55 2.45 13 3 13h8v8C11 21.55 11.45 22 12 22 12.55 22 13 21.55 13 21v-8h8C21.55 13 22 12.55 22 12 22 11.45 21.55 11 21 11z',
+                                                    primaryAction: {
+                                                        type: 'Sequential',
+                                                        commands: [
+                                                            {
+                                                                type: 'SetValue',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                            {
+                                                                type: 'SendEvent',
+                                                                arguments: [
+                                                                    '${controlId}',
+                                                                    'Select',
+                                                                    '${ordinal}',
+                                                                ],
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                                {
+                                                    type: 'AlexaIconButton',
+                                                    buttonSize: '72dp',
+                                                    disabled: '${data.value <=0 || disableContent}',
+                                                    vectorSource:
+                                                        'M21 13H3C2.45 13 2 12.55 2 12 2 11.45 2.45 11 3 11h18C21.55 11 22 11.45 22 12 22 12.55 21.55 13 21 13z',
+                                                    primaryAction: {
+                                                        type: 'Sequential',
+                                                        commands: [
+                                                            {
+                                                                type: 'SetValue',
+                                                                property: 'disableContent',
+                                                                value: true,
+                                                            },
+                                                            {
+                                                                type: 'SendEvent',
+                                                                arguments: [
+                                                                    '${controlId}',
+                                                                    'Reduce',
+                                                                    '${ordinal}',
+                                                                ],
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                        onPress: [
+                                            {
+                                                type: 'Sequential',
+                                                commands: [
+                                                    {
+                                                        type: 'SetValue',
+                                                        property: 'disableContent',
+                                                        value: true,
+                                                    },
+                                                    {
+                                                        type: 'SendEvent',
+                                                        arguments: ['${controlId}', 'Select', '${ordinal}'],
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const listItems: Array<{
+                primaryText: string;
+                value: number;
+            }> = [];
+            const aggregateValues: { [key: string]: any } = {};
+            const selections = control.getSlotIds();
+
+            selections.forEach((x) => {
+                aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
+            });
+
+            const choices = control.getChoicesList(input);
+            for (const item of choices) {
+                listItems.push({
+                    primaryText: props.valueRenderer([item], input)[0],
+                    value: aggregateValues[item] ?? 0,
+                });
+            }
+            return {
+                type: 'MultiValueListSelector',
+                controlId: control.id,
+                listItems,
+            };
+        } else {
+            throw Error('Invalid renderStyle');
+        }
     }
 }

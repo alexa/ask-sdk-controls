@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-import { Intent } from 'ask-sdk-model';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { randomlyPick } from '../utils/ArrayUtils';
@@ -19,6 +18,8 @@ import { StringOrList } from '../utils/BasicTypes';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { IControl } from './interfaces/IControl';
+
+export type FunctionProp<T> = (input: ControlInput) => T;
 
 /**
  * Defines the mandatory props of a Control.
@@ -30,6 +31,13 @@ export interface ControlProps {
      * This must be unique within the scope of the entire control tree.
      */
     id: string;
+}
+
+export interface APLComponentProps {
+    /**
+     * Defines the render style of APL component produced by the control.
+     */
+    renderStyle: any;
 }
 
 /**
@@ -286,6 +294,14 @@ export abstract class Control implements IControl {
         return act.render(input, responseBuilder);
     }
 
+    renderAPLComponent(
+        props: APLComponentProps,
+        input: ControlInput,
+        responseBuilder: ControlResponseBuilder,
+    ): { [key: string]: any } {
+        throw new Error('Not Implemented');
+    }
+
     // TODO: remove and/or create a new class... class UnhandledActError extends Error.
     throwUnhandledActError(act: SystemAct): never {
         throw new Error(`No NLG for ${act}`);
@@ -339,5 +355,13 @@ export abstract class Control implements IControl {
         return typeof propValue === 'function'
             ? (propValue as any).call(this, act, input, this.state)
             : propValue;
+    }
+
+    evaluateFunctionProp<T>(prop: T | ((input: ControlInput) => T), input: ControlInput): T {
+        if (typeof prop !== 'function') {
+            return prop;
+        }
+        const func = prop as FunctionProp<T>;
+        return func(input);
     }
 }

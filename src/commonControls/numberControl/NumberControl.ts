@@ -25,7 +25,13 @@ import {
     ValueControlIntent,
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
-import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
+import {
+    APLComponentProps,
+    Control,
+    ControlInputHandlingProps,
+    ControlProps,
+    ControlState,
+} from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
@@ -38,6 +44,7 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
+import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InformConfusingConfirmationAct,
@@ -57,7 +64,11 @@ import {
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
-import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
+import {
+    NumberControlAPLComponentBuiltIns,
+    NumberControlAPLComponentStyle,
+    NumberControlAPLPropsBuiltIns,
+} from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -303,6 +314,10 @@ interface LastInitiativeState {
     actName?: string;
 }
 
+export interface NumberControlAPLComponentProps extends APLComponentProps {
+    renderStyle: NumberControlAPLComponentStyle;
+}
+
 /**
  * State tracked by a NumberControl.
  */
@@ -543,7 +558,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             const slotElicitation = generateSlotElicitation();
             builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
 
-            this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            // Check APL mode to prevent addition of APL Directive.
+            if (builder.aplMode !== APLMode.COMPONENT) {
+                this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            }
         } else if (act instanceof RequestChangedValueAct) {
             const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
             const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
@@ -551,7 +569,9 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            this.addStandardAPL(input, builder, this.props.apl.requestChangedValue);
+            if (builder.aplMode !== APLMode.COMPONENT) {
+                this.addStandardAPL(input, builder, this.props.apl.requestValue);
+            }
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
@@ -624,6 +644,14 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
         }
+    }
+
+    renderAPLComponent(
+        props: NumberControlAPLComponentProps,
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ): { [key: string]: any } {
+        return NumberControlAPLComponentBuiltIns.renderComponent(this, props, input, resultBuilder);
     }
 
     // tsDoc - see Control
@@ -1339,7 +1367,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             : prop;
     }
 
-    private evaluateAPLValidationFailedMessage(value?: number): string {
+    evaluateAPLValidationFailedMessage(value?: number): string {
         if (typeof this.props.apl.validationFailedMessage === 'function') {
             return this.props.apl.validationFailedMessage(value);
         }

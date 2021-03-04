@@ -13,6 +13,7 @@
 
 import { ResponseBuilder } from 'ask-sdk-core';
 import { canfulfill, dialog, Directive, Intent, interfaces, Response, ui } from 'ask-sdk-model';
+import { APLMode } from './AplMode';
 
 /**
  * A specialized ResponseBuilder for use with Controls framework
@@ -34,6 +35,13 @@ export class ControlResponseBuilder implements ResponseBuilder {
 
     private displayUsed: boolean;
     shouldEndSession: boolean;
+
+    // APL Component props
+    aplMode: APLMode;
+
+    aplDocumentDataSources: { [key: string]: any } = {};
+    aplDocumentStyles: { [key: string]: any } = {};
+    aplDocumentLayouts: { [key: string]: any } = {};
 
     constructor(responseBuilder: ResponseBuilder) {
         this.coreBuilder = responseBuilder;
@@ -297,5 +305,17 @@ export class ControlResponseBuilder implements ResponseBuilder {
      */
     getResponse(): Response {
         return this.build();
+    }
+
+    addAPLDocumentDataSource(key: string, data: { [key: string]: any }) {
+        this.aplDocumentDataSources[key] = data;
+    }
+
+    addAPLDocumentStyle(key: string, data: { [key: string]: any }) {
+        this.aplDocumentStyles[key] = data;
+    }
+
+    addAPLDocumentLayout(key: string, data: { [key: string]: any }) {
+        this.aplDocumentLayouts[key] = data;
     }
 }
