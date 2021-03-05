@@ -213,16 +213,16 @@ export abstract class ControlManager implements IControlManager {
      *      `ControlManager.renderActsOneByOne()`.
      *
      */
-    render(
+    async render(
         result: ControlResult,
         input: ControlInput,
         controlResponseBuilder: ControlResponseBuilder,
-    ): void | Promise<void> {
+    ): Promise<void> {
         // set the APL mode to default.
         // Required to enable addRenderAPLDirective on control.renderActs()
         controlResponseBuilder.aplMode = APLMode.DIRECT;
 
-        renderActsInSequence(result.acts, input, controlResponseBuilder);
+        await renderActsInSequence(result.acts, input, controlResponseBuilder);
     }
 
     /**
@@ -317,13 +317,13 @@ export abstract class ControlManager implements IControlManager {
  * @param input - Input
  * @param responseBuilder - Response builder.
  */
-export function renderActsInSequence(
+export async function renderActsInSequence(
     systemActs: SystemAct[],
     input: ControlInput,
     controlResponseBuilder: ControlResponseBuilder,
-): void {
+): Promise<void> {
     for (const act of systemActs) {
-        act.control.renderAct(act, input, controlResponseBuilder);
+        await act.control.renderAct(act, input, controlResponseBuilder);
     }
 }
 

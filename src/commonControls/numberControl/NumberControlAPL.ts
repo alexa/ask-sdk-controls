@@ -13,13 +13,12 @@
 
 import i18next from 'i18next';
 import _ from 'lodash';
-import { ControlInput, ControlResponseBuilder } from '../..';
-import { DeepRequired } from '../../utils/DeepRequired';
+import { AplContent, ControlInput, ControlResponseBuilder } from '../..';
 import { ListAPLComponentProps } from '../listControl/ListControl';
-import { NumberControl, NumberControlAPLComponentProps, NumberControlAPLProps } from './NumberControl';
+import { NumberControl, NumberControlAPLComponentProps } from './NumberControl';
 
 export namespace NumberControlAPLComponentBuiltIns {
-    export function renderModalKeypad(
+    export async function renderModalKeypad(
         control: NumberControl,
         props: NumberControlAPLComponentProps,
         input: ControlInput,
@@ -49,7 +48,11 @@ export namespace NumberControlAPLComponentBuiltIns {
                     type: 'string',
                 },
                 {
-                    name: 'validationFailureText',
+                    name: 'validationFailureMessage',
+                    type: 'string',
+                },
+                {
+                    name: 'inputNumber',
                     type: 'string',
                 },
             ],
@@ -88,14 +91,14 @@ export namespace NumberControlAPLComponentBuiltIns {
                                     maxWidth: '100%',
                                     grow: 1,
                                     validCharacters: '-0-9',
-                                    text: control.state.value?.toString(),
+                                    text: '${inputNumber}',
                                     hint: '[number]',
                                     hintWeight: 'normal',
                                     fontSize: '34px',
                                 },
                                 {
                                     type: 'Text',
-                                    text: control.state.isValidValue ? '' : '${validationFailureMessage}',
+                                    text: '${validationFailureMessage}',
                                     minWidth: '100%',
                                     maxWidth: '100%',
                                     height: '30px',
@@ -109,10 +112,15 @@ export namespace NumberControlAPLComponentBuiltIns {
             ],
         });
 
+        const validationFailureMessage: string = await control.evaluateAPLValidationFailedMessage(
+            props.validationFailedMessage!,
+            input,
+        );
         return {
             type: 'ModalKeyPad',
             controlId: control.id,
-            validationFailureMessage: props.validationFailureText, //control.evaluateAPLValidationFailedMessage(control.state.value);
+            inputNumber: control.state.value?.toString(),
+            validationFailureMessage,
         };
     }
 
@@ -128,7 +136,7 @@ export namespace NumberControlAPLComponentBuiltIns {
          * @param input - Input
          * @param resultBuilder - Result builder
          */
-        static default = (
+        static default = async (
             control: NumberControl,
             defaultProps: NumberControlAPLComponentProps,
             input: ControlInput,
@@ -142,7 +150,7 @@ export namespace NumberControlAPLComponentBuiltIns {
          * @param props - props
          */
         static of(props: ListAPLComponentProps) {
-            return (
+            return async (
                 control: NumberControl,
                 defaultProps: NumberControlAPLComponentProps,
                 input: ControlInput,
@@ -158,53 +166,54 @@ export namespace NumberControlAPLComponentBuiltIns {
 }
 
 export namespace NumberControlAPLPropsBuiltIns {
-    /*
-     * Default NumberControl APL props
-     */
-    export const Default: DeepRequired<NumberControlAPLProps> = {
-        enabled: true,
-        validationFailedMessage: (value?: number | string) =>
-            i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', {
-                value,
-            }),
-        requestValue: (control: NumberControl, input: ControlInput, validationFailedMessage: string) => {
+    export interface DefaultSelectValueAPLProps {
+        /**
+         * Default: 'Please select'
+         */
+        title?: string;
+        /**
+         * Tracks the text to be displayed for invalid input values
+         * when control renders APL in Component Mode.
+         */
+        validationFailedMessage?: string | ((value?: number) => string);
+        /**
+         * Function that maps the NumberControlState.value to rendered value that
+         * will be presented to the user as a list.
+         *
+         * Default: returns the value unchanged in string format.
+         */
+        valueRenderer?: (value: number, input: ControlInput) => string;
+    }
+
+    export function defaultSelectValueAPLContent(
+        props: DefaultSelectValueAPLProps,
+    ): (control: NumberControl, input: ControlInput) => AplContent | Promise<AplContent> {
+        return async (control: NumberControl, input: ControlInput) => {
             const aplContent = {
                 document: numberPadDocumentGenerator(),
-                dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
-                customHandlingFuncs: [],
+                dataSource: await numberPadDataSourceGenerator(control, input, props),
             };
             return aplContent;
-        },
-        requestChangedValue: (
-            control: NumberControl,
-            input: ControlInput,
-            validationFailedMessage: string,
-        ) => {
-            const aplContent = {
-                document: numberPadDocumentGenerator(),
-                dataSource: numberPadDataSourceGenerator(control, input, validationFailedMessage),
-                customHandlingFuncs: [],
-            };
-            return aplContent;
-        },
-        renderComponent: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default,
-    };
+        };
+    }
 
     /**
      * The APL dataSource to use when requesting a number value.
      *
      */
-    export function numberPadDataSourceGenerator(
+    export async function numberPadDataSourceGenerator(
         control: NumberControl,
         input: ControlInput,
-        validationFailedMessage: string,
+        contentProps: DefaultSelectValueAPLProps,
     ) {
         return {
             numPadData: {
                 controlId: control.id,
                 headerTitle: i18next.t('NUMBER_CONTROL_DEFAULT_APL_HEADER_TITLE'),
-                isValidValue: control.state.isValidValue,
-                validationFailedMessage,
+                validationFailedMessage: await control.evaluateAPLValidationFailedMessage(
+                    contentProps.validationFailedMessage!,
+                    input,
+                ),
             },
         };
     }
@@ -301,7 +310,6 @@ export namespace NumberControlAPLPropsBuiltIns {
                                 },
                                 {
                                     type: 'Text',
-                                    when: '${numPadData.isValidValue == false}',
                                     width: '50vw',
                                     spacing: '2vh',
                                     text: '${numPadData.validationFailedMessage}',

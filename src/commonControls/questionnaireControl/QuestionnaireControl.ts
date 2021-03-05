@@ -1286,7 +1286,11 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     }
 
     // tsDoc - see Control
-    public renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
+    public async renderAct(
+        act: SystemAct,
+        input: ControlInput,
+        builder: ControlResponseBuilder,
+    ): Promise<void> {
         // initiative acts (which include APL generation)
         if (act instanceof AskQuestionAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.askQuestionAct, input));

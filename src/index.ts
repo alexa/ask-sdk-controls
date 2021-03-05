@@ -59,7 +59,6 @@ export {
 } from './commonControls/listControl/ListControl';
 export { ListControlAPLPropsBuiltIns } from './commonControls/listControl/ListControlAPL';
 export {
-    NumberConfirmationRequireFunction,
     NumberControl,
     NumberControlActionProps,
     NumberControlInteractionModelProps,
@@ -146,10 +145,10 @@ export {
     unpackOrdinalControlIntent,
 } from './intents/OrdinalControlIntent';
 export {
-    ValueControlIntent,
-    ValueControlIntentSlots,
     MultiValuePayload,
     unpackValueControlIntent,
+    ValueControlIntent,
+    ValueControlIntentSlots,
 } from './intents/ValueControlIntent';
 export { ControlInteractionModelGenerator } from './interactionModelGeneration/ControlInteractionModelGenerator';
 export { InteractionModelGenerator } from './interactionModelGeneration/InteractionModelGenerator';
@@ -165,8 +164,8 @@ export { ListFormatting } from './intl/ListFormat';
 export { Logger } from './logging/Logger';
 export { ControlResponseBuilder } from './responseGeneration/ControlResponseBuilder';
 export {
-    ControlHandler,
     CanHandleExceptionBehavior as CanHandleThrowBehavior,
+    ControlHandler,
 } from './runtime/ControlHandler';
 export * from './systemActs/ContentActs';
 export * from './systemActs/InitiativeActs';

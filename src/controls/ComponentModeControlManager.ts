@@ -34,7 +34,7 @@ export abstract class ComponentModeControlManager extends ControlManager impleme
         // Required to disable addRenderAPLDirective on control.renderActs()
         controlResponseBuilder.aplMode = APLMode.COMPONENT;
 
-        renderActsInSequence(result.acts, input, controlResponseBuilder);
+        await renderActsInSequence(result.acts, input, controlResponseBuilder);
         await this.renderAPL(result, input, controlResponseBuilder);
     }
 

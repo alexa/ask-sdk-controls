@@ -200,7 +200,7 @@ suite('DateControl tests', () => {
             );
             const result = new ControlResponseBuilder(undefined!);
             try {
-                control.renderAct(new TestAct(control, 'test'), input, result);
+                await control.renderAct(new TestAct(control, 'test'), input, result);
             } catch (err) {
                 expect(err.message).equal(
                     'No NLG for TestAct:{"takesInitiative":false,"test":"test","controlId":"dateControl"}',

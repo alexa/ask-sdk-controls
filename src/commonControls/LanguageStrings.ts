@@ -48,37 +48,28 @@ export const defaultI18nResources: Resource = {
 
             // NumberControl Runtime
             NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'Ok. Value set to {{value}}.',
+            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED: 'Ok. Value changed to {{value}}.',
+            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: `OK, removed {{value}}.`,
             NUMBER_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
                 "Sorry but that's not a valid choice because {{reason}}.",
             NUMBER_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE: "Sorry but that's not a valid choice.",
             NUMBER_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE: 'What number?',
-            NUMBER_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE: 'What should I change it to?',
-            NUMBER_CONTROL_DEFAULT_PROMPT_REPEAT_UNUSABLE_VALUE:
-                "I'm really sorry but I heard {{value}} again.",
-            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
+            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CONFIRMED: 'Great.',
             NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
             NUMBER_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE: 'Did you perhaps mean {{value}}?',
-            NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_DISCONFIRMATION:
-                'Sorry you disagreed but with the same number.',
-            NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_CONFIRMATION:
-                'Sorry the previous value is {{previousValue}}, but you confirmed to a different number.',
+
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'Ok. Value set to {{value}}.',
+            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'Ok. Value changed to {{value}}.',
+            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: `OK, removed {{value}}.`,
             NUMBER_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
                 "Sorry but that's not a valid choice because {{reason}}.",
             NUMBER_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE: "Sorry but that's not a valid choice.",
             NUMBER_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE: 'What number?',
-            NUMBER_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE: 'What should I change it to?',
-            NUMBER_CONTROL_DEFAULT_REPROMPT_REPEAT_UNUSABLE_VALUE:
-                "I'm really sorry but I heard {{value}} again.",
-            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
+            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CONFIRMED: 'Great.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE: 'Did you perhaps mean {{value}}?',
-            NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_DISCONFIRMATION:
-                'Sorry you disagreed but with the same number.',
-            NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_CONFIRMATION:
-                'Sorry the previous value is {{previousValue}}, but you confirmed to a different number.',
             NUMBER_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Enter a number...',
             NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE: "Sorry but '{{value}}' is not a valid choice.",
 

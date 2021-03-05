@@ -179,6 +179,14 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the feedback is defined and matches one of the provided identifiers.
+     * @param feedback - Feedback slot value
+     * @param expectedValues - Feedback slot value IDs to match against
+     */
+    export function feedbackIsMatch(feedback: string | undefined, expectedValues: string[]): boolean {
+        return feedback !== undefined && expectedValues.includes(feedback);
+    }
+    /**
      * Test if the slot value matches one of the provided identifiers, or is undefined.
      * @param slotValue - Slot value ID
      * @param expectedValues - Slot value IDs to match against

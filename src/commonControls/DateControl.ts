@@ -844,7 +844,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     // tsDoc - see Control
-    renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
+    async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): Promise<void> {
         if (act instanceof RequestValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
             builder.addRepromptFragment(

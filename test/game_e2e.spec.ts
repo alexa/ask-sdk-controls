@@ -25,9 +25,9 @@ import {
     NumberControl,
     RequestChangedValueAct,
     RequestValueAct,
-    ValueControlIntent,
     SystemAct,
     ValueControl,
+    ValueControlIntent,
     ValueSetAct,
 } from '../src';
 import { Strings as $ } from '../src/constants/Strings';
@@ -349,7 +349,7 @@ class PlayerContainer extends ContainerControl {
         prompts: {
             requestValue: 'How old is your avatar?',
             valueSet: (act) => (act.payload.value === 25 ? "Hey, that's my age!" : 'Cool.'),
-            // valueChanged: 'Cool.'
+            valueChanged: 'Cool.',
         },
         interactionModel: { targets: [$$.Target.Age] },
     });

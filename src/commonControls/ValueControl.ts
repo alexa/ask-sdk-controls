@@ -967,7 +967,7 @@ export class ValueControl extends Control implements InteractionModelContributor
     }
 
     // tsDoc - see Control
-    renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
+    async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): Promise<void> {
         if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
             builder.addRepromptFragment(

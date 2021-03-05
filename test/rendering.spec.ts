@@ -21,10 +21,10 @@ import {
     DateControlValidations,
     InvalidValueAct,
     RequestValueAct,
-    ValueControlIntent,
     SkillInvoker,
     SystemAct,
     UnusableInputValueAct,
+    ValueControlIntent,
 } from '../src';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
@@ -78,11 +78,15 @@ class RenderingDemoControl extends Control {
 
     takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): void {}
 
-    renderAct(act: SystemAct, input: ControlInput, responseBuilder: ControlResponseBuilder): void {
+    async renderAct(
+        act: SystemAct,
+        input: ControlInput,
+        responseBuilder: ControlResponseBuilder,
+    ): Promise<void> {
         if (act instanceof InvalidValueAct) {
             responseBuilder.addPromptFragment('The current value is invalid.'); // <<---- 'rendering by Control'. this is the most common approach
         } else {
-            super.renderAct(act, input, responseBuilder); // <<---- super.renderAct delegates to act.render(). this is 'self-render'. see UnusableInputValueAct.render()
+            await super.renderAct(act, input, responseBuilder); // <<---- super.renderAct delegates to act.render(). this is 'self-render'. see UnusableInputValueAct.render()
         }
     }
 }
@@ -92,16 +96,16 @@ class RenderingDemoControlManager extends ControlManager {
         return new RenderingDemoControl('root');
     }
 
-    render(
+    async render(
         result: ControlResult,
         input: ControlInput,
         controlResponseBuilder: ControlResponseBuilder,
-    ): void | Promise<void> {
+    ): Promise<void> {
         for (const act of result.acts) {
             if (act instanceof RequestValueAct) {
                 controlResponseBuilder.addPromptFragment('How many ducks?'); // <<---- 'render by ControlManager'.. this offers maximum power.
             } else {
-                act.control.renderAct(act, input, controlResponseBuilder); // <<---- the general case is to 'render by Control'
+                await act.control.renderAct(act, input, controlResponseBuilder); // <<---- the general case is to 'render by Control'
             }
         }
     }

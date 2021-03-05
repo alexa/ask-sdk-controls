@@ -193,7 +193,7 @@ suite('QuestionnaireControl e2e tests', () => {
         const questionnaireControl = controlManager.createControlTree();
         const touchInput = TestInput.simpleUserEvent(['healthScreen', 'radioClick', 'cough', 1]);
         const responseBuilder = new ControlResponseBuilder(ResponseFactory.init());
-        questionnaireControl.renderAct(
+        await questionnaireControl.renderAct(
             new ActiveAPLInitiativeAct(questionnaireControl),
             touchInput,
             responseBuilder,

@@ -22,6 +22,10 @@ export namespace BasicNumberDemo {
                     validation: [
                         (state) => state.value! % 2 === 0 || { renderedReason: 'the value must be even' },
                     ],
+                    apl: {
+                        validationFailedMessage: (value) =>
+                            `Sorry, ${value} is not valid, value must be even`,
+                    },
                 }),
             );
             return rootControl;
