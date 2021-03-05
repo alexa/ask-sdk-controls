@@ -88,12 +88,12 @@ export interface ValueChangedPayload<T> {
     /**
      * The previous control value.
      */
-    previousValue: T;
+    previousValue?: T;
 
     /**
      * The previous rendered value.
      */
-    renderedPreviousValue: string;
+    renderedPreviousValue?: string;
 }
 
 /**

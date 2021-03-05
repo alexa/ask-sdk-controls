@@ -13,15 +13,15 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import {
+    AmazonBuiltInSlotType,
+    AmazonIntent,
     ControlHandler,
     IntentBuilder,
-    ValueControlIntent,
     SkillInvoker,
     TestInput,
     testTurn,
+    ValueControlIntent,
     waitForDebugger,
-    AmazonBuiltInSlotType,
-    AmazonIntent,
 } from '../../../../src';
 import { BasicNumberDemo } from '../src';
 import { BasicNumberDemoIM } from '../src/buildInteractionModel';
@@ -53,23 +53,23 @@ suite('Number Demo', () => {
         await testTurn(invoker, 'U: yes', TestInput.of(IntentBuilder.of('AMAZON.YesIntent')), 'A: Great.');
     });
 
-    test('Number Demo - 40 as value, no as disconfirmation, resolve ambiguity to 14', async () => {
+    test('Number Demo - 14 as value, no as disconfirmation, resolve ambiguity to 40', async () => {
         const requestHandler = new ControlHandler(new BasicNumberDemo.DemoControlManager());
         const invoker = new SkillInvoker(requestHandler);
         await testTurn(invoker, 'U: __', TestInput.launchRequest(), 'A: Welcome. What number?');
 
         await testTurn(
             invoker,
-            'U: forty',
-            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '40' })),
-            'A: Was that 40?',
+            'U: fourteen',
+            TestInput.of(ValueControlIntent.of('AMAZON.NUMBER', { 'AMAZON.NUMBER': '14' })),
+            'A: Was that 14?',
         );
 
         await testTurn(
             invoker,
             'U: no',
             TestInput.of(IntentBuilder.of('AMAZON.NoIntent')),
-            'A: My mistake. Did you perhaps mean 14?',
+            'A:  My mistake. Did you perhaps mean 40?',
         );
 
         await testTurn(invoker, 'U: yes', TestInput.of(IntentBuilder.of('AMAZON.YesIntent')), 'A: Great.');

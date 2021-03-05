@@ -281,7 +281,11 @@ export abstract class Control implements IControl {
      * @param input - Input
      * @param responseBuilder - Response builder
      */
-    renderAct(act: SystemAct, input: ControlInput, responseBuilder: ControlResponseBuilder): void {
+    async renderAct(
+        act: SystemAct,
+        input: ControlInput,
+        responseBuilder: ControlResponseBuilder,
+    ): Promise<void> {
         // The default is to let the act render itself
         return act.render(input, responseBuilder);
     }
@@ -295,7 +299,10 @@ export abstract class Control implements IControl {
      * @param input - Input
      * @param responseBuilder - Response builder
      */
-    renderAPLComponent(input: ControlInput, responseBuilder: ControlResponseBuilder): { [key: string]: any } {
+    async renderAPLComponent(
+        input: ControlInput,
+        responseBuilder: ControlResponseBuilder,
+    ): Promise<{ [key: string]: any }> {
         throw new Error('Not Implemented');
     }
 

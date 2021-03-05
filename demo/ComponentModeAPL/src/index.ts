@@ -140,7 +140,9 @@ export namespace ComponentModeDemo {
                                 left: '50px',
                                 width: '200px',
                                 height: '100px',
-                                items: [this.ageControl.renderAPLComponent(input, controlResponseBuilder)],
+                                items: [
+                                    await this.ageControl.renderAPLComponent(input, controlResponseBuilder),
+                                ],
                             },
                             {
                                 id: 'label2',
@@ -162,7 +164,12 @@ export namespace ComponentModeDemo {
                                 left: '50px',
                                 width: '200px',
                                 height: '100px',
-                                items: [this.guestsControl.renderAPLComponent(input, controlResponseBuilder)],
+                                items: [
+                                    await this.guestsControl.renderAPLComponent(
+                                        input,
+                                        controlResponseBuilder,
+                                    ),
+                                ],
                             },
                             {
                                 id: 'label3',
@@ -185,7 +192,10 @@ export namespace ComponentModeDemo {
                                 width: '700px',
                                 height: '360px',
                                 items: [
-                                    this.partyThemeControl.renderAPLComponent(input, controlResponseBuilder),
+                                    await this.partyThemeControl.renderAPLComponent(
+                                        input,
+                                        controlResponseBuilder,
+                                    ),
                                 ],
                             },
 

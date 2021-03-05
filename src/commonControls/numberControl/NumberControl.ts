@@ -20,12 +20,20 @@ import {
     DeepRequired,
     falseIfGuardFailed,
     InputUtil,
+    ModelData,
     okIf,
     unpackValueControlIntent,
     ValueControlIntent,
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
-import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
+import {
+    Control,
+    ControlInitiativeHandler,
+    ControlInputHandler,
+    ControlInputHandlingProps,
+    ControlProps,
+    ControlState,
+} from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
@@ -36,29 +44,27 @@ import {
 } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { ModelData } from '../../interactionModelGeneration/ModelTypes';
 import { Logger } from '../../logging/Logger';
 import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
-    InformConfusingConfirmationAct,
-    InformConfusingDisconfirmationAct,
     InvalidValueAct,
-    ProblematicInputValueAct,
+    ValueChangedAct,
+    ValueClearedAct,
     ValueConfirmedAct,
     ValueDisconfirmedAct,
     ValueSetAct,
 } from '../../systemActs/ContentActs';
 import {
     ConfirmValueAct,
-    RequestChangedValueAct,
+    InitiativeAct,
     RequestValueAct,
     SuggestValueAct,
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
-import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
+import { evaluateInputHandlers } from '../../utils/ControlUtils';
+import { NumberControlAPLComponentBuiltIns, NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -110,17 +116,16 @@ export interface NumberControlProps extends ControlProps {
      *  - the Control will take initiative to explicitly confirm the value with a yes/no
      *    question.
      */
-    confirmationRequired?: boolean | NumberConfirmationRequireFunction;
+    confirmationRequired?: boolean | ((state: NumberControlState, input: ControlInput) => boolean);
 
-    // TODO: feature. generalize this to "valueToSuggest"
-    /**
-     * List of value-pairs that are known to be frequently misunderstood by NLU
+    /*
+     * Function that determines the value which is known to be frequently misunderstood by NLU
      *
      * Control behavior:
-     * - If the user disaffirms one value of a pair, the other will be
-     *   suggested.
+     * - If the user disaffirms a value, return value of `mostLikelyMisunderstandings`
+     * function is suggested back to the user.
      */
-    ambiguousPairs?: Array<[number, number]>;
+    mostLikelyMisunderstandings?: (value: number, input: ControlInput) => number;
 
     /**
      * Props to customize the relationship between the control and the
@@ -148,11 +153,6 @@ export interface NumberControlProps extends ControlProps {
 }
 
 /**
- * NumberControl isRequired function
- */
-export type NumberConfirmationRequireFunction = (state: NumberControlState, input: ControlInput) => boolean;
-
-/**
  * Mapping of action slot values to the capability that this control supports.
  *
  * Behavior:
@@ -173,6 +173,13 @@ export type NumberControlActionProps = {
      * Default ['builtin_change']
      */
     change?: string[];
+
+    /**
+     * Action slot value IDs that are associated with the "remove value" capability.
+     *
+     * Default ['builtin_clear', builtin_remove']
+     */
+    clear?: string[];
 };
 
 /**
@@ -242,33 +249,24 @@ export interface NumberControlInteractionModelProps {
  */
 export interface NumberControlPromptsProps {
     requestValue?: StringOrList | ((act: RequestValueAct, input: ControlInput) => StringOrList);
-    requestChangedValue?: StringOrList | ((act: RequestChangedValueAct, input: ControlInput) => StringOrList);
+    valueSet?: StringOrList | ((act: ValueSetAct<number>, input: ControlInput) => StringOrList);
+    valueChanged?: StringOrList | ((act: ValueChangedAct<number>, input: ControlInput) => StringOrList);
     confirmValue?: StringOrList | ((act: ConfirmValueAct<number>, input: ControlInput) => StringOrList);
+    valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<number>, input: ControlInput) => StringOrList);
     valueDisconfirmed?:
         | StringOrList
         | ((act: ValueDisconfirmedAct<number>, input: ControlInput) => StringOrList);
-    valueSet?: StringOrList | ((act: ValueSetAct<number>, input: ControlInput) => StringOrList);
-    valueConfirmed?: StringOrList | ((act: ValueConfirmedAct<number>, input: ControlInput) => StringOrList);
-    suggestValue?: StringOrList | ((act: SuggestValueAct<number>, input: ControlInput) => StringOrList);
-    informConfusingDisconfirmation?:
-        | StringOrList
-        | ((act: InformConfusingDisconfirmationAct<number>, input: ControlInput) => StringOrList);
-    informConfusingConfirmation?:
-        | StringOrList
-        | ((act: InformConfusingConfirmationAct<number>, input: ControlInput) => StringOrList);
-    problematicInputValue?:
-        | StringOrList
-        | ((act: ProblematicInputValueAct<number>, input: ControlInput) => StringOrList);
+    valueCleared?: StringOrList | ((act: ValueClearedAct<number>, input: ControlInput) => StringOrList);
     invalidValue?: StringOrList | ((act: InvalidValueAct<number>, input: ControlInput) => StringOrList);
+    suggestValue?: StringOrList | ((act: SuggestValueAct<number>, input: ControlInput) => StringOrList);
 }
 
-export type AplContent = { document?: any; dataSource?: any; customHandlingFuncs?: any };
+export type AplContent = { document: { [key: string]: any }; dataSource: { [key: string]: any } };
 export type AplContentFunc = (
     control: NumberControl,
     input: ControlInput,
-    validationFailedMessage: string,
-) => AplContent;
-export type AplPropNewStyle = AplContent | AplContentFunc;
+) => AplContent | Promise<AplContent>;
+export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
 export type AplRenderComponentFunc = (
     control: NumberControl,
     props: NumberControlAPLComponentProps,
@@ -290,15 +288,10 @@ export class NumberControlAPLProps {
     /**
      * Defines the APL to use when requesting a value.
      */
-    requestValue?: AplPropNewStyle;
+    requestValue?: AplDocumentPropNewStyle;
 
     /**
-     * Defines the APL to use when requesting a changed value.
-     */
-    requestChangedValue?: AplPropNewStyle;
-
-    /**
-     * The message to show on screen if validation fails.
+     * Tracks the text to be displayed for invalid input values.
      */
     validationFailedMessage?: string | ((value?: number) => string);
 
@@ -335,9 +328,18 @@ interface LastInitiativeState {
  */
 export interface NumberControlAPLComponentProps {
     /**
-     * Tracks the text to be displayed for invalid input values.
+     * Tracks the text to be displayed for invalid input values
+     * when control renders APL in Component Mode.
      */
-    validationFailureText?: string;
+    validationFailedMessage?: string | ((value?: number) => string);
+
+    /**
+     * Function that maps the NumberControlState.value to rendered value that
+     * will be presented to the user.
+     *
+     * Default: returns the value unchanged
+     */
+    valueRenderer?: (value: number, input: ControlInput) => string;
 }
 
 /**
@@ -352,24 +354,24 @@ export class NumberControlState implements ControlState {
     /**
      * Tracks whether the value has been explicitly confirmed by the user.
      */
-    isValueConfirmed: boolean = false;
-
-    /**
-     * Tracks the values the user disconfirmed.
-     */
-    rejectedValues: number[] = [];
-
-    /**
-     * Tracks whether the value is valid.
-     * TODO: remove this and allow async prop functions.
-     */
-    isValidValue: boolean = false;
+    confirmed?: boolean;
 
     /**
      * Tracks the last initiative act from the control
      */
     lastInitiative: LastInitiativeState;
+
+    /**
+     * Tracks the most recent elicitation action.
+     *
+     * Note: this isn't cleared immediate after user provides a value as the
+     * value maybe be invalid and has to be re-elicited.  Use
+     * state.lastInitiative to test if the most recent turn was a direct elicitation.
+     */
+    elicitationAction?: string;
 }
+
+const FEEDBACK_TYPES = [$.Feedback.Affirm, $.Feedback.Disaffirm];
 
 /**
  * A Control that obtains a single integer from the user.
@@ -419,34 +421,28 @@ export class NumberControl extends Control implements InteractionModelContributo
                 actions: {
                     set: [$.Action.Set],
                     change: [$.Action.Change],
+                    clear: [$.Action.Clear, $.Action.Remove],
                 },
                 targets: [$.Target.Number, $.Target.It],
             },
             prompts: {
                 requestValue: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE'),
-                requestChangedValue: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE'),
+                valueChanged: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED', {
+                        value: act.payload.renderedValue,
+                    }),
                 confirmValue: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE', {
                         value: act.payload.renderedValue,
                     }),
+                valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CONFIRMED'),
                 valueDisconfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED'),
                 valueSet: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET', {
                         value: act.payload.renderedValue,
                     }),
-                valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED'),
-                suggestValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE', {
-                        value: act.payload.renderedValue,
-                    }),
-                informConfusingDisconfirmation: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_DISCONFIRMATION'),
-                informConfusingConfirmation: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INFORM_CONFUSING_CONFIRMATION', {
-                        previousValue: act.payload.renderedValue,
-                    }),
-                problematicInputValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_REPEAT_UNUSABLE_VALUE', {
+                valueCleared: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED', {
                         value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -460,10 +456,17 @@ export class NumberControl extends Control implements InteractionModelContributo
                         value: act.payload.renderedValue,
                     });
                 },
+                suggestValue: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
             },
             reprompts: {
                 requestValue: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE'),
-                requestChangedValue: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE'),
+                valueChanged: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED', {
+                        value: act.payload.renderedValue,
+                    }),
                 confirmValue: (act) =>
                     i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE', {
                         value: act.payload.renderedValue,
@@ -473,19 +476,9 @@ export class NumberControl extends Control implements InteractionModelContributo
                     i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET', {
                         value: act.payload.renderedValue,
                     }),
-                valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED'),
-                suggestValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', {
-                        value: act.payload.renderedValue,
-                    }),
-                informConfusingDisconfirmation: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_DISCONFIRMATION'),
-                informConfusingConfirmation: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_INFORM_CONFUSING_CONFIRMATION', {
-                        previousValue: act.payload.renderedValue,
-                    }),
-                problematicInputValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_REPEAT_UNUSABLE_VALUE', {
+                valueConfirmed: i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CONFIRMED'),
+                valueCleared: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED', {
                         value: act.payload.renderedValue,
                     }),
                 invalidValue: (act) => {
@@ -499,39 +492,124 @@ export class NumberControl extends Control implements InteractionModelContributo
                         value: act.payload.renderedValue,
                     });
                 },
+                suggestValue: (act) =>
+                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', {
+                        value: act.payload.renderedValue,
+                    }),
             },
             validation: [],
             confirmationRequired: false,
-            ambiguousPairs: [
-                [13, 30],
-                [14, 40],
-                [15, 50],
-                [16, 60],
-                [17, 70],
-                [18, 80],
-                [19, 90],
-            ], // TODO: generalize the default. in english it should suggest (113 <-> 130) etc.
             required: true,
-            apl: NumberControlAPLPropsBuiltIns.Default,
+            apl: {
+                enabled: true,
+                validationFailedMessage: NumberControl.defaultValidationFailureText(),
+                requestValue: NumberControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
+                    validationFailedMessage: props.apl?.validationFailedMessage,
+                }),
+                renderComponent: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default,
+            },
             inputHandling: {
                 customHandlingFuncs: [],
+            },
+            mostLikelyMisunderstandings: (value: number) => {
+                switch (value) {
+                    case 13:
+                        return 30;
+                    case 14:
+                        return 40;
+                    case 15:
+                        return 50;
+                    case 16:
+                        return 60;
+                    case 17:
+                        return 70;
+                    case 18:
+                        return 80;
+                    case 19:
+                        return 90;
+                    case 113:
+                        return 130;
+                    case 114:
+                        return 140;
+                    case 115:
+                        return 150;
+                    case 116:
+                        return 160;
+                    case 117:
+                        return 170;
+                    case 118:
+                        return 180;
+                    case 119:
+                        return 190;
+                    default:
+                        return value;
+                }
             },
             valueRenderer: (value: number, input) => value.toString(),
         };
         return _.merge(defaults, props);
     }
 
+    static defaultValidationFailureText(): (value?: number) => string {
+        return (value?: number) => i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', { value });
+    }
+
+    standardInputHandlers: ControlInputHandler[] = [
+        {
+            name: 'SetWithValue (built-in)',
+            canHandle: this.isSetWithValue,
+            handle: this.handleSetWithValue,
+        },
+        {
+            name: 'SetWithoutValue (built-in)',
+            canHandle: this.isSetWithoutValue,
+            handle: this.handleSetWithoutValue,
+        },
+        {
+            name: 'ChangeWithValue (built-in)',
+            canHandle: this.isChangeWithValue,
+            handle: this.handleChangeWithValue,
+        },
+        {
+            name: 'ChangeWithoutValue (built-in)',
+            canHandle: this.isChangeWithoutValue,
+            handle: this.handleChangeWithoutValue,
+        },
+        {
+            name: 'BareValue (built-in)',
+            canHandle: this.isBareValue,
+            handle: this.handleBareValue,
+        },
+        {
+            name: 'ConfirmationAffirmed (built-in)',
+            canHandle: this.isConfirmationAffirmed,
+            handle: this.handleConfirmationAffirmed,
+        },
+        {
+            name: 'ConfirmationDisaffirmed (built-in)',
+            canHandle: this.isConfirmationDisaffirmed,
+            handle: this.handleConfirmationDisaffirmed,
+        },
+        {
+            name: 'FeedbackWithValue (built-in)',
+            canHandle: this.isFeedbackWithValue,
+            handle: this.handleFeedbackWithValue,
+        },
+        {
+            name: 'ClearValue (builtin)',
+            canHandle: this.isClearValue,
+            handle: this.handleClearValue,
+        },
+        {
+            name: 'SelectChoiceByTouch (built-in)',
+            canHandle: this.isSelectChoiceByTouch,
+            handle: this.handleSelectChoiceByTouch,
+        },
+    ];
+
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        const customCanHandle = await evaluateInputHandlers(this, input);
-        const builtInCanHandle: boolean =
-            this.canHandleForEmptyStateValue(input) ||
-            this.canHandleForExistingStateValue(input) ||
-            this.isScreenEvent(input);
-
-        _logIfBothTrue(customCanHandle, builtInCanHandle);
-
-        return customCanHandle || builtInCanHandle;
+        return evaluateInputHandlers(this, input);
     }
 
     // tsDoc - see Control
@@ -550,13 +628,472 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
+    /**
+     * Determine if the input is an implicit or explicit "set" with a value provided.
+     *
+     * Example utterance: "Set my age to six"
+     *
+     * @param input - Input
+     */
+    private isSetWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { action, target, feedback, values } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            const valueStr = values[0].slotValue;
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueStrDefined(valueStr));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
+            this.handleFunc = this.handleSetWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    /**
+     * Handle an implicit or explicit "set" with a value provided.
+     *
+     * @param input - Input
+     * @param resultBuilder - ResultBuilder
+     */
+    private async handleSetWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
+        const { valueStr } = InputUtil.getValueResolution(input);
+        this.setValue(valueStr);
+
+        if (this.isConfirmationRequired(input) === true) {
+            this.addInitiativeAct(
+                new ConfirmValueAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        }
+        return;
+    }
+
+    private isSetWithoutValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
+            this.handleFunc = this.handleSetWithoutValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleSetWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
+        return;
+    }
+
+    private isChangeWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            const valueStr = values[0].slotValue;
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueStrDefined(valueStr));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
+            this.handleFunc = this.handleChangeWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private async handleChangeWithValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
+        const { valueStr } = InputUtil.getValueResolution(input);
+        this.setValue(valueStr);
+        if (this.isConfirmationRequired(input) === true) {
+            this.addInitiativeAct(
+                new ConfirmValueAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+        }
+        return;
+    }
+
+    private isChangeWithoutValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
+            this.handleFunc = this.handleChangeWithoutValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleChangeWithoutValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        this.askElicitationQuestion(input, resultBuilder, $.Action.Change);
+        return;
+    }
+
+    private isBareValue(input: ControlInput): any {
+        try {
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            const valueStr = values[0].slotValue;
+            okIf(InputUtil.feedbackIsUndefined(feedback));
+            okIf(InputUtil.actionIsUndefined(action));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueStrDefined(valueStr));
+            this.handleFunc = this.handleBareValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private async handleBareValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        const { valueStr } = InputUtil.getValueResolution(input);
+        this.setValue(valueStr);
+        if (this.isConfirmationRequired(input) === true) {
+            this.addInitiativeAct(
+                new ConfirmValueAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
+        }
+        return;
+    }
+
+    private isConfirmationAffirmed(input: ControlInput): any {
+        try {
+            okIf(InputUtil.isBareYes(input));
+            okIf(
+                this.state.lastInitiative.actName === ConfirmValueAct.name ||
+                    this.state.lastInitiative.actName === SuggestValueAct.name,
+            );
+            this.handleFunc = this.handleConfirmationAffirmed;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private async handleConfirmationAffirmed(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
+        if (validationResult === true) {
+            this.state.confirmed = true;
+            this.state.lastInitiative.actName = undefined;
+            resultBuilder.addAct(
+                new ValueConfirmedAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+            );
+        } else {
+            resultBuilder.addAct(
+                new InvalidValueAct<number>(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    reasonCode: validationResult.reasonCode,
+                    renderedReason: validationResult.renderedReason,
+                }),
+            );
+            this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
+        }
+    }
+
+    private isConfirmationDisaffirmed(input: ControlInput): any {
+        try {
+            okIf(InputUtil.isBareNo(input));
+            okIf(
+                this.state.lastInitiative.actName === ConfirmValueAct.name ||
+                    this.state.lastInitiative.actName === SuggestValueAct.name,
+            );
+            this.handleFunc = this.handleConfirmationDisaffirmed;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value, input),
+            }),
+        );
+        const suggestValue = this.getAmbiguousPair(this.state.value, input);
+        if (suggestValue !== this.state.value) {
+            this.setValue(suggestValue);
+            this.addInitiativeAct(
+                new SuggestValueAct(this, {
+                    value: suggestValue,
+                    renderedValue: this.props.valueRenderer(suggestValue!, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            // Discard the stored input
+            this.clear();
+            this.addInitiativeAct(new RequestValueAct(this), resultBuilder);
+        }
+    }
+
+    private isFeedbackWithValue(input: ControlInput): any {
+        try {
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            const valueStr = values[0].slotValue;
+            okIf(InputUtil.feedbackIsMatch(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsUndefined(action));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueStrDefined(valueStr));
+            this.handleFunc = this.handleFeedbackWithValue;
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleFeedbackWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        resultBuilder.addAct(
+            new ValueDisconfirmedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value, input),
+            }),
+        );
+        const { valueStr } = InputUtil.getValueResolution(input);
+        const suggestValue = Number.parseInt(valueStr, 10);
+        if (suggestValue !== this.state.value) {
+            this.setValue(suggestValue);
+            this.addInitiativeAct(
+                new SuggestValueAct(this, {
+                    value: suggestValue,
+                    renderedValue: this.props.valueRenderer(suggestValue!, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            // Discard the stored input
+            this.clear();
+            this.addInitiativeAct(new RequestValueAct(this), resultBuilder);
+        }
+    }
+
+    private isClearValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.clear));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleClearValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        resultBuilder.addAct(
+            new ValueClearedAct(this, {
+                value: this.state.value,
+                renderedValue: this.props.valueRenderer(this.state.value, input),
+            }),
+        );
+        this.clear();
+        return;
+    }
+
+    private isSelectChoiceByTouch(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isAPLUserEventWithMatchingControlId(input, this.id));
+            const userEvent = input.request as interfaces.alexa.presentation.apl.UserEvent;
+            okIf(userEvent.arguments !== undefined);
+            okIf(userEvent.arguments.length === 2);
+            const controlId = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+                .arguments![0] as string;
+            okIf(controlId === this.id);
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private async handleSelectChoiceByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        const valueStr = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            .arguments![1] as string;
+        this.setValue(valueStr);
+        this.state.confirmed = true;
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        return;
+    }
+
+    async validateAndAddActs(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ): Promise<void> {
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
+        if (validationResult === true) {
+            if (elicitationAction === $.Action.Set) {
+                resultBuilder.addAct(
+                    new ValueSetAct(this, {
+                        value: this.state.value,
+                        renderedValue: this.props.valueRenderer(this.state.value, input),
+                    }),
+                );
+            } else if (elicitationAction === $.Action.Change) {
+                resultBuilder.addAct(
+                    new ValueChangedAct(this, {
+                        value: this.state.value,
+                        renderedValue: this.props.valueRenderer(this.state.value, input),
+                    }),
+                );
+            } else {
+                throw new Error('Invalid elicitation Action');
+            }
+        } else {
+            this.state.confirmed = false;
+            resultBuilder.addAct(
+                new InvalidValueAct<number>(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    reasonCode: validationResult.reasonCode,
+                    renderedReason: validationResult.renderedReason,
+                }),
+            );
+            this.askElicitationQuestion(input, resultBuilder, elicitationAction);
+        }
+    }
+
+    private askElicitationQuestion(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+        elicitationAction: string,
+    ) {
+        this.state.elicitationAction = elicitationAction;
+        this.addInitiativeAct(new RequestValueAct(this), resultBuilder);
+    }
+
+    addInitiativeAct(initiativeAct: InitiativeAct, resultBuilder: ControlResultBuilder) {
+        this.state.lastInitiative.actName = initiativeAct.constructor.name;
+        resultBuilder.addAct(initiativeAct);
+    }
+
+    isConfirmationRequired(input: ControlInput): boolean {
+        if (this.state.value === undefined) {
+            return false;
+        }
+
+        if (this.state.confirmed === true) {
+            return false;
+        }
+        const propValue = this.props.confirmationRequired;
+        return typeof propValue === 'function' ? propValue.call(this, this.state, input) : propValue;
+    }
+
+    private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        this.state.lastInitiative.actName = ConfirmValueAct.name;
+        resultBuilder.addAct(
+            new ConfirmValueAct(this, {
+                value: this.state.value,
+                renderedValue:
+                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
+            }),
+        );
+    }
+
+    standardInitiativeHandlers: ControlInitiativeHandler[] = [
+        {
+            name: 'std:elicitValue',
+            canTakeInitiative: this.wantsToElicitValue,
+            takeInitiative: this.elicitValue,
+        },
+        {
+            name: 'std:invalidValue',
+            canTakeInitiative: this.wantsToFixInvalidValue,
+            takeInitiative: this.fixInvalidValue,
+        },
+        {
+            name: 'std::confirmValue',
+            canTakeInitiative: this.wantsToConfirmValue,
+            takeInitiative: this.confirmValue,
+        },
+    ];
+
     // tsDoc - see Control
     async canTakeInitiative(input: ControlInput): Promise<boolean> {
-        return (
-            this.wantsToElicitValue(input) ||
-            (await this.wantsToFixInvalidValue(input)) ||
-            this.wantsToConfirmValue(input)
-        );
+        const stdHandlers = this.standardInitiativeHandlers;
+
+        const matches = [];
+        for (const handler of stdHandlers) {
+            if (await handler.canTakeInitiative.call(this, input)) {
+                matches.push(handler);
+            }
+        }
+
+        if (matches.length > 1) {
+            log.error(
+                `More than one handler matched. Initiative Handlers in a single control should be mutually exclusive. ` +
+                    `Defaulting to the first. Initiative handlers: ${JSON.stringify(
+                        matches.map((x) => x.name),
+                    )}`,
+            );
+        }
+
+        if (matches.length >= 1) {
+            this.initiativeFunc = matches[0].takeInitiative.bind(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // tsDoc - see Control
@@ -568,10 +1105,40 @@ export class NumberControl extends Control implements InteractionModelContributo
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);
+        return;
+    }
+
+    private wantsToElicitValue(input: ControlInput): boolean {
+        if (this.state.value === undefined && this.evaluateBooleanProp(this.props.required, input)) {
+            return true;
+        }
+        return false;
+    }
+
+    private elicitValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
+    }
+
+    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
+        if (
+            this.state.value !== undefined &&
+            (await evaluateValidationProp(this.props.validation, this.state, input)) !== true
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+    }
+
+    private wantsToConfirmValue(input: ControlInput): boolean {
+        return this.isConfirmationRequired(input);
     }
 
     // tsDoc - see Control
-    renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder) {
+    async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder) {
         if (act instanceof RequestValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
             builder.addRepromptFragment(
@@ -582,23 +1149,18 @@ export class NumberControl extends Control implements InteractionModelContributo
 
             // Check APL mode to prevent addition of APL Directive.
             if (builder.aplMode === APLMode.DIRECT) {
-                this.addStandardAPL(input, builder, this.props.apl.requestValue);
-            }
-        } else if (act instanceof RequestChangedValueAct) {
-            const prompt = this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input);
-            const reprompt = this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input);
-
-            builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
-
-            if (builder.aplMode === APLMode.DIRECT) {
-                this.addStandardAPL(input, builder, this.props.apl.requestValue);
+                await this.addStandardAPL(input, builder); // re-render APL Screen
             }
         } else if (act instanceof ConfirmValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
             );
+
+            // Check APL mode to prevent addition of APL Directive.
+            if (builder.aplMode === APLMode.DIRECT) {
+                await this.addStandardAPL(input, builder); // re-render APL Screen
+            }
         } else if (act instanceof ValueDisconfirmedAct) {
             builder.addPromptFragment(
                 this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
@@ -609,71 +1171,44 @@ export class NumberControl extends Control implements InteractionModelContributo
         } else if (act instanceof ValueSetAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
+        } else if (act instanceof ValueChangedAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+            );
         } else if (act instanceof ValueConfirmedAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input));
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
             );
-        } else if (act instanceof SuggestValueAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.suggestValue, input));
+        } else if (act instanceof ValueClearedAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueCleared, input));
             builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.suggestValue, input),
-            );
-        } else if (act instanceof InformConfusingConfirmationAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.informConfusingConfirmation, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.informConfusingConfirmation, input),
-            );
-        } else if (act instanceof InformConfusingDisconfirmationAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.informConfusingDisconfirmation, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.informConfusingDisconfirmation, input),
-            );
-        } else if (act instanceof ProblematicInputValueAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.problematicInputValue, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.problematicInputValue, input),
+                this.evaluatePromptProp(act, this.props.reprompts.valueCleared, input),
             );
         } else if (act instanceof InvalidValueAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
             builder.addRepromptFragment(
                 this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
             );
+        } else if (act instanceof SuggestValueAct) {
+            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.suggestValue, input));
+            builder.addRepromptFragment(
+                this.evaluatePromptProp(act, this.props.reprompts.suggestValue, input),
+            );
         } else {
             this.throwUnhandledActError(act);
         }
     }
 
-    private addStandardAPL(
-        input: ControlInput,
-        builder: ControlResponseBuilder,
-        aplPropNewStyle: AplPropNewStyle,
-    ) {
+    private async addStandardAPL(input: ControlInput, builder: ControlResponseBuilder) {
         if (
             this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
             getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
         ) {
-            const renderedAPL = this.evaluateAPLPropNewStyle(
-                aplPropNewStyle,
-                input,
-                this.evaluateAPLValidationFailedMessage(this.state.value),
-            );
+            const renderedAPL = await this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
             builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
         }
-    }
-
-    renderAPLComponent(input: ControlInput, resultBuilder: ControlResponseBuilder): { [key: string]: any } {
-        const aplRenderFunc = this.props.apl.renderComponent;
-        const defaultProps: NumberControlAPLComponentProps = {
-            validationFailureText: this.evaluateAPLValidationFailedMessage(this.state.value),
-        };
-        return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
     }
 
     // tsDoc - see Control
@@ -694,7 +1229,7 @@ export class NumberControl extends Control implements InteractionModelContributo
      * @param value - Value, either an integer or a string that can be parsed as a integer.
      */
     setValue(value: string | number) {
-        this.state.value = typeof value === 'string' ? Number.parseInt(value!, 10) : value;
+        this.state.value = typeof value === 'string' ? Number.parseInt(value, 10) : value;
     }
 
     /**
@@ -702,59 +1237,40 @@ export class NumberControl extends Control implements InteractionModelContributo
      */
     clear() {
         this.state = new NumberControlState();
+        this.state.lastInitiative = {};
     }
 
-    private canHandleForEmptyStateValue(input: ControlInput): boolean {
-        try {
-            okIf(this.state.value === undefined);
+    async renderAPLComponent(
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ): Promise<{ [key: string]: any }> {
+        const aplRenderFunc = this.props.apl.renderComponent;
+        const defaultProps: NumberControlAPLComponentProps = {
+            validationFailedMessage: (value?: number) =>
+                i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', { value }),
+            valueRenderer: this.props.valueRenderer,
+        };
+        return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
+    }
 
-            if (InputUtil.isIntent(input, GeneralControlIntent.name)) {
-                const { action, target } = unpackGeneralControlIntent(
-                    (input.request as IntentRequest).intent,
-                );
-                okIf(
-                    InputUtil.actionIsMatchOrUndefined(action, [
-                        ...this.props.interactionModel.actions.set,
-                        ...this.props.interactionModel.actions.change,
-                    ]),
-                );
-                okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+    private getAmbiguousPair(value: number, input: ControlInput): number {
+        return this.props.mostLikelyMisunderstandings(value, input);
+    }
 
-                this.handleFunc = this.handleLastQuestionEmptyAndValueNotExisting;
-                return true;
-            } else if (InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER)) {
-                const { action, target } = unpackValueControlIntent((input.request as IntentRequest).intent);
-                okIf(
-                    InputUtil.actionIsMatchOrUndefined(action, [
-                        ...this.props.interactionModel.actions.set,
-                        ...this.props.interactionModel.actions.change,
-                    ]),
-                );
-                okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-                this.handleFunc = this.handleLastQuestionEmptyAndValueExisting;
-                return true;
-            }
-            return false;
-        } catch (e) {
-            return falseIfGuardFailed(e);
+    private async evaluateAPLPropNewStyle(
+        prop: AplDocumentPropNewStyle,
+        input: ControlInput,
+    ): Promise<AplContent> {
+        return typeof prop === 'function' ? (prop as AplContentFunc).call(this, this, input) : prop;
+    }
+
+    async evaluateAPLValidationFailedMessage(
+        prop: string | ((value?: number) => string),
+        input: ControlInput,
+    ): Promise<string> {
+        if (this.state.value === undefined) {
+            return '';
         }
-    }
-
-    private isScreenEvent(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isAPLUserEventWithMatchingControlIdAndArgLength(input, this.id, 2));
-            this.handleFunc = this.handleScreenEvent;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private async handleScreenEvent(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        const value = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![1];
-
-        this.setValue(value);
-        this.state.isValueConfirmed = true;
 
         const validationResult: true | ValidationFailure = await evaluateValidationProp(
             this.props.validation,
@@ -762,638 +1278,12 @@ export class NumberControl extends Control implements InteractionModelContributo
             input,
         );
         if (validationResult !== true) {
-            await this.fixInvalidValue(input, resultBuilder);
-        } else {
-            this.state.isValidValue = true;
-            resultBuilder.addAct(
-                new ValueSetAct(this, { value, renderedValue: this.props.valueRenderer(value, input) }),
-            );
-        }
-        return;
-    }
-
-    private handleLastQuestionEmptyAndValueNotExisting(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        resultBuilder.addAct(new RequestValueAct(this));
-    }
-
-    private async handleLastQuestionEmptyAndValueExisting(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
-        const valueStr = values[0].slotValue;
-        this.setValue(valueStr);
-        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
-    }
-
-    private canHandleForExistingStateValue(input: ControlInput): boolean {
-        try {
-            okIf(this.state.value !== undefined);
-            return (
-                this.isValueInRejectedValues(input) ||
-                this.isBareNoWhenConfirmingValue(input) ||
-                this.isFeedbackNoAndValueUndefinedWhenConfirmingValue(input) ||
-                this.isFeedbackNoAndValueNotChangedWhenConfirmingValue(input) ||
-                this.isFeedbackNoAndValueChangedWhenConfirmingValue(input) ||
-                this.isBareYesConfirmingValue(input) ||
-                this.isFeedbackYesAndValueChangedWhenConfirmingValue(input) ||
-                this.isFeedbackYesAndValueNotChangedWhenConfirmingValue(input) ||
-                this.isFeedbackYesAndValueUndefinedWhenConfirmingValue(input) ||
-                this.isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input) ||
-                this.isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input) ||
-                this.isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input)
-            );
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private isValueInRejectedValues(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(this.state.rejectedValues.includes(Number.parseInt(valueStr, 10)));
-            this.handleFunc = this.handleValueExistsInRejectedValues;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private handleValueExistsInRejectedValues(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
-        const valueStr = values[0].slotValue;
-        this.setValue(valueStr);
-        resultBuilder.addAct(
-            new ProblematicInputValueAct(this, {
-                reasonCode: 'ValuePreviouslyRejected',
-                value: this.state.value,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-        resultBuilder.addAct(new RequestValueAct(this));
-    }
-
-    private isBareNoWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isBareNo(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private isFeedbackNoAndValueUndefinedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private async handleFeedbackNoAndWithoutValueWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        this.state.lastInitiative.actName = undefined;
-        resultBuilder.addAct(
-            new ValueDisconfirmedAct(this, {
-                value: this.state.value!,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-        await this.commonHandlerWhenValueRejected(input, resultBuilder);
-    }
-
-    private isFeedbackNoAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { action, target, feedback, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value === Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackNoAndValueNotChangedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private async handleFeedbackNoAndValueNotChangedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        this.state.lastInitiative.actName = undefined;
-        resultBuilder.addAct(
-            new InformConfusingDisconfirmationAct(this, {
-                value: this.state.value!,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-                reasonCode: 'DisconfirmedWithSameValue',
-            }),
-        );
-        await this.commonHandlerWhenValueRejected(input, resultBuilder);
-    }
-
-    private isFeedbackNoAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value !== Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackNoAndValueChangedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private async handleFeedbackNoAndValueChangedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
-        const valueStr = values[0].slotValue;
-        this.setValue(valueStr);
-        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
-    }
-
-    private isFeedbackYesAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value !== Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackYesAndValueChangedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private handleFeedbackYesAndValueChangedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
-        const valueStr = values[0].slotValue;
-        const previousValue = this.state.value;
-        this.setValue(valueStr);
-        resultBuilder.addAct(
-            new InformConfusingConfirmationAct(this, {
-                value: previousValue,
-                renderedValue:
-                    previousValue !== undefined ? this.props.valueRenderer(previousValue, input) : '',
-                reasonCode: 'ConfirmedWithDifferentValue',
-            }),
-        );
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
-        resultBuilder.addAct(
-            new ConfirmValueAct(this, {
-                value: this.state.value,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-    }
-
-    private isBareYesConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isBareYes(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private isFeedbackYesAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value === Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private isFeedbackYesAndValueUndefinedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        this.state.isValueConfirmed = true;
-        this.state.lastInitiative.actName = undefined;
-        resultBuilder.addAct(
-            new ValueConfirmedAct(this, {
-                value: this.state.value,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-    }
-
-    private isFeedbackUndefinedAndValueNotChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsUndefined(feedback));
-            okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
-            okIf(this.state.value === Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackYesAndValueUndefinedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private handleFeedbackYesAndValueUndefinedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        this.state.isValueConfirmed = true;
-        this.state.lastInitiative.actName = undefined;
-        resultBuilder.addAct(
-            new ValueConfirmedAct(this, {
-                value: this.state.value,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-    }
-
-    private isFeedbackUndefinedAndValueChangedWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
-            const { feedback, action, target, values } = unpackValueControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            const valueStr = values[0].slotValue;
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
-            okIf(InputUtil.feedbackIsUndefined(feedback));
-            okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.value !== Number.parseInt(valueStr, 10));
-            this.handleFunc = this.handleFeedbackUndefinedAndValueChangedWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private async handleFeedbackUndefinedAndValueChangedWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        const { action, values } = unpackValueControlIntent((input.request as IntentRequest).intent);
-        const valueStr = values[0].slotValue;
-        this.setValue(valueStr);
-        await this.commonHandlerWhenValueChanged(action ?? $.Action.Set, input, resultBuilder);
-    }
-
-    private isTargetsMatchWithoutFeedbackNorValueWhenConfirmingValue(input: ControlInput): boolean {
-        try {
-            okIf(InputUtil.isIntent(input, GeneralControlIntent.name));
-            const { feedback, action, target } = unpackGeneralControlIntent(
-                (input.request as IntentRequest).intent,
-            );
-            okIf(InputUtil.feedbackIsUndefined(feedback));
-            okIf(
-                InputUtil.actionIsMatchOrUndefined(action, [
-                    ...this.props.interactionModel.actions.set,
-                    ...this.props.interactionModel.actions.change,
-                ]),
-            );
-            okIf(
-                InputUtil.targetIsMatch(target, _.without(this.props.interactionModel.targets, $.Target.It)),
-            );
-            this.handleFunc = this.handleTargetMatchWithoutFeedbackNorValueWhenConfirmingValue;
-            return true;
-        } catch (e) {
-            return falseIfGuardFailed(e);
-        }
-    }
-
-    private handleTargetMatchWithoutFeedbackNorValueWhenConfirmingValue(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): void {
-        resultBuilder.addAct(new RequestValueAct(this));
-    }
-
-    async commonHandlerWhenValueChanged(
-        action: string,
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
-        if (validationResult !== true) {
-            this.state.rejectedValues.push(this.state.value!);
-            resultBuilder.addAct(
-                new InvalidValueAct(this, {
-                    value: this.state.value!,
-                    renderedValue:
-                        this.state.value !== undefined
-                            ? this.props.valueRenderer(this.state.value, input)
-                            : '',
-                    renderedReason: validationResult.renderedReason,
-                }),
-            );
-            resultBuilder.addAct(new RequestValueAct(this));
-        } else if (!this.isConfirmationRequired(input)) {
-            this.state.isValidValue = true;
-            this.state.isValueConfirmed = true;
-            this.state.lastInitiative.actName = undefined;
-            resultBuilder.addAct(
-                new ValueSetAct(this, {
-                    value: this.state.value,
-                    renderedValue:
-                        this.state.value !== undefined
-                            ? this.props.valueRenderer(this.state.value, input)
-                            : '',
-                }),
-            );
-        } else {
-            this.state.isValidValue = true;
-            this.state.lastInitiative.actName = ConfirmValueAct.name;
-            resultBuilder.addAct(
-                new ConfirmValueAct(this, {
-                    value: this.state.value,
-                    renderedValue:
-                        this.state.value !== undefined
-                            ? this.props.valueRenderer(this.state.value, input)
-                            : '',
-                }),
-            );
-        }
-    }
-
-    /* TODO: bug: User's action has to be used in this function to form the response
-     * prompt, need to define action in the related payloadType This will fix
-     * the following: U: No, {change} the value please A: What value do you want
-     * to {change} to?
-     */
-    private async commonHandlerWhenValueRejected(
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        this.state.rejectedValues.push(this.state.value!);
-        const ambiguousPartner = this.getAmbiguousPartner(this.state.value!);
-        if (ambiguousPartner !== undefined && !this.state.rejectedValues.includes(ambiguousPartner)) {
-            const previousValue = this.state.value;
-            this.state.value = ambiguousPartner;
-            const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
-            if (validationResult === true) {
-                // this is to confirm from users for the suggestedValue
-                this.state.isValidValue = true;
-                this.state.lastInitiative.actName = ConfirmValueAct.name;
-                resultBuilder.addAct(
-                    new SuggestValueAct(this, {
-                        value: this.state.value,
-                        renderedValue:
-                            this.state.value !== undefined
-                                ? this.props.valueRenderer(this.state.value, input)
-                                : '',
-                    }),
-                );
-            } else {
-                this.state.value = previousValue;
-                resultBuilder.addAct(new RequestValueAct(this));
+            if (typeof prop === 'function') {
+                return prop(this.state.value);
             }
-        } else {
-            resultBuilder.addAct(new RequestValueAct(this));
+            return prop;
         }
-    }
-
-    private wantsToElicitValue(input: ControlInput): boolean {
-        if (this.evaluateBooleanProp(this.props.required, input) && this.state.value === undefined) {
-            this.initiativeFunc = this.elicitValue;
-            return true;
-        }
-        return false;
-    }
-
-    private elicitValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        resultBuilder.addAct(new RequestValueAct(this));
-    }
-
-    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
-        if (!this.evaluateBooleanProp(this.props.required, input) || this.state.value === undefined) {
-            return false;
-        }
-        const validationResult: true | ValidationFailure = await evaluateValidationProp(
-            this.props.validation,
-            this.state,
-            input,
-        );
-        if (validationResult === true) {
-            this.state.isValidValue = true;
-            return false;
-        }
-
-        this.initiativeFunc = await this.fixInvalidValue;
-        return true;
-    }
-
-    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        const validationResult = await evaluateValidationProp(this.props.validation, this.state, input);
-        if (validationResult === true) {
-            this.state.isValidValue = true;
-        }
-
-        resultBuilder.addAct(
-            new InvalidValueAct(this, {
-                value: this.state.value!,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-                reasonCode: 'ValueInvalid',
-                renderedReason: (validationResult as ValidationFailure).renderedReason,
-            }),
-        );
-        resultBuilder.addAct(new RequestValueAct(this));
-    }
-
-    private wantsToConfirmValue(input: ControlInput): boolean {
-        if (!this.evaluateBooleanProp(this.props.required, input) || this.state.value === undefined) {
-            return false;
-        }
-        if (this.state.isValueConfirmed || !this.isConfirmationRequired(input)) {
-            return false;
-        }
-
-        this.initiativeFunc = this.confirmValue;
-        return true;
-    }
-
-    private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
-        resultBuilder.addAct(
-            new ConfirmValueAct(this, {
-                value: this.state.value,
-                renderedValue:
-                    this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
-            }),
-        );
-    }
-
-    private isConfirmationRequired(input: ControlInput) {
-        if (typeof this.props.confirmationRequired === 'function') {
-            return this.props.confirmationRequired(this.state, input);
-        } else if (typeof this.props.confirmationRequired === 'boolean') {
-            return this.props.confirmationRequired;
-        } else {
-            return true; // by default confirmation is required
-        }
-    }
-
-    private getAmbiguousPartner(value?: number): number | undefined {
-        const pairs = this.props.ambiguousPairs;
-
-        for (const pair of pairs) {
-            if (pair[0] === value) {
-                return pair[1];
-            } else if (pair[1] === value) {
-                return pair[0];
-            }
-        }
-        return undefined;
-    }
-
-    private evaluateAPLPropNewStyle(
-        prop: AplPropNewStyle,
-        input: ControlInput,
-        validationFailedMessage: string,
-    ): AplContent {
-        return typeof prop === 'function'
-            ? (prop as AplContentFunc).call(this, this, input, validationFailedMessage)
-            : prop;
-    }
-
-    evaluateAPLValidationFailedMessage(value?: number): string {
-        if (typeof this.props.apl.validationFailedMessage === 'function') {
-            return this.props.apl.validationFailedMessage(value);
-        }
-        return this.props.apl.validationFailedMessage;
+        return '';
     }
 }
 

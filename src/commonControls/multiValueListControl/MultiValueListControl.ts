@@ -1325,7 +1325,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     // tsDoc - see Control
-    renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
+    async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): Promise<void> {
         if (act instanceof RequestValueByListAct) {
             builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
             builder.addRepromptFragment(
@@ -1387,7 +1387,10 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    renderAPLComponent(input: ControlInput, resultBuilder: ControlResponseBuilder): { [key: string]: any } {
+    async renderAPLComponent(
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ): Promise<{ [key: string]: any }> {
         const aplRenderFunc = this.props.apl.renderComponent;
         const defaultProps: MultiValueListAPLComponentProps = {
             valueRenderer: this.props.valueRenderer,

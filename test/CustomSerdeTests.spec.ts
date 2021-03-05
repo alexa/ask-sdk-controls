@@ -118,7 +118,7 @@ class CustomSerdeControl extends Control {
         }
     }
 
-    renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): void {
+    async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): Promise<void> {
         throw new Error('Method not implemented.');
     }
 }

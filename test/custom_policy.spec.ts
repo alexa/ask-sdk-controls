@@ -14,21 +14,21 @@
 import { expect } from 'chai';
 import _ from 'lodash';
 import { suite, test } from 'mocha';
+import { NumberControl } from '../src/commonControls/numberControl/NumberControl';
+import { ValueControl } from '../src/commonControls/ValueControl';
 import { Strings as $ } from '../src/constants/Strings';
+import { ContainerControl } from '../src/controls/ContainerControl';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
+import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
+import { ValueControlIntent } from '../src/intents/ValueControlIntent';
+import { RequestValueAct } from '../src/systemActs/InitiativeActs';
+import { SystemAct } from '../src/systemActs/SystemAct';
 import { throwIf } from '../src/utils/ErrorUtils';
 import { simpleInvoke, TestInput } from '../src/utils/testSupport/TestingUtils';
 import { GameStrings as $$ } from './game_strings';
-import { ValueControlIntent } from '../src/intents/ValueControlIntent';
-import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
-import { RequestValueAct } from '../src/systemActs/InitiativeActs';
-import { SystemAct } from '../src/systemActs/SystemAct';
-import { ContainerControl } from '../src/controls/ContainerControl';
-import { ValueControl } from '../src/commonControls/ValueControl';
-import { NumberControl } from '../src/commonControls/numberControl/NumberControl';
 
 /**
  * Demonstrate standard ControlState object but with different Controls to handle them
