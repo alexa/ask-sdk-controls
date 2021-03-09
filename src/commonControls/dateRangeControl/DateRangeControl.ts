@@ -17,6 +17,7 @@ import _ from 'lodash';
 import { ControlInputHandlingProps, InputUtil, StringOrList, ValueControlIntent } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
+    ImplicitResolutionStrategy,
     ContainerControl,
     ContainerControlProps,
     ContainerControlState,
@@ -498,6 +499,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     static mergeWithDefaultProps(props: DateRangeControlProps): DeepRequired<DateRangeControlProps> {
         const defaults: DeepRequired<DateRangeControlProps> = {
             id: 'uninitialized',
+            dialog: {
+                explicityResolveTargetAmbiguity: ImplicitResolutionStrategy.MostRecentInitiative,
+            },
             validation: {
                 startDateValid: [],
                 endDateValid: [],

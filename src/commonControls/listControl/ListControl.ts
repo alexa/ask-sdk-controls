@@ -459,7 +459,7 @@ const FEEDBACK_TYPES = [$.Feedback.Affirm, $.Feedback.Disaffirm];
 export class ListControl extends Control implements InteractionModelContributor {
     state: ListControlState = new ListControlState();
 
-    private rawProps: ListControlProps;
+    rawProps: ListControlProps;
     private props: DeepRequired<ListControlProps>;
     private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
     private initiativeFunc?: (

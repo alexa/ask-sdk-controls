@@ -184,3 +184,12 @@ export interface LiteralContentPayload {
     promptFragment: string;
     repromptFragment?: string;
 }
+
+
+/**
+ * Payload for TargetDisambiguationAct
+ */
+export interface TargetDisambiguationPayload {
+    specificTargets: string[];
+    renderedSpecificTargets: string;
+}

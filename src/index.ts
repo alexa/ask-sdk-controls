@@ -82,7 +82,6 @@ export {
 export { Strings } from './constants/Strings';
 export {
     ContainerControl,
-    ContainerControlCompleteProps,
     ContainerControlProps,
     ContainerControlState,
 } from './controls/ContainerControl';

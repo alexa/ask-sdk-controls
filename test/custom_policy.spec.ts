@@ -21,7 +21,7 @@ import { ControlManager } from '../src/controls/ControlManager';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
 import { throwIf } from '../src/utils/ErrorUtils';
 import { simpleInvoke, TestInput } from '../src/utils/testSupport/TestingUtils';
-import { GameStrings as $$ } from './game_strings';
+import { TestStrings as $$ } from './TestStrings';
 import { ValueControlIntent } from '../src/intents/ValueControlIntent';
 import { GeneralControlIntent } from '../src/intents/GeneralControlIntent';
 import { RequestValueAct } from '../src/systemActs/InitiativeActs';

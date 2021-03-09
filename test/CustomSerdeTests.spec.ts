@@ -65,7 +65,7 @@ class CustomSerdeControlState implements ControlState {
     value: Set<string>;
 
     lastInitiative: {
-        actname?: string;
+        actName?: string;
     };
     constructor(value: Set<string>) {
         this.value = value;

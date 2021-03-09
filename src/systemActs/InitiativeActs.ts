@@ -24,7 +24,8 @@ import {
     RequestValueByListPayload,
     RequestValuePayload,
     SuggestActionPayload,
-    ValueSetPayload,
+    TargetDisambiguationPayload as DisambiguateTargetPayload,
+    ValueSetPayload
 } from './PayloadTypes';
 import { SystemAct } from './SystemAct';
 
@@ -346,7 +347,7 @@ export class SuggestValueAct<T> extends InitiativeAct {
 export class SuggestActionAct<T> extends InitiativeAct {
     payload: SuggestActionPayload<T>;
 
-    constructor(control: Control, payload?: SuggestActionPayload<T>) {
+    constructor(control: Control, payload?: SuggestActionPayload<T>) {  //TODO: why does this have an optional payload?
         super(control);
         this.payload = payload ?? {};
     }
@@ -358,6 +359,27 @@ export class SuggestActionAct<T> extends InitiativeAct {
             throw new Error(
                 `Cannot directly render SuggestActionAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
                     `Either provide a renderedTarget when creating the act, or render the act in control.render() or controlManager.render().`,
+            );
+        }
+    }
+}
+
+
+export class DisambiguateTargetAct extends InitiativeAct {
+    payload: DisambiguateTargetPayload;
+
+    constructor(control: Control, payload: DisambiguateTargetPayload) {
+        super(control);
+        this.payload = payload ?? {};
+    }
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        if (this.payload.renderedSpecificTargets !== undefined) {
+            controlResponseBuilder.addPromptFragment(i18next.t('DISAMBIGUATE_TARGET_ACT_DEFAULT_PROMPT', {renderedTargets: this.payload.renderedSpecificTargets}));
+            controlResponseBuilder.addRepromptFragment(i18next.t('DISAMBIGUATE_TARGET_ACT_DEFAULT_PROMPT', {renderedTargets: this.payload.renderedSpecificTargets}));
+        } else {
+            throw new Error(
+                `Cannot directly render DisambiguateTargetAct as payload.renderedSpecificTargets is undefined. ${this.toString()}. ` +
+                    `Either provide renderedSpecificTargets when creating the act, or render the act in control.render() or controlManager.render().`,
             );
         }
     }

@@ -11,11 +11,15 @@
  * permissions and limitations under the License.
  */
 
+import { Intent, IntentRequest } from 'ask-sdk-model';
 import _ from 'lodash';
-import { InputUtil } from '..';
+import { DeepRequired, failIf, falseIfGuardFailed, InputUtil, okIf, unpackGeneralControlIntent } from '..';
+import { ListFormatting } from '../intl/ListFormat';
 import { Logger } from '../logging/Logger';
-import { findControlById } from '../utils/ControlUtils';
-import { Control, ControlProps, ControlState } from './Control';
+import { DisambiguateTargetAct } from '../systemActs/InitiativeActs';
+import { evaluateInputHandlers, findControlById } from '../utils/ControlUtils';
+import { GuardFailed } from '../utils/Predicates';
+import { Control, ControlInputHandler, ControlProps, ControlState } from './Control';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { IContainerControl } from './interfaces/IContainerControl';
@@ -31,21 +35,40 @@ interface ChildActivityRecord {
     turnNumber: number;
 }
 
-interface LastInitiativeState {
-    /**
-     * Tracks the last act initiated from the control.
-     */
-    actName?: string;
+export enum ImplicitResolutionStrategy {
+    FirstMatch = 'firstMatch',
+    MostRecentInitiative = 'mostRecentInitiative',
 }
+
+interface DisambiguateTargetsCandidate extends DisambiguationCandidate {
+    controlId: string;
+    specificTarget: string;
+}
+
+interface DisambiguationTargetQuestion {
+    type: 'AskTargetDisambiguation';
+    turn: number;
+    candidates: DisambiguateTargetsCandidate[];
+}
+
+type DisambiguationQuestion = DisambiguationTargetQuestion; // todo: add additional types
 
 /**
  * Container state for use in arbitration
  */
 export class ContainerControlState implements ControlState {
     value: any;
-    lastHandlingControl?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
-    lastInitiativeChild?: ChildActivityRecord; // ditto.
-    lastInitiative: LastInitiativeState;
+    lastHandlingControlRecord?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
+    lastInitiativeControlRecord?: ChildActivityRecord; // ditto.
+    lastInitiative?: DisambiguationQuestion | 'childInitiative';    
+}
+
+export class ContainerControlDialogProps {
+    explicityResolveTargetAmbiguity: boolean; // TODO | func to boolean.
+
+    // TODO: make this a function of candidates -> selection so that developer can implement their own.
+    //       and convert enum to built-in strategies.
+    implicitResolutionStrategy: ImplicitResolutionStrategy; // TODO: | ((candidates: Control[], controlInput: ControlInput) => HandlingAmbiguityStrategy)
 }
 
 /**
@@ -53,10 +76,12 @@ export class ContainerControlState implements ControlState {
  */
 export class ContainerControlProps implements ControlProps {
     id: string;
+
+    dialog?: ContainerControlDialogProps;
 }
 
-export class ContainerControlCompleteProps implements ControlProps {
-    id: string;
+interface DisambiguationCandidate {
+    controlId: string;
 }
 
 /**
@@ -87,9 +112,13 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     children: Control[] = [];
 
     rawProps: ContainerControlProps;
-    props: ContainerControlCompleteProps;
+    props: DeepRequired<ContainerControlProps>;
     selectedHandlingChild: Control | undefined;
     selectedInitiativeChild: Control | undefined;
+
+    handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    handlerCandidates: Control[];
+    disambiguationQuestion: DisambiguationQuestion;
 
     // jsDoc: see `Control`
     constructor(props: ContainerControlProps) {
@@ -114,9 +143,13 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      *
      * Any property defined by the user-provided data overrides the defaults.
      */
-    static mergeWithDefaultProps(props: ContainerControlProps): any {
-        const defaults: ContainerControlCompleteProps = {
+    static mergeWithDefaultProps(props: ContainerControlProps): DeepRequired<ContainerControlProps> {
+        const defaults: DeepRequired<ContainerControlProps> = {
             id: 'dummy',
+            dialog: {
+                explicityResolveTargetAmbiguity: true,
+                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative,
+            },
         };
         return _.merge(defaults, props);
     }
@@ -134,29 +167,101 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         return this;
     }
 
-    // jsDoc: see `Control`
+    standardInputHandlers: ControlInputHandler[] = [
+        {
+            name: 'TargetAmbiguity (built-in)',
+            canHandle: this.isTargetAmbiguity,
+            handle: this.handleTargetAmbiguity,
+        },
+        {
+            name: 'AnswerToTargetAmbiguity (built-in)',
+            canHandle: this.isAnswerToTargetAmbiguity,
+            handle: this.handleAnswerToTargetAmbiguity,
+        },
+        {
+            name: 'DirectDelegationToChild (built-in)',
+            canHandle: this.canHandleByChild,
+            handle: this.handleByChild,
+        },
+    ];
+
+    // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
-        return this.canHandleByChild(input);
+        this.handlerCandidates = await this.gatherHandlingCandidates(input);
+        return evaluateInputHandlers(this, input);
     }
 
-    // jsDoc: see `Control`
-    async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        return this.handleByChild(input, resultBuilder);
+    async isTargetAmbiguity(input: ControlInput): Promise<boolean> {
+        /*
+            Form questions like 
+              1. "did you mean pizza1 or pizza2"
+              2. "did you mean the first item or the first pizza?"
+            
+            or statements like
+              3. I'm not sure what you mean. Could you be a little more specific.
+              4. I'm not sure if you are trying to change something or talk about change you will receive. Could you be a little more specific.
+
+
+            Lets start by looking for specific common patterns, such as unspecified target ambiguity            
+        */
+        try {
+            okIf(this.handlerCandidates.length > 1);
+            okIf(this.props.dialog.explicityResolveTargetAmbiguity === true);
+
+            okIf(InputUtil.isControlIntent(input));
+            const { feedback, action, target } = unpackGeneralControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+
+            // Check that the target is undefined or that all candidates share the target.
+            if (target !== undefined) {
+                for (const candidate of this.handlerCandidates) {
+                    if (!candidate.getAllTargets().includes(target)) {
+                        throw new GuardFailed('The candidates do not all share the user-specified target.');
+                    }
+                }
+            }
+
+            // create simple array of {control -> specificTarget} mappings for validations and serialization.
+            const simplifiedCandidateList: DisambiguateTargetsCandidate[] = this.handlerCandidates.map(
+                (x) => ({ controlId: x.id, specificTarget: x.getSpecificTarget() }),
+            );
+
+            // Check that there are no duplicates in the set of specific targets
+            const specificTargetsSet: Set<string> = new Set<string>();
+            for (const candidate of simplifiedCandidateList) {
+                failIf(specificTargetsSet.has(candidate.specificTarget));
+                specificTargetsSet.add(candidate.specificTarget);
+            }
+
+            // Everything looks good.  record the plan and return true.
+            this.disambiguationQuestion = {
+                type: 'AskTargetDisambiguation',
+                turn: input.turnNumber,
+                candidates: simplifiedCandidateList,
+            };
+            log.debug(`${this.id} canHandle=true. AskTargetDisambiguation`);
+            return true;
+        } catch (err) {
+            return falseIfGuardFailed(err);
+        }
     }
 
-    // jsDoc: see `Control`
-    async canTakeInitiative(input: ControlInput): Promise<boolean> {
-        return this.canTakeInitiativeByChild(input);
-    }
+    async handleTargetAmbiguity(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        if (this.disambiguationQuestion !== undefined && this.disambiguationQuestion.type === 'AskTargetDisambiguation') {
+            throw new Error("this.disambiguationQuestion should have been set to 'AskTargetDisambiguation' in isTargetAmbiguity");
+        }
+        
+        // record what we did in the state
+        this.state.lastInitiative = this.disambiguationQuestion;
+        
 
-    // jsDoc: see `Control`
-    async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        return this.takeInitiativeByChild(input, resultBuilder);
-    }
+        const specificTargets = this.disambiguationQuestion.candidates.map(x=>x.specificTarget);
+        const individuallyRenderedSpecificTargets = this.disambiguationQuestion.candidates.map(x=>input.controls[x.controlId].renderSpecificTarget(x.specificTarget));
+        const renderedSpecificTargets = ListFormatting.format(individuallyRenderedSpecificTargets, 'or');
 
-    // jsDoc: see `ControlStateDiagramming`
-    stringifyStateForDiagram(): string {
-        return ''; // nothing special to report.
+        // add the act
+        resultBuilder.addAct(new DisambiguateTargetAct(this, {specificTargets: }));
     }
 
     /**
@@ -169,6 +274,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      *
      * @param input - Input
      */
+    //TODO: rename: canHandleAsContainer...
     async canHandleByChild(input: ControlInput): Promise<boolean> {
         const candidates = await this.gatherHandlingCandidates(input);
         this.selectedHandlingChild = await this.decideHandlingChild(candidates, input);
@@ -190,26 +296,22 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      * @param input - Input
      * @param resultBuilder - Response builder.
      */
+    //TODO: rename: handleAsContainer
     async handleByChild(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        if (!this.selectedHandlingChild) {
-            throw new Error(
-                'this.selectedHandlingChild is undefined. Did you call canHandle() first? Did it update this.selectedHandlingChild?',
-            );
-        }
-
-        await this.selectedHandlingChild.handle(input, resultBuilder);
-        this.state.lastHandlingControl = {
-            controlId: this.selectedHandlingChild.id,
-            turnNumber: input.turnNumber,
-        };
-
-        if (resultBuilder.hasInitiativeAct()) {
-            this.state.lastInitiativeChild = {
+        if (this.selectedHandlingChild !== undefined) {
+            await this.selectedHandlingChild.handle(input, resultBuilder);
+            this.state.lastHandlingControlRecord = {
                 controlId: this.selectedHandlingChild.id,
                 turnNumber: input.turnNumber,
             };
-        }
 
+            if (resultBuilder.hasInitiativeAct()) {
+                this.state.lastInitiativeControlRecord = {
+                    controlId: this.selectedHandlingChild.id,
+                    turnNumber: input.turnNumber,
+                };
+            }
+        }
         return;
     }
 
@@ -252,16 +354,59 @@ export class ContainerControl extends Control implements IContainerControl, Cont
      * @param candidates - The child controls that reported `canHandle = true`
      * @param input - Input
      */
+
+    //TODO review name
     async decideHandlingChild(candidates: Control[], input: ControlInput): Promise<Control | undefined> {
         if (candidates.length === 0) {
             return undefined;
         }
+        // do we need a prop to control whether fallbackIntent can only be handled by (most recent initiative) MRI control?
         if (InputUtil.isFallbackIntent(input)) {
-            const last = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
+            const last = findControlById(candidates, this.state.lastInitiativeControlRecord?.controlId);
             return last ? last : undefined;
         }
-        const mruMatch = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
-        return mruMatch ?? candidates[0];
+
+        switch (this.props.dialog.explicityResolveTargetAmbiguity) {
+            case ImplicitResolutionStrategy.FirstMatch:
+                return candidates[0];
+            case ImplicitResolutionStrategy.MostRecentInitiative:
+                const mruMatch = findControlById(
+                    candidates,
+                    this.state.lastInitiativeControlRecord?.controlId,
+                );
+                return mruMatch ?? candidates[0];
+            case ImplicitResolutionStrategy.AskExplicitly:
+                return undefined;
+        }
+    }
+
+    // jsDoc: see `Control`
+    async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        if (this.handleFunc === undefined) {
+            log.error('ListControl: handle called but no clause matched.  are canHandle/handle out of sync?');
+            const intent: Intent = (input.request as IntentRequest).intent;
+            throw new Error(`${intent.name} can not be handled by ${this.constructor.name}.`);
+        }
+
+        await this.handleFunc(input, resultBuilder);
+        if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
+            await this.takeInitiative(input, resultBuilder);
+        }
+    }
+
+    // jsDoc: see `Control`
+    async canTakeInitiative(input: ControlInput): Promise<boolean> {
+        return this.canTakeInitiativeByChild(input);
+    }
+
+    // jsDoc: see `Control`
+    async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        return this.takeInitiativeByChild(input, resultBuilder);
+    }
+
+    // jsDoc: see `ControlStateDiagramming`
+    stringifyStateForDiagram(): string {
+        return ''; // nothing special to report.
     }
 
     /**
@@ -302,7 +447,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             );
         }
         await this.selectedInitiativeChild.takeInitiative(input, resultBuilder);
-        this.state.lastInitiativeChild = {
+        this.state.lastInitiativeControlRecord = {
             controlId: this.selectedInitiativeChild.id,
             turnNumber: input.turnNumber,
         };
@@ -345,12 +490,15 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             return undefined;
         }
 
-        const handlingControlMatch = findControlById(candidates, this.state.lastHandlingControl?.controlId);
+        const handlingControlMatch = findControlById(
+            candidates,
+            this.state.lastHandlingControlRecord?.controlId,
+        );
         if (handlingControlMatch !== undefined) {
             return handlingControlMatch;
         }
 
-        const mruMatch = findControlById(candidates, this.state.lastInitiativeChild?.controlId);
+        const mruMatch = findControlById(candidates, this.state.lastInitiativeControlRecord?.controlId);
         return mruMatch ?? candidates[0];
     }
 }

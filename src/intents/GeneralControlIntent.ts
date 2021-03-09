@@ -36,10 +36,6 @@ export interface GeneralControlIntentSlots {
  * @param intent - Intent
  */
 export function unpackGeneralControlIntent(intent: Intent): GeneralControlIntentSlots {
-    if (!intent.name.startsWith('GeneralControlIntent')) {
-        throw new Error(`Not a compatible intent : ${intent.name}`);
-    }
-
     let feedback: string | undefined;
     let action: string | undefined;
     let target: string | undefined;
@@ -66,8 +62,6 @@ export function unpackGeneralControlIntent(intent: Intent): GeneralControlIntent
             case 'tail':
                 break;
 
-            default:
-                throw new Error('not handled');
         }
     }
 

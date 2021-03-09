@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import { Strings as $ } from '../constants/Strings';
 import { ControlAPLRenderProps } from '../responseGeneration/ControlAPLRenderProps';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
@@ -19,6 +20,9 @@ import { StringOrList } from '../utils/BasicTypes';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { IControl } from './interfaces/IControl';
+
+//TODO: hoist common props for all controls to here.
+//or at least define interfaces to help developers be consistent.
 
 /**
  * Defines the mandatory props of a Control.
@@ -49,7 +53,7 @@ export interface ControlState {
     /**
      * Tracks the last initiative act from the control.
      */
-    lastInitiative: any;
+    lastInitiative?: any;
 }
 
 export interface ControlInputHandler {
@@ -343,5 +347,27 @@ export abstract class Control implements IControl {
         return typeof propValue === 'function'
             ? (propValue as any).call(this, act, input, this.state)
             : propValue;
+    }
+
+    // TODO: make abstract
+    getAllTargets(): string[] {
+        return [$.Target.It];
+    }
+
+    // TODO: make abstract.
+    // TODO: maybe it isn't required.. we could scan the targets looking for the relatively-unique ones amongst candidates.
+    getSpecificTarget(): string {
+        return $.Target.It;
+    }
+
+    /**
+     * Render a target associated with the Control for use in a disambiguation prompt.
+     * Default: returns the target verbatim.
+     */
+    renderTargetForDisambiguationPrompt(target: string): string {
+        //TODO: introduce default renderings for the built-in targets.
+        //TODO:  if defaultTargetRendering(target) !== undefined, return it.
+
+        return target; //Default: just return it verbatim
     }
 }

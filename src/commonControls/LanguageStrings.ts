@@ -345,6 +345,8 @@ export const defaultI18nResources: Resource = {
             CONFIRM_VALUE_ACT_DEFAULT_PROMPT: `Was that {{value}}.`,
             SUGGEST_VALUE_ACT_DEFAULT_PROMPT: `Did you perhaps mean {{value}}?`,
             SUGGEST_ACTION_ACT_DEFAULT_PROMPT: 'You can add or update values.',
+            DISAMBIGUATE_TARGET_ACT_DEFAULT_PROMPT: `Is that {{renderedTargets}}?`,  // E.g. "Is that (your firstName or your lastName)"
+            
 
             // ControlIntent Samples
 

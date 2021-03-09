@@ -120,6 +120,8 @@ export interface ValueControlProps extends ControlProps {
      */
     interactionModel?: ValueControlInteractionModelProps;
 
+    dialog?: ValueControlDialogProps;
+
     /**
      * Props to configure input handling.
      */
@@ -218,6 +220,11 @@ export class ValueControlInteractionModelProps {
      */
     actions?: ValueControlActionProps;
 }
+
+export class ValueControlDialogProps {
+    targetForDisambiguation: string;
+}
+
 
 /**
  * Props to customize the prompt fragments that will be added by
@@ -342,6 +349,9 @@ export class ValueControl extends Control implements InteractionModelContributor
                     change: [$.Action.Change],
                 },
                 targets: [$.Target.It],
+            },
+            dialog: {
+                targetForDisambiguation: $.Target.It
             },
             prompts: {
                 confirmValue: (act) =>
@@ -485,7 +495,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
             okIf(InputUtil.valueStrDefined(valueStr));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, [$.Feedback.Affirm, $.Feedback.Disaffirm]));
-            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
+            okIf(InputUtil.actionIsMatchOrUndefined(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
         } catch (e) {
@@ -1062,5 +1072,13 @@ export class ValueControl extends Control implements InteractionModelContributor
             intent,
             slotName: slotType,
         };
+    }
+    
+    getAllTargets(): string[] {
+        return this.props.interactionModel.targets;
+    }
+    
+    getSpecificTarget(): string {
+        return this.props.dialog.targetForDisambiguation;
     }
 }

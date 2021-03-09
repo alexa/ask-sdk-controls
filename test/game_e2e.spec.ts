@@ -48,7 +48,7 @@ import {
     TestInput,
     waitForDebugger,
 } from '../src/utils/testSupport/TestingUtils';
-import { GameStrings as $$ } from './game_strings';
+import { TestStrings as $$ } from './TestStrings';
 
 waitForDebugger();
 

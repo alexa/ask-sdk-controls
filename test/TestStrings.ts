@@ -11,13 +11,15 @@
  * permissions and limitations under the License.
  */
 
-export namespace GameStrings {
+export namespace TestStrings {
     export enum SlotType {
         DomainValue = 'DomainValue',
     }
 
     export enum Target {
         Name = 'name',
+        FirstName = 'firstName',
+        LastName = 'lastName',
         AvatarName = 'avatarName',
         PetName = 'petName',
         Age = 'age',
@@ -36,6 +38,9 @@ export namespace GameStrings {
         PetContainer = 'petContainer',
         PetName = 'petName',
         PetSpecies = 'petSpecies',
+
+        FirstName = 'firstName',
+        LastName = 'lastName'
     }
 
     export enum Value {

@@ -134,7 +134,7 @@ export function unpackValueControlIntent(intent: Intent): MultiValuePayload {
  *  - `AMAZON.SearchQuery` cannot be used due to restrictions in NLU. Custom
  *    intents should be defined instead.
  *
- *  - It does not support multiple value of different slottypes, see:
+ *  - It does not support multiple value of different slot types, see:
  *    https://developer.amazon.com/en-US/docs/alexa/custom-skills/collect-multiple-values-in-a-slot.html#about-multiple-value-slots
  *
  */

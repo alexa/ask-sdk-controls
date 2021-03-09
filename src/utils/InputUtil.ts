@@ -60,6 +60,17 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the input is a ControlIntent of some kind.
+     * @param input - Input
+     */
+    export function isControlIntent(input: ControlInput): boolean {
+        return (
+            input.request.type === 'IntentRequest' &&
+            input.request.intent.name.includes('ControlIntent')
+        );
+    }
+
+    /**
      * Test if the input is a ValueControlIntent for the provided slotType.
      * @param input - Input
      */
