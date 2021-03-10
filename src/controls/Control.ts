@@ -37,7 +37,7 @@ export interface APLComponentProps {
     /**
      * Defines the render style of APL component produced by the control.
      */
-    renderStyle: any;
+    renderStyle: string;
 }
 
 /**

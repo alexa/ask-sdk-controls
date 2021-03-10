@@ -11,13 +11,13 @@
  * permissions and limitations under the License.
  */
 
-import { SinglePageApp } from '.';
+import { ComponentModeDemo } from '.';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { Logger } from '../../../src/logging/Logger';
 
-const log = new Logger('SinglePageAppDemo:InteractionModel');
+const log = new Logger('ComponentModeDemo:InteractionModel');
 
-export namespace SinglePageAppIM {
+export namespace ComponentModeDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
         .withInvocationName('controls demo')
         .addIntent({ name: 'AMAZON.StopIntent' })
@@ -96,12 +96,12 @@ export namespace SinglePageAppIM {
                 },
             ],
         })
-        .buildCoreModelForControls(new SinglePageApp.DemoControlManager());
+        .buildCoreModelForControls(new ComponentModeDemo.DemoControlManager());
 }
 
 // If launched directly, build and write to a file
 if (require.main === module) {
     // Build and write
-    SinglePageAppIM.imGen.buildAndWrite('en-US-generated.json');
+    ComponentModeDemoIM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');
 }

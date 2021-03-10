@@ -23,6 +23,7 @@ import {
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
 import { Logger } from '../logging/Logger';
+import { APLMode } from '../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { ControlInput } from './ControlInput';
@@ -217,6 +218,10 @@ export abstract class ControlManager implements IControlManager {
         input: ControlInput,
         controlResponseBuilder: ControlResponseBuilder,
     ): void | Promise<void> {
+        // set the APL mode to default.
+        // Required to enable addRenderAPLDirective on control.renderActs()
+        controlResponseBuilder.aplMode = APLMode.DIRECT;
+
         renderActsInSequence(result.acts, input, controlResponseBuilder);
     }
 

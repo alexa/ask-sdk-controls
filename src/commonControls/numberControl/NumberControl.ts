@@ -307,15 +307,29 @@ export class NumberControlAPLProps {
     validationFailedMessage?: string | ((value?: number) => string);
 }
 
+/**
+ * Tracks the last act initiated from the control.
+ */
 interface LastInitiativeState {
     /**
-     * Tracks the last act initiated from the control.
+     * Control act name.
      */
     actName?: string;
 }
 
+/**
+ * Props to customize NumberControl APLComponent rendering.
+ */
 export interface NumberControlAPLComponentProps extends APLComponentProps {
+    /**
+     * Defines the render style of APL component produced by the control.
+     */
     renderStyle: NumberControlAPLComponentStyle;
+
+    /**
+     * Tracks the text to be displayed for invalid input values.
+     */
+    validationFailureText?: string;
 }
 
 /**
@@ -559,7 +573,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addElicitSlotDirective(slotElicitation.slotName, slotElicitation.intent);
 
             // Check APL mode to prevent addition of APL Directive.
-            if (builder.aplMode !== APLMode.COMPONENT) {
+            if (builder.aplMode === APLMode.DIRECT) {
                 this.addStandardAPL(input, builder, this.props.apl.requestValue);
             }
         } else if (act instanceof RequestChangedValueAct) {
@@ -569,7 +583,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             builder.addPromptFragment(this.evaluatePromptProp(act, prompt, input));
             builder.addRepromptFragment(this.evaluatePromptProp(act, reprompt, input));
 
-            if (builder.aplMode !== APLMode.COMPONENT) {
+            if (builder.aplMode === APLMode.DIRECT) {
                 this.addStandardAPL(input, builder, this.props.apl.requestValue);
             }
         } else if (act instanceof ConfirmValueAct) {
@@ -651,7 +665,12 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResponseBuilder,
     ): { [key: string]: any } {
-        return NumberControlAPLComponentBuiltIns.renderComponent(this, props, input, resultBuilder);
+        return NumberControlAPLComponentBuiltIns.renderComponent(
+            this,
+            { ...props, validationFailureText: this.evaluateAPLValidationFailedMessage(this.state.value) },
+            input,
+            resultBuilder,
+        );
     }
 
     // tsDoc - see Control
