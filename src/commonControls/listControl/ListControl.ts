@@ -156,7 +156,7 @@ export interface ListControlProps extends ControlProps {
      * Function that maps the ListControlState.value to rendered value that
      * will be presented to the user as a list.
      *
-     * Default: returns the value unchanged.
+     * Default: prompt & primaryText set to the value other props default to undefined.
      */
     valueRenderer?: (value: string, input: ControlInput) => ListControlRenderedItem;
 
@@ -166,16 +166,37 @@ export interface ListControlProps extends ControlProps {
     apl?: ListControlAPLProps;
 }
 
+/**
+ * Props to customize the value which will be returned by `this.valueRenderer()`.
+ */
 export interface ListControlRenderedItem {
-    /** Props required to set for ImageListControl APL */
+    /**
+     * Defines the primary Text used to render list Items on APL.
+     *
+     * Default: ListControlState.value
+     */
     primaryText?: string;
+
+    /**
+     * Defines the secondary text used to render list Items on APL.
+     *
+     * Default: ''
+     */
     secondaryText?: string;
+
+    /**
+     * Defines the Image source reference to render listItem images on APL.
+     *
+     */
     imageSource?: string;
 
-    /** Rendered value which maps to ListControlState.value
+    /**
+     * Rendered value which maps to ListControlState.value
      * that will be presented to the user as a list
+     *
+     * Default: ListControlState.value
      */
-    prompt?: string;
+    prompt: string;
 }
 
 /**
@@ -367,13 +388,19 @@ export class ListControlAPLProps {
     requestChangedValue?: AplDocumentPropNewStyle;
 }
 
+/**
+ * Tracks the last act initiated from the control.
+ */
 interface LastInitiativeState {
     /**
-     * Tracks the last act initiated from the control.
+     * Control act name.
      */
     actName?: string;
 }
 
+/**
+ * Props to customize ListControl APLComponent rendering.
+ */
 export interface ListAPLComponentProps extends APLComponentProps {
     /**
      * Defines the render style of APL component produced by the control.
@@ -392,7 +419,8 @@ export interface ListAPLComponentProps extends APLComponentProps {
      * Function that maps the MultiValueListControlState.value to rendered value that
      * will be presented to the user as a list.
      *
-     * Default: returns the value unchanged.
+     * Default: returns the value unchanged
+     *  i.e ListControlRenderedItem.prompt = value
      */
     valueRenderer?: (value: string, input: ControlInput) => ListControlRenderedItem;
 }
@@ -860,7 +888,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
-                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
             }),
         );
     }
@@ -882,7 +910,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
-                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
             }),
         );
 
@@ -896,9 +924,9 @@ export class ListControl extends Control implements InteractionModelContributor 
                 choicesFromActivePage,
                 allChoices,
                 renderedChoicesFromActivePage: choicesFromActivePage.map(
-                    (value) => this.props.valueRenderer(value, input).prompt!,
+                    (value) => this.props.valueRenderer(value, input).prompt,
                 ),
-                renderedAllChoices: allChoices.map((value) => this.props.valueRenderer(value, input).prompt!),
+                renderedAllChoices: allChoices.map((value) => this.props.valueRenderer(value, input).prompt),
             }),
             resultBuilder,
         );
@@ -931,7 +959,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
         // feedback
         resultBuilder.addAct(
-            new ValueSetAct(this, { value, renderedValue: this.props.valueRenderer(value, input).prompt! }),
+            new ValueSetAct(this, { value, renderedValue: this.props.valueRenderer(value, input).prompt }),
         );
         return;
     }
@@ -966,7 +994,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: this.state.value,
-                    renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
                 }),
             );
             return;
@@ -1040,7 +1068,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         this.addInitiativeAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
-                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
             }),
             resultBuilder,
         );
@@ -1093,7 +1121,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                             renderedPreviousValue: this.props.valueRenderer(this.state.previousValue, input)
                                 .prompt!,
                             value: this.state.value!,
-                            renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                            renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
                         }),
                     );
                 } else {
@@ -1105,7 +1133,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 resultBuilder.addAct(
                     new ValueSetAct(this, {
                         value: this.state.value,
-                        renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
                     }),
                 );
             }
@@ -1114,7 +1142,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             resultBuilder.addAct(
                 new InvalidValueAct<string>(this, {
                     value: this.state.value!,
-                    renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
                     reasonCode: validationResult.reasonCode,
                     renderedReason: validationResult.renderedReason,
                 }),
@@ -1143,10 +1171,10 @@ export class ListControl extends Control implements InteractionModelContributor 
                         choicesFromActivePage,
                         allChoices,
                         renderedChoicesFromActivePage: choicesFromActivePage.map(
-                            (value) => this.props.valueRenderer(value, input).prompt!,
+                            (value) => this.props.valueRenderer(value, input).prompt,
                         ),
                         renderedAllChoices: allChoices.map(
-                            (value) => this.props.valueRenderer(value, input).prompt!,
+                            (value) => this.props.valueRenderer(value, input).prompt,
                         ),
                     }),
                     resultBuilder,
@@ -1156,14 +1184,14 @@ export class ListControl extends Control implements InteractionModelContributor 
                 this.addInitiativeAct(
                     new RequestChangedValueByListAct(this, {
                         currentValue: this.state.value!,
-                        renderedValue: this.props.valueRenderer(this.state.value!, input).prompt!,
+                        renderedValue: this.props.valueRenderer(this.state.value!, input).prompt,
                         choicesFromActivePage,
                         allChoices,
                         renderedChoicesFromActivePage: choicesFromActivePage.map(
-                            (value) => this.props.valueRenderer(value, input).prompt!,
+                            (value) => this.props.valueRenderer(value, input).prompt,
                         ),
                         renderedAllChoices: allChoices.map(
-                            (value) => this.props.valueRenderer(value, input).prompt!,
+                            (value) => this.props.valueRenderer(value, input).prompt,
                         ),
                     }),
                     resultBuilder,
@@ -1217,7 +1245,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
             );
 
-            if (builder.aplMode !== APLMode.COMPONENT) {
+            if (builder.aplMode === APLMode.DIRECT) {
                 const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
                 this.addStandardAPL(input, builder, renderedAPL);
             }
@@ -1229,7 +1257,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
             );
 
-            if (builder.aplMode !== APLMode.COMPONENT) {
+            if (builder.aplMode === APLMode.DIRECT) {
                 const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestChangedValue, input);
                 this.addStandardAPL(input, builder, renderedAPL);
             }

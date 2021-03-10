@@ -23,7 +23,7 @@ export enum APLMode {
 
     /**
      * The top-level ControlManager.renderAPL produces the APL for each turn.
-     *   - typically this will be a master document that includes various control.renderAPLComponent calls.
+     *   - typically this will be a document that includes various control.renderAPLComponent calls.
      *
      * Controls do not render APL directives during renderAct.
      */

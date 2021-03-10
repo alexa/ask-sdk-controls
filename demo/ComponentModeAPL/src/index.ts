@@ -6,7 +6,10 @@ import { Control } from '../../../src/controls/Control';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
 import { DemoRootControl } from '../../Common/src/DemoRootControl';
 
-export namespace SinglePageApp {
+/**
+ * Demonstrates the composition of visual-aspects of multiple controls
+ */
+export namespace ComponentModeDemo {
     export class DemoControlManager extends ComponentModeControlManager {
         ageControl: NumberControl;
         guestsControl: NumberControl;
@@ -86,7 +89,7 @@ export namespace SinglePageApp {
                 ],
             });
 
-            // TODO: Improve APL Layout
+            // TODO: change to a more responsive layout rather than absolute positioning
             const aplDoc = {
                 type: 'APL',
                 version: '1.5',
@@ -135,7 +138,7 @@ export namespace SinglePageApp {
                                 height: '100px',
                                 items: [
                                     this.ageControl.renderAPLComponent(
-                                        { renderStyle: 'touchForward' },
+                                        { renderStyle: 'modalKeypad' },
                                         input,
                                         controlResponseBuilder,
                                     ),
@@ -163,7 +166,7 @@ export namespace SinglePageApp {
                                 height: '100px',
                                 items: [
                                     this.guestsControl.renderAPLComponent(
-                                        { renderStyle: 'touchForward' },
+                                        { renderStyle: 'modalKeypad' },
                                         input,
                                         controlResponseBuilder,
                                     ),
@@ -261,5 +264,5 @@ export namespace SinglePageApp {
 }
 
 export const handler = SkillBuilders.custom()
-    .addRequestHandlers(new ControlHandler(new SinglePageApp.DemoControlManager()))
+    .addRequestHandlers(new ControlHandler(new ComponentModeDemo.DemoControlManager()))
     .lambda();

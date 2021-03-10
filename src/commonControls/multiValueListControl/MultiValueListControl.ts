@@ -935,41 +935,43 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             .arguments![1] as string;
 
         if (touchAction === 'Select') {
-            this.addValue({
-                id: choiceId,
-                erMatch: true,
-            });
+            return this.addItem(choiceId, input, resultBuilder);
+        } else if (touchAction === 'Toggle') {
+            return this.toggleItemChoiceSelection(choiceId, input, resultBuilder);
+        }
+        return;
+    }
+
+    private addItem(choiceId: string, input: ControlInput, resultBuilder: ControlResultBuilder) {
+        this.addValue({
+            id: choiceId,
+            erMatch: true,
+        });
+        resultBuilder.addAct(
+            new ValueAddedAct(this, {
+                value: choiceId,
+                renderedValue: this.evaluateRenderedValue(choiceId, input),
+            }),
+        );
+    }
+
+    private toggleItemChoiceSelection(
+        choiceId: string,
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) {
+        if (!this.state.value.some((x) => x.id === choiceId)) {
+            this.addItem(choiceId, input, resultBuilder);
+        } else {
+            this.state.value = this.state.value.filter((x) => x.id !== choiceId);
+
             resultBuilder.addAct(
-                new ValueAddedAct(this, {
+                new ValueRemovedAct(this, {
                     value: choiceId,
                     renderedValue: this.evaluateRenderedValue(choiceId, input),
                 }),
             );
-        } else if (touchAction === 'Toggle') {
-            if (!this.state.value.some((x) => x.id === choiceId)) {
-                this.addValue({
-                    id: choiceId,
-                    erMatch: true,
-                });
-
-                resultBuilder.addAct(
-                    new ValueAddedAct(this, {
-                        value: choiceId,
-                        renderedValue: this.evaluateRenderedValue(choiceId, input),
-                    }),
-                );
-            } else {
-                this.state.value = this.state.value.filter((x) => x.id !== choiceId);
-
-                resultBuilder.addAct(
-                    new ValueRemovedAct(this, {
-                        value: choiceId,
-                        renderedValue: this.evaluateRenderedValue(choiceId, input),
-                    }),
-                );
-            }
         }
-        return;
     }
 
     private isRemoveChoiceByTouch(input: ControlInput): boolean {
@@ -991,42 +993,56 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     private handleRemoveChoiceByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
-        const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent).arguments![2];
+        const choiceIndex = (input.request as interfaces.alexa.presentation.apl.UserEvent)
+            .arguments![2] as number;
         assert(choiceIndex !== undefined);
         const touchAction = (input.request as interfaces.alexa.presentation.apl.UserEvent)
             .arguments![1] as string;
-        const content = this.getSlotIds();
         if (touchAction === 'Remove') {
-            const choiceId = content[choiceIndex - 1];
-            this.state.value?.splice(choiceIndex - 1, 1);
-            resultBuilder.addAct(
-                new ValueRemovedAct(this, {
-                    value: choiceId,
-                    renderedValue: this.evaluateRenderedValue(choiceId, input),
-                }),
-            );
+            this.removeItem(choiceIndex, input, resultBuilder);
         } else if (touchAction === 'Reduce') {
-            const aggregateValues: { [key: string]: any } = {};
-            const selections = this.getChoicesList(input);
-
-            selections.forEach((x) => {
-                aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
-            });
-
-            const choiceId = Array.from(Object.keys(aggregateValues))[choiceIndex - 1] as string;
-            const removeIndex = content.indexOf(choiceId);
-            this.state.value?.splice(removeIndex, 1);
-
-            resultBuilder.addAct(
-                new ValueRemovedAct(this, {
-                    value: choiceId,
-                    renderedValue: this.evaluateRenderedValue(choiceId, input),
-                }),
-            );
+            this.decrementItemCount(choiceIndex, input, resultBuilder);
         } else {
             throw new Error('Invalid touchAction from Ordinal to remove items');
         }
         return;
+    }
+
+    private removeItem(choiceIndex: number, input: ControlInput, resultBuilder: ControlResultBuilder) {
+        const content = this.getSlotIds();
+        const choiceId = content[choiceIndex - 1];
+        this.state.value?.splice(choiceIndex - 1, 1);
+        resultBuilder.addAct(
+            new ValueRemovedAct(this, {
+                value: choiceId,
+                renderedValue: this.evaluateRenderedValue(choiceId, input),
+            }),
+        );
+    }
+
+    private decrementItemCount(
+        choiceIndex: number,
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) {
+        const aggregateValues: { [key: string]: any } = {};
+        const content = this.getSlotIds();
+        const selections = this.getChoicesList(input);
+
+        selections.forEach((x) => {
+            aggregateValues[x] = (aggregateValues[x] ?? 0) + 1;
+        });
+
+        const choiceId = Array.from(Object.keys(aggregateValues))[choiceIndex - 1] as string;
+        const removeIndex = content.indexOf(choiceId);
+        this.state.value?.splice(removeIndex, 1);
+
+        resultBuilder.addAct(
+            new ValueRemovedAct(this, {
+                value: choiceId,
+                renderedValue: this.evaluateRenderedValue(choiceId, input),
+            }),
+        );
     }
 
     private isClearValue(input: ControlInput): boolean {
@@ -1349,7 +1365,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.throwUnhandledActError(act);
         }
 
-        if (builder.aplMode !== APLMode.COMPONENT) {
+        if (builder.aplMode === APLMode.DIRECT) {
             this.addStandardAPL(input, builder); // re-render APL Screen
         }
     }
