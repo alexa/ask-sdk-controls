@@ -17,7 +17,6 @@ import _ from 'lodash';
 import { ModelData } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
-    APLComponentProps,
     Control,
     ControlInputHandler,
     ControlInputHandlingProps,
@@ -62,7 +61,7 @@ import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
-import { ListControlAPLPropsBuiltIns, ListControlComponentAPLBuiltIns, ListStyles } from './ListControlAPL';
+import { ListControlAPLPropsBuiltIns, ListControlComponentAPLBuiltIns } from './ListControlAPL';
 
 // TODO: feature: support "what are my choices"
 // TODO: feature: voice pagination of choices.
@@ -369,7 +368,12 @@ export class ListControlPromptProps {
 export type AplContent = { document: { [key: string]: any }; dataSource: { [key: string]: any } };
 export type AplContentFunc = (control: ListControl, input: ControlInput) => AplContent;
 export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
-
+export type AplRenderComponentFunc = (
+    control: ListControl,
+    props: ListAPLComponentProps,
+    input: ControlInput,
+    resultBuilder: ControlResponseBuilder,
+) => { [key: string]: any };
 /**
  * Props associated with the APL produced by ListControl.
  */
@@ -386,6 +390,23 @@ export class ListControlAPLProps {
      */
     requestValue?: AplDocumentPropNewStyle;
     requestChangedValue?: AplDocumentPropNewStyle;
+
+    /**
+     * Determines the APL Component rendering mode.
+     *
+     * Usage:
+     *
+     * 1) Use pre-defined built-ins under ListControlComponentAPLBuiltIns.* namespace which provides both default
+     * implementations and customization of props(ListAPLComponentProps) to render an APL component.
+     *
+     * e.g  renderComponent: ListControlComponentAPLBuiltIns.ImageListRenderer.default --- Default Implementation
+     *      renderComponent: ListControlComponentAPLBuiltIns.ImageListRenderer.of(props: ListAPLComponentProps) --- Override few properties
+     *
+     * 2) Provide a custom function which returns an APL component.
+     *
+     * Default: ListControlComponentAPLBuiltIns.TextListRenderer.default
+     */
+    renderComponent?: AplRenderComponentFunc;
 }
 
 /**
@@ -401,12 +422,7 @@ interface LastInitiativeState {
 /**
  * Props to customize ListControl APLComponent rendering.
  */
-export interface ListAPLComponentProps extends APLComponentProps {
-    /**
-     * Defines the render style of APL component produced by the control.
-     */
-    renderStyle: ListStyles;
-
+export interface ListAPLComponentProps {
     /**
      * Boolean to determine to highlight user selected choice from the
      * list of items.
@@ -633,6 +649,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 requestChangedValue: ListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
                     valueRenderer: props.valueRenderer ?? ListControl.defaultValueRenderer(),
                 }),
+                renderComponent: ListControlComponentAPLBuiltIns.TextListRenderer.default,
             },
         };
 
@@ -1303,17 +1320,12 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
     }
 
-    renderAPLComponent(
-        props: ListAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ): { [key: string]: any } {
-        return ListControlComponentAPLBuiltIns.renderComponent(
-            this,
-            { ...props, valueRenderer: this.props.valueRenderer },
-            input,
-            resultBuilder,
-        );
+    renderAPLComponent(input: ControlInput, resultBuilder: ControlResponseBuilder): { [key: string]: any } {
+        const aplRenderFunc = this.props.apl.renderComponent;
+        const defaultProps: ListAPLComponentProps = {
+            valueRenderer: this.props.valueRenderer,
+        };
+        return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
     }
 
     private evaluateAPLPropNewStyle(prop: AplDocumentPropNewStyle, input: ControlInput): AplContent {

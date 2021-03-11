@@ -12,9 +12,150 @@
  */
 
 import i18next from 'i18next';
+import _ from 'lodash';
 import { ControlInput, ControlResponseBuilder } from '../..';
 import { DeepRequired } from '../../utils/DeepRequired';
+import { ListAPLComponentProps } from '../listControl/ListControl';
 import { NumberControl, NumberControlAPLComponentProps, NumberControlAPLProps } from './NumberControl';
+
+export namespace NumberControlAPLComponentBuiltIns {
+    export function renderModalKeypad(
+        control: NumberControl,
+        props: NumberControlAPLComponentProps,
+        input: ControlInput,
+        resultBuilder: ControlResponseBuilder,
+    ) {
+        resultBuilder.addAPLDocumentStyle('NumberControlFrameStyle', {
+            values: [
+                {
+                    borderWidth: 2,
+                    borderStrokeWidth: 1,
+                    borderColor: 'darkgrey',
+                    hintColor: 'grey',
+                    fontSize: '40dp',
+                },
+                {
+                    when: '${state.focused}',
+                    // borderColor: 'green',
+                    borderStrokeWidth: 2,
+                },
+            ],
+        });
+
+        resultBuilder.addAPLDocumentLayout('ModalKeyPad', {
+            parameters: [
+                {
+                    name: 'controlId',
+                    type: 'string',
+                },
+                {
+                    name: 'validationFailureText',
+                    type: 'string',
+                },
+            ],
+            items: [
+                {
+                    type: 'Container',
+                    style: 'NumberControlFrameStyle',
+                    width: '100%',
+                    height: '100%',
+                    items: [
+                        {
+                            type: 'Container',
+                            width: '100%',
+                            height: '100%',
+                            direction: 'column',
+                            items: [
+                                {
+                                    type: 'EditText',
+                                    id: 'editTextNumber',
+                                    style: 'EditStyle',
+                                    keyboardType: 'numberPad',
+                                    submitKeyType: 'go',
+                                    onSubmit: [
+                                        {
+                                            type: 'Sequential',
+                                            commands: [
+                                                {
+                                                    type: 'SendEvent',
+                                                    arguments: ['${controlId}', '${event.source.value}'],
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    accessibilityLabel: 'Enter a number',
+                                    minWidth: '100%',
+                                    maxWidth: '100%',
+                                    grow: 1,
+                                    validCharacters: '-0-9',
+                                    text: control.state.value?.toString(),
+                                    hint: '[number]',
+                                    hintWeight: 'normal',
+                                    fontSize: '34px',
+                                },
+                                {
+                                    type: 'Text',
+                                    text: control.state.isValidValue ? '' : '${validationFailureMessage}',
+                                    minWidth: '100%',
+                                    maxWidth: '100%',
+                                    height: '30px',
+                                    fontSize: '24px',
+                                    color: 'red',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        return {
+            type: 'ModalKeyPad',
+            controlId: control.id,
+            validationFailureMessage: props.validationFailureText, //control.evaluateAPLValidationFailedMessage(control.state.value);
+        };
+    }
+
+    /**
+     * Defines ModalKeyPad Renderer for APLComponentMode.
+     */
+    export class ModalKeyPadRender {
+        /**
+         * Provides a default implementation of textList with default props.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: NumberControl,
+            defaultProps: NumberControlAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => renderModalKeypad(control, defaultProps, input, resultBuilder);
+
+        /**
+         * Provides customization over `renderModalKeypad()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: ListAPLComponentProps) {
+            return (
+                control: NumberControl,
+                defaultProps: NumberControlAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return renderModalKeypad(control, mergedProps, input, resultBuilder);
+            };
+        }
+    }
+}
 
 export namespace NumberControlAPLPropsBuiltIns {
     /*
@@ -46,6 +187,7 @@ export namespace NumberControlAPLPropsBuiltIns {
             };
             return aplContent;
         },
+        renderComponent: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default,
     };
 
     /**
@@ -177,115 +319,3 @@ export namespace NumberControlAPLPropsBuiltIns {
 }
 
 export type NumberControlAPLComponentStyle = 'modalKeypad';
-
-export namespace NumberControlAPLComponentBuiltIns {
-    export function renderComponent(
-        control: NumberControl,
-        props: NumberControlAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ) {
-        if (props.renderStyle === 'modalKeypad') {
-            return renderModalKeypad(control, props, input, resultBuilder);
-        } else {
-            throw new Error('Invalid renderStyle');
-        }
-    }
-
-    export function renderModalKeypad(
-        control: NumberControl,
-        props: NumberControlAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ) {
-        resultBuilder.addAPLDocumentStyle('NumberControlFrameStyle', {
-            values: [
-                {
-                    borderWidth: 2,
-                    borderStrokeWidth: 1,
-                    borderColor: 'darkgrey',
-                    hintColor: 'grey',
-                    fontSize: '40dp',
-                },
-                {
-                    when: '${state.focused}',
-                    // borderColor: 'green',
-                    borderStrokeWidth: 2,
-                },
-            ],
-        });
-
-        resultBuilder.addAPLDocumentLayout('ModalKeyPad', {
-            parameters: [
-                {
-                    name: 'controlId',
-                    type: 'string',
-                },
-                {
-                    name: 'validationFailureText',
-                    type: 'string',
-                },
-            ],
-            items: [
-                {
-                    type: 'Container',
-                    style: 'NumberControlFrameStyle',
-                    width: '100%',
-                    height: '100%',
-                    items: [
-                        {
-                            type: 'Container',
-                            width: '100%',
-                            height: '100%',
-                            direction: 'column',
-                            items: [
-                                {
-                                    type: 'EditText',
-                                    id: 'editTextNumber',
-                                    style: 'EditStyle',
-                                    keyboardType: 'numberPad',
-                                    submitKeyType: 'go',
-                                    onSubmit: [
-                                        {
-                                            type: 'Sequential',
-                                            commands: [
-                                                {
-                                                    type: 'SendEvent',
-                                                    arguments: ['${controlId}', '${event.source.value}'],
-                                                },
-                                            ],
-                                        },
-                                    ],
-                                    accessibilityLabel: 'Enter a number',
-                                    minWidth: '100%',
-                                    maxWidth: '100%',
-                                    grow: 1,
-                                    validCharacters: '-0-9',
-                                    text: control.state.value?.toString(),
-                                    hint: '[number]',
-                                    hintWeight: 'normal',
-                                    fontSize: '34px',
-                                },
-                                {
-                                    type: 'Text',
-                                    text: control.state.isValidValue ? '' : '${validationFailureMessage}',
-                                    minWidth: '100%',
-                                    maxWidth: '100%',
-                                    height: '30px',
-                                    fontSize: '24px',
-                                    color: 'red',
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        });
-
-        return {
-            type: 'ModalKeyPad',
-            controlId: control.id,
-            validationFailureMessage: props.validationFailureText, //control.evaluateAPLValidationFailedMessage(control.state.value);
-        };
-    }
-}

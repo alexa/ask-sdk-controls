@@ -25,13 +25,7 @@ import {
     ValueControlIntent,
 } from '../..';
 import { Strings as $ } from '../../constants/Strings';
-import {
-    APLComponentProps,
-    Control,
-    ControlInputHandlingProps,
-    ControlProps,
-    ControlState,
-} from '../../controls/Control';
+import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
@@ -64,11 +58,7 @@ import {
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
-import {
-    NumberControlAPLComponentBuiltIns,
-    NumberControlAPLComponentStyle,
-    NumberControlAPLPropsBuiltIns,
-} from './NumberControlAPL';
+import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -279,6 +269,12 @@ export type AplContentFunc = (
     validationFailedMessage: string,
 ) => AplContent;
 export type AplPropNewStyle = AplContent | AplContentFunc;
+export type AplRenderComponentFunc = (
+    control: NumberControl,
+    props: NumberControlAPLComponentProps,
+    input: ControlInput,
+    resultBuilder: ControlResponseBuilder,
+) => { [key: string]: any };
 
 /**
  * Props associated with the APL produced by NumberControl.
@@ -305,6 +301,23 @@ export class NumberControlAPLProps {
      * The message to show on screen if validation fails.
      */
     validationFailedMessage?: string | ((value?: number) => string);
+
+    /**
+     * Determines the APL Component rendering mode.
+     *
+     * Usage:
+     *
+     * 1) Use pre-defined built-ins under ListControlComponentAPLBuiltIns.* namespace which provides both default
+     * implementations and customization of props(NumberControlAPLComponentProps) to render an APL component.
+     *
+     * e.g  renderComponent: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default --- Default Implementation
+     *      renderComponent: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default.of(props: NumberControlAPLComponentProps) --- Override few properties
+     *
+     * 2) Provide a custom function which returns an APL component.
+     *
+     * Default: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default
+     */
+    renderComponent?: AplRenderComponentFunc;
 }
 
 /**
@@ -320,12 +333,7 @@ interface LastInitiativeState {
 /**
  * Props to customize NumberControl APLComponent rendering.
  */
-export interface NumberControlAPLComponentProps extends APLComponentProps {
-    /**
-     * Defines the render style of APL component produced by the control.
-     */
-    renderStyle: NumberControlAPLComponentStyle;
-
+export interface NumberControlAPLComponentProps {
     /**
      * Tracks the text to be displayed for invalid input values.
      */
@@ -660,17 +668,12 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    renderAPLComponent(
-        props: NumberControlAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ): { [key: string]: any } {
-        return NumberControlAPLComponentBuiltIns.renderComponent(
-            this,
-            { ...props, validationFailureText: this.evaluateAPLValidationFailedMessage(this.state.value) },
-            input,
-            resultBuilder,
-        );
+    renderAPLComponent(input: ControlInput, resultBuilder: ControlResponseBuilder): { [key: string]: any } {
+        const aplRenderFunc = this.props.apl.renderComponent;
+        const defaultProps: NumberControlAPLComponentProps = {
+            validationFailureText: this.evaluateAPLValidationFailedMessage(this.state.value),
+        };
+        return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
     }
 
     // tsDoc - see Control

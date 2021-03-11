@@ -32,14 +32,6 @@ export interface ControlProps {
      */
     id: string;
 }
-
-export interface APLComponentProps {
-    /**
-     * Defines the render style of APL component produced by the control.
-     */
-    renderStyle: string;
-}
-
 /**
  * Defines the mandatory state of a Control.
  */
@@ -294,11 +286,16 @@ export abstract class Control implements IControl {
         return act.render(input, responseBuilder);
     }
 
-    renderAPLComponent(
-        props: APLComponentProps,
-        input: ControlInput,
-        responseBuilder: ControlResponseBuilder,
-    ): { [key: string]: any } {
+    /**
+     * Add response APL component by this control.
+     *
+     * This is intended to be used to provide APL rendering component for a control to process
+     * inputs, provide feedback, elicitation etc through touch events on APL screens.
+     *
+     * @param input - Input
+     * @param responseBuilder - Response builder
+     */
+    renderAPLComponent(input: ControlInput, responseBuilder: ControlResponseBuilder): { [key: string]: any } {
         throw new Error('Not Implemented');
     }
 

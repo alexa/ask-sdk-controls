@@ -1,4 +1,5 @@
 import i18next from 'i18next';
+import _ from 'lodash';
 import { ControlResponseBuilder } from '../..';
 import { ControlInput } from '../../controls/ControlInput';
 import { AplContent, ListAPLComponentProps, ListControl, ListControlRenderedItem } from './ListControl';
@@ -117,24 +118,18 @@ export namespace ListControlAPLPropsBuiltIns {
     }
 }
 
-export type ListStyles = 'textList' | 'imageList';
-
+/**
+ * Namespace which define built-in renderers for APL Component Mode.
+ */
 export namespace ListControlComponentAPLBuiltIns {
-    export function renderComponent(
-        control: ListControl,
-        props: ListAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ) {
-        if (props.renderStyle === 'textList') {
-            return renderTextList(control, props, input, resultBuilder);
-        } else if (props.renderStyle === 'imageList') {
-            return renderImageList(control, props, input, resultBuilder);
-        } else {
-            throw new Error('Invalid render style');
-        }
-    }
-
+    /**
+     * Function which returns an APL component using ImageListLayout.
+     *
+     * @param control - ListControl
+     * @param props - Control context props e.g valueRenderer
+     * @param input - Input
+     * @param resultBuilder - Result builder
+     */
     export function renderImageList(
         control: ListControl,
         props: ListAPLComponentProps,
@@ -288,6 +283,14 @@ export namespace ListControlComponentAPLBuiltIns {
         };
     }
 
+    /**
+     * Function which returns an APL component using TextListLayout.
+     *
+     * @param control - ListControl
+     * @param props - Control context props e.g valueRenderer
+     * @param input - Input
+     * @param resultBuilder - Result builder
+     */
     export function renderTextList(
         control: ListControl,
         props: ListAPLComponentProps,
@@ -364,5 +367,88 @@ export namespace ListControlComponentAPLBuiltIns {
             controlId: control.id,
             listItems,
         };
+    }
+
+    /**
+     * Defines TextListRenderer for APLComponentMode.
+     */
+    export class TextListRenderer {
+        /**
+         * Provides a default implementation of textList with default props.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: ListControl,
+            defaultProps: ListAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => renderTextList(control, defaultProps, input, resultBuilder);
+
+        /**
+         * Provides customization over `renderTextList()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: ListAPLComponentProps) {
+            return (
+                control: ListControl,
+                defaultProps: ListAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return renderTextList(control, mergedProps, input, resultBuilder);
+            };
+        }
+    }
+
+    /**
+     * Defines ImageListRenderer for APLComponentMode.
+     */
+    export class ImageListRenderer {
+        /**
+         * Provides a default implementation of imageList with default props.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: ListControl,
+            defaultProps: ListAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => renderImageList(control, { ...defaultProps, highlightSelected: true }, input, resultBuilder);
+
+        /**
+         * Provides customization over `renderImageList()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: ListAPLComponentProps) {
+            return (
+                control: ListControl,
+                defaultProps: ListAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Assign defaults to props.
+                defaultProps.highlightSelected = true;
+
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return renderImageList(control, mergedProps, input, resultBuilder);
+            };
+        }
     }
 }

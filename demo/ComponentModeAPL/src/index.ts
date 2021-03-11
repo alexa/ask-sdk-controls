@@ -1,6 +1,7 @@
 import { SkillBuilders } from 'ask-sdk-core';
 import { ControlInput, ControlResponseBuilder, ControlResult, NumberControl } from '../../../src';
 import { MultiValueListControl } from '../../../src/commonControls/multiValueListControl/MultiValueListControl';
+import { MultiValueListControlComponentAPLBuiltIns } from '../../../src/commonControls/multiValueListControl/MultiValueListControlAPL';
 import { ComponentModeControlManager } from '../../../src/controls/ComponentModeControlManager';
 import { Control } from '../../../src/controls/Control';
 import { ControlHandler } from '../../../src/runtime/ControlHandler';
@@ -59,6 +60,9 @@ export namespace ComponentModeDemo {
                     slotType: 'PartyTheme',
                     interactionModel: {
                         targets: ['builtin_choice', 'builtin_it', 'theme'],
+                    },
+                    apl: {
+                        renderComponent: MultiValueListControlComponentAPLBuiltIns.CheckBoxRenderer.default,
                     },
                 })),
             );
@@ -136,13 +140,7 @@ export namespace ComponentModeDemo {
                                 left: '50px',
                                 width: '200px',
                                 height: '100px',
-                                items: [
-                                    this.ageControl.renderAPLComponent(
-                                        { renderStyle: 'modalKeypad' },
-                                        input,
-                                        controlResponseBuilder,
-                                    ),
-                                ],
+                                items: [this.ageControl.renderAPLComponent(input, controlResponseBuilder)],
                             },
                             {
                                 id: 'label2',
@@ -164,13 +162,7 @@ export namespace ComponentModeDemo {
                                 left: '50px',
                                 width: '200px',
                                 height: '100px',
-                                items: [
-                                    this.guestsControl.renderAPLComponent(
-                                        { renderStyle: 'modalKeypad' },
-                                        input,
-                                        controlResponseBuilder,
-                                    ),
-                                ],
+                                items: [this.guestsControl.renderAPLComponent(input, controlResponseBuilder)],
                             },
                             {
                                 id: 'label3',
@@ -193,11 +185,7 @@ export namespace ComponentModeDemo {
                                 width: '700px',
                                 height: '360px',
                                 items: [
-                                    this.partyThemeControl.renderAPLComponent(
-                                        { renderStyle: 'aggregateDuplicates' },
-                                        input,
-                                        controlResponseBuilder,
-                                    ),
+                                    this.partyThemeControl.renderAPLComponent(input, controlResponseBuilder),
                                 ],
                             },
 
