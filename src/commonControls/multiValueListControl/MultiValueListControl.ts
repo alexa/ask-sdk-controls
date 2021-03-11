@@ -19,7 +19,6 @@ import _ from 'lodash';
 import { ModelData, StringOrList } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
-    APLComponentProps,
     Control,
     ControlInitiativeHandler,
     ControlInputHandler,
@@ -64,9 +63,7 @@ import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 import {
     MultiValueListControlAPLPropsBuiltIns,
     MultiValueListControlComponentAPLBuiltIns,
-    MultiValueListStyles,
 } from './MultiValueListControlAPL';
-
 const log = new Logger('AskSdkControls:MultiValueListControl');
 
 export type MultiValueValidationFailure = {
@@ -194,6 +191,12 @@ export type SlotValidationFunction = (
 export type AplContent = { document: { [key: string]: any }; dataSource: { [key: string]: any } };
 export type AplContentFunc = (control: MultiValueListControl, input: ControlInput) => AplContent;
 export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
+export type AplRenderComponentFunc = (
+    control: MultiValueListControl,
+    props: MultiValueListAPLComponentProps,
+    input: ControlInput,
+    resultBuilder: ControlResponseBuilder,
+) => { [key: string]: any };
 
 /**
  * Mapping of action slot values to the capability that this control supports.
@@ -381,6 +384,24 @@ export class MultiValueListControlAPLProps {
      * Custom APL to request value from list of choices.
      */
     requestValue?: AplDocumentPropNewStyle;
+
+    /**
+     * Determines the APL Component rendering mode.
+     *
+     * Usage:
+     *
+     * 1) Use pre-defined built-ins under MultiValueListControlComponentAPLBuiltIns.* namespace which provides both default
+     * implementations and customization of props(MultiValueListAPLComponentProps) to render an APL component.
+     *
+     * e.g  renderComponent: MultiValueListControlComponentAPLBuiltIns.DualTextListRender.default --- Default Implementation
+     *      renderComponent: MultiValueListControlComponentAPLBuiltIns.DualTextListRender.default.of(props: MultiValueListAPLComponentProps) --- Override few properties
+     *
+     * 2) Provide a custom function which returns an APL component.
+     *
+     *
+     * Default: MultiValueListControlComponentAPLBuiltIns.DualTextListRender.default
+     */
+    renderComponent?: AplRenderComponentFunc;
 }
 
 export type MultiValueListStateValue = {
@@ -410,12 +431,7 @@ interface LastInitiativeState {
     valueIds?: string[];
 }
 
-export interface MultiValueListAPLComponentProps extends APLComponentProps {
-    /**
-     * Defines the render style of APL component produced by the control.
-     */
-    renderStyle: MultiValueListStyles;
-
+export interface MultiValueListAPLComponentProps {
     /**
      * Function that maps the MultiValueListControlState.value to rendered value that
      * will be presented to the user as a list.
@@ -664,6 +680,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                 requestValue: MultiValueListControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
                     valueRenderer: (choice, input) => choice, // TODO: Pass the valueRenderer prop
                 }),
+                renderComponent: MultiValueListControlComponentAPLBuiltIns.DualTextListRender.default,
             },
             inputHandling: {
                 customHandlingFuncs: [],
@@ -1370,17 +1387,12 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    renderAPLComponent(
-        props: MultiValueListAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ): { [key: string]: any } {
-        return MultiValueListControlComponentAPLBuiltIns.renderComponent(
-            this,
-            { ...props, valueRenderer: this.props.valueRenderer },
-            input,
-            resultBuilder,
-        );
+    renderAPLComponent(input: ControlInput, resultBuilder: ControlResponseBuilder): { [key: string]: any } {
+        const aplRenderFunc = this.props.apl.renderComponent;
+        const defaultProps: MultiValueListAPLComponentProps = {
+            valueRenderer: this.props.valueRenderer,
+        };
+        return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
     }
 
     // tsDoc - see Control

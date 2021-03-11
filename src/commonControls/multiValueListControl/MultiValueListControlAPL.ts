@@ -1,4 +1,5 @@
 import i18next from 'i18next';
+import _ from 'lodash';
 import { ControlResponseBuilder } from '../..';
 import { ControlInput } from '../../controls/ControlInput';
 import { assert } from '../../utils/AssertionUtils';
@@ -383,26 +384,18 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
     }
 }
 
-export type MultiValueListStyles = 'checkBoxes' | 'dualTextList' | 'aggregateDuplicates';
-
+/**
+ * Namespace which define built-in renderers for APL Component Mode.
+ */
 export namespace MultiValueListControlComponentAPLBuiltIns {
-    export function renderComponent(
-        control: MultiValueListControl,
-        props: MultiValueListAPLComponentProps,
-        input: ControlInput,
-        resultBuilder: ControlResponseBuilder,
-    ) {
-        if (props.renderStyle === 'checkBoxes') {
-            return renderCheckBoxComponent(control, props, input, resultBuilder);
-        } else if (props.renderStyle === 'dualTextList') {
-            return dualTextListComponent(control, props, input, resultBuilder);
-        } else if (props.renderStyle === 'aggregateDuplicates') {
-            return aggregateDuplicatesComponent(control, props, input, resultBuilder);
-        } else {
-            throw Error('Invalid renderStyle');
-        }
-    }
-
+    /**
+     * Function which returns an APL component using AlexaCheckbox Layout.
+     *
+     * @param control - MultiValueListControl
+     * @param props - Control context props e.g valueRenderer
+     * @param input - Input
+     * @param resultBuilder - Result builder
+     */
     export function renderCheckBoxComponent(
         control: MultiValueListControl,
         props: MultiValueListAPLComponentProps,
@@ -536,6 +529,14 @@ export namespace MultiValueListControlComponentAPLBuiltIns {
         };
     }
 
+    /**
+     * Function which returns an APL component using dualTextList Layout.
+     *
+     * @param control - MultiValueListControl
+     * @param props - Control context props e.g valueRenderer
+     * @param input - Input
+     * @param resultBuilder - Result builder
+     */
     export function dualTextListComponent(
         control: MultiValueListControl,
         props: MultiValueListAPLComponentProps,
@@ -717,6 +718,15 @@ export namespace MultiValueListControlComponentAPLBuiltIns {
         };
     }
 
+    /**
+     * Function which returns an APL component using AlexaIconButton Layout
+     * providing increment/decrement buttons for listItems.
+     *
+     * @param control - MultiValueListControl
+     * @param props - Control context props e.g valueRenderer
+     * @param input - Input
+     * @param resultBuilder - Result builder
+     */
     export function aggregateDuplicatesComponent(
         control: MultiValueListControl,
         props: MultiValueListAPLComponentProps,
@@ -877,5 +887,134 @@ export namespace MultiValueListControlComponentAPLBuiltIns {
             controlId: control.id,
             listItems,
         };
+    }
+
+    /**
+     * Defines DualTextListRenderer for APLComponentMode.
+     */
+    export class DualTextListRender {
+        /**
+         * Provides a default implementation of dualTextList with default props.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: MultiValueListControl,
+            defaultProps: MultiValueListAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => dualTextListComponent(control, defaultProps, input, resultBuilder);
+
+        /**
+         * Provides customization over `dualTextListComponent()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: MultiValueListAPLComponentProps) {
+            return (
+                control: MultiValueListControl,
+                defaultProps: MultiValueListAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return dualTextListComponent(control, mergedProps, input, resultBuilder);
+            };
+        }
+    }
+
+    /**
+     * Defines CheckBoxRenderer for APLComponentMode.
+     *
+     * Provides methods to render APL components using AlexaCheckbox layouts.
+     */
+    export class CheckBoxRenderer {
+        /**
+         * Provides a default implementation of CheckBox-textList with default props.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: MultiValueListControl,
+            defaultProps: MultiValueListAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => renderCheckBoxComponent(control, defaultProps, input, resultBuilder);
+
+        /**
+         * Provides customization over `renderCheckBoxComponent()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: MultiValueListAPLComponentProps) {
+            return (
+                control: MultiValueListControl,
+                defaultProps: MultiValueListAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return renderCheckBoxComponent(control, mergedProps, input, resultBuilder);
+            };
+        }
+    }
+
+    /**
+     * Defines AggregateDuplicatesRenderer for APLComponentMode.
+     *
+     * Provides methods to render APL components using AlexaIconButton layouts.
+     */
+    export class AggregateDuplicatesRenderer {
+        /**
+         * Provides a default implementation of aggregateDuplicates-textList with default props.
+         *
+         * Usage:
+         * - This is used to render list items where duplicates counts of item selections
+         *  are allowed.
+         * - Returns a textList layout with increment and decrement alexaIcons on each listItem.
+         *
+         * @param control - ListControl
+         * @param defaultProps - props
+         * @param input - Input
+         * @param resultBuilder - Result builder
+         */
+        static default = (
+            control: MultiValueListControl,
+            defaultProps: MultiValueListAPLComponentProps,
+            input: ControlInput,
+            resultBuilder: ControlResponseBuilder,
+        ) => aggregateDuplicatesComponent(control, defaultProps, input, resultBuilder);
+
+        /**
+         * Provides customization over `aggregateDuplicatesComponent()` arguments where the input
+         * props overrides the defaults.
+         *
+         * @param props - props
+         */
+        static of(props: MultiValueListAPLComponentProps) {
+            return (
+                control: MultiValueListControl,
+                defaultProps: MultiValueListAPLComponentProps,
+                input: ControlInput,
+                resultBuilder: ControlResponseBuilder,
+            ) => {
+                // Merges the user-provided props with the default props.
+                // Any property defined by the user-provided data overrides the defaults.
+                const mergedProps = _.merge(defaultProps, props);
+                return aggregateDuplicatesComponent(control, mergedProps, input, resultBuilder);
+            };
+        }
     }
 }
