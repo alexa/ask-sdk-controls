@@ -483,6 +483,9 @@ export class NumberControl extends Control implements InteractionModelContributo
                 customHandlingFuncs: [],
             },
             valueRenderer: (value: number, input) => value.toString(),
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
         return _.merge(defaults, props);
     }

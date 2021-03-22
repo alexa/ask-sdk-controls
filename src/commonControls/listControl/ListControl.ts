@@ -602,6 +602,9 @@ export class ListControl extends Control implements InteractionModelContributor 
                         }),
                 }),
             },
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
 
         return _.merge(defaults, props);

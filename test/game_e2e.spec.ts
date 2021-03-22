@@ -383,7 +383,7 @@ class PlayerContainer extends ContainerControl {
     }
 
     async canHandle(input: ControlInput): Promise<boolean> {
-        return InputUtil.isIntent(input, 'MySetPlayerIntent') || this.canHandleByChild(input);
+        return InputUtil.isIntent(input, 'MySetPlayerIntent') || super.canHandle(input);
     }
 
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
@@ -409,6 +409,6 @@ class PlayerContainer extends ContainerControl {
             }
             return;
         }
-        return this.handleByChild(input, resultBuilder);
+        return super.handle(input, resultBuilder);
     }
 }

@@ -126,11 +126,11 @@ class NeverHandlesControl extends ContainerControl {
  */
 class ReverseOrderControl extends ContainerControl {
     async canHandle(input: ControlInput): Promise<boolean> {
-        return this.canHandleByChild(input);
+        return super.canHandle(input);
     }
 
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        return this.handleByChild(input, resultBuilder);
+        return super.handle(input, resultBuilder);
     }
 
     async canTakeInitiative(input: ControlInput): Promise<boolean> {

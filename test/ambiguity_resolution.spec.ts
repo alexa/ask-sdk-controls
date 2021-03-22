@@ -49,7 +49,8 @@ class DisambiguationManager extends ControlManager {
         const rootControl = new ContainerControl({
             id: 'root',
             dialog: {
-                explicityResolveTargetAmbiguity: ImplicitResolutionStrategy.AskExplicitly,
+                explicityResolveTargetAmbiguity: true,
+                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative
             },
         });
 

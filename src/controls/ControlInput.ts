@@ -13,10 +13,9 @@
 
 import { HandlerInput } from 'ask-sdk-core';
 import { Request } from 'ask-sdk-model';
-import _ from 'lodash';
-import { IControlInput } from './interfaces/IControlInput';
-import { IControl } from './interfaces/IControl';
 import { APLMode } from '../responseGeneration/AplMode';
+import { IControl } from './interfaces/IControl';
+import { IControlInput } from './interfaces/IControlInput';
 
 /**
  * Defines an expanded input object passed around during processing by Controls.
@@ -34,9 +33,32 @@ export class ControlInput implements IControlInput {
     /**
      * The request object
      *
-     * This is a convenience for `handlerInput.requestEnvelope.request`.
+     * The request object that should be processed during canHandle.
+     *
+     * Usage:
+     *  * In essentially all cases `request` can be treated as `the request`.  If you need to know if
+     *    it is a stashed value or if you absolutely need `this turns original request`, use `originalRequest`
+     *  * If a Container is directly handling an input (e.g. a custom intent), it is preferable to manipulate the child control
+     *    directly rather than constructing a modified request object.  I.e. don't manufacture new Request objects.
+     *  * The only intended scenario is to stash a request from one turn then pass it to a child on a subsequent turn.
+     * 
+     * Purpose:
+     * * In scenarios with user-input ambiguity we often need to stash the original request until we work
+     *   out how best to process it. A common solution is to ask the user how to resolve the situation 
+     *   and then proceed with this extra information by routing the original request appropriately.
+     * 
+     * Note:
+     *  * Because of the limited scenarios where this should be modified, it is marked readonly. 
+     *    Mutate with caution.
      */
     readonly request: Request;
+
+    /**
+     * The original request object
+     *
+     * This is a convenience copy of `handlerInput.requestEnvelope.request` and never changes.
+     */
+    readonly originalRequest: Request;
 
     /**
      * The number of incoming requests during the user session.
@@ -69,6 +91,7 @@ export class ControlInput implements IControlInput {
     ) {
         this.handlerInput = handlerInput;
         this.request = this.handlerInput.requestEnvelope.request;
+        this.originalRequest = this.handlerInput.requestEnvelope.request;
         this.turnNumber = turnNumber;
         this.controls = controlMap;
         this.aplMode = aplMode;

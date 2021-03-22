@@ -413,6 +413,9 @@ export class ValueControl extends Control implements InteractionModelContributor
                 customHandlingFuncs: [],
             },
             valueRenderer: (value: string, input) => value,
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
 
         return _.merge(defaults, props);
@@ -1078,7 +1081,7 @@ export class ValueControl extends Control implements InteractionModelContributor
         return this.props.interactionModel.targets;
     }
     
-    getSpecificTarget(): string {
+    __getSpecificTarget(): string {
         return this.props.dialog.targetForDisambiguation;
     }
 }

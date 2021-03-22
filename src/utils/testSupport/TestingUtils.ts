@@ -395,6 +395,7 @@ function dummyControlInput(request?: Request): ControlInput {
     return {
         handlerInput,
         request: handlerInput.requestEnvelope.request,
+        originalRequest: handlerInput.requestEnvelope.request,
         turnNumber: TestInput.turnNumber,
         controls: {},
         aplMode: APLMode.DIRECT, // TODO: get this wired up from the test configuration.

@@ -19,10 +19,20 @@ import { randomlyPick } from '../utils/ArrayUtils';
 import { StringOrList } from '../utils/BasicTypes';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
+import { ControlIdentifierType } from './enums/ControlIdentifierType';
+import { RenderType } from './enums/RenderType';
 import { IControl } from './interfaces/IControl';
+import { IControlInput } from './interfaces/IControlInput';
 
 //TODO: hoist common props for all controls to here.
 //or at least define interfaces to help developers be consistent.
+
+export type RenderIdentifierFunc = (
+    input: IControlInput,
+    identifier: string,
+    identifierType: ControlIdentifierType,
+    renderType: RenderType,
+) => string;
 
 /**
  * Defines the mandatory props of a Control.
@@ -34,6 +44,10 @@ export interface ControlProps {
      * This must be unique within the scope of the entire control tree.
      */
     id: string;
+
+    rendering?: {
+        renderIdentifierFunc?: RenderIdentifierFunc;
+    };
 }
 
 /**
@@ -356,18 +370,20 @@ export abstract class Control implements IControl {
 
     // TODO: make abstract.
     // TODO: maybe it isn't required.. we could scan the targets looking for the relatively-unique ones amongst candidates.
-    getSpecificTarget(): string {
+    __getSpecificTarget(): string {
         return $.Target.It;
     }
 
-    /**
-     * Render a target associated with the Control for use in a disambiguation prompt.
-     * Default: returns the target verbatim.
-     */
-    renderTargetForDisambiguationPrompt(target: string): string {
+    // tsDoc from IControl
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
         //TODO: introduce default renderings for the built-in targets.
         //TODO:  if defaultTargetRendering(target) !== undefined, return it.
 
-        return target; //Default: just return it verbatim
+        return identifier; //Default: just return it verbatim
     }
 }

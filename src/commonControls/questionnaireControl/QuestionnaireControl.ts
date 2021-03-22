@@ -612,6 +612,9 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                 intentToChoiceMapper: (intent) => defaultIntentToValueMapper(intent),
                 customHandlingFuncs: [],
             },
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
 
         return _.merge(defaults, props);

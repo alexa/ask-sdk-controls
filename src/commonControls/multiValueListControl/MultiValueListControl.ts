@@ -662,6 +662,9 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                 customHandlingFuncs: [],
             },
             valueRenderer: props.valueRenderer ?? ((value, input) => value),
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
 
         return _.merge(defaults, props);

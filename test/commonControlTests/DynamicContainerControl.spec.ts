@@ -133,7 +133,7 @@ export class MyMultiControl extends DynamicContainerControl {
             return true;
         }
 
-        return this.canHandleByChild(input);
+        return super.canHandle(input);
     }
 
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
@@ -144,7 +144,7 @@ export class MyMultiControl extends DynamicContainerControl {
             return;
         }
         request = request as IntentRequest; // assume IntentRequest.
-        await this.handleByChild(input, resultBuilder);
+        await super.handle(input, resultBuilder);
 
         if ((await this.children[0].isReady(input)) && this.children.length === 1) {
             // Dynamically add the second child

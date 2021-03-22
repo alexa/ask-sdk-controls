@@ -59,7 +59,7 @@ export class DemoRootControl extends ContainerControl {
         }
 
         // otherwise delegate to children
-        if (await this.canHandleByChild(input)) {
+        if (await super.canHandle(input)) {
             return true;
         }
 
@@ -72,7 +72,7 @@ export class DemoRootControl extends ContainerControl {
             await this.handleFunc(input, resultBuilder);
             return;
         }
-        return this.handleByChild(input, resultBuilder);
+        return super.handle(input, resultBuilder);
     }
 
     async handleLaunch(input: ControlInput, resultBuilder: ControlResultBuilder) {

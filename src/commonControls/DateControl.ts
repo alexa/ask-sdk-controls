@@ -432,6 +432,9 @@ export class DateControl extends Control implements InteractionModelContributor 
             validation: [],
             confirmationRequired: false,
             required: true,
+            rendering: {
+                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+            }
         };
 
         return _.merge(defaults, props);

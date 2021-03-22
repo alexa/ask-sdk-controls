@@ -489,7 +489,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     private startDateControl: DateControl;
     private endDateControl: DateControl;
-    private handleFunc:
+    protected handleFunc:
         | ((input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>)
         | undefined;
     private takeInitiativeFunc:
@@ -500,7 +500,8 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         const defaults: DeepRequired<DateRangeControlProps> = {
             id: 'uninitialized',
             dialog: {
-                explicityResolveTargetAmbiguity: ImplicitResolutionStrategy.MostRecentInitiative,
+                explicityResolveTargetAmbiguity: false,
+                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative
             },
             validation: {
                 startDateValid: [],
@@ -760,8 +761,10 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             return this.handleFunc(input, resultBuilder);
         }
 
-        // If can't handle by DateRangeControl itself, let children handle it and update state values
-        await this.handleByChild(input, resultBuilder);
+        // If can't handle by DateRangeControl itself, run default container control logic..
+        await super.handle(input, resultBuilder);
+
+        // ..and observe the data captured by child controls
         const newStartDate = this.getStartDateFromChild();
         const newEndDate = this.getEndDateFromChild();
         this.setStartDate(newStartDate);
@@ -831,7 +834,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                 this.isChangeRange(input) ||
                 this.isConfirmationAffirmed(input) ||
                 this.isConfirmationDisAffirmed(input) ||
-                (await this.canHandleByChild(input))
+                (await super.canHandle(input))
             );
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -845,7 +848,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             // When the focus is on children
             // give children priority to handle the request
             return (
-                (await this.canHandleByChild(input)) ||
+                (await super.canHandle(input)) ||
                 this.isTwoValueInput(input) ||
                 this.isDateInterpretedAsDateRange(input) ||
                 this.isChangeBoth(input) ||
