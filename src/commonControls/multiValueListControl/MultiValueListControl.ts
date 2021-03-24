@@ -184,6 +184,7 @@ export interface MultiValueListControlProps extends ControlProps {
  * ListControl validation function
  */
 export type SlotValidationFunction = (
+    this: MultiValueListControl,
     values: MultiValueListStateValue[],
     input: ControlInput,
 ) => true | MultiValueValidationFailure | Promise<true | MultiValueValidationFailure>;
@@ -449,7 +450,6 @@ export class MultiValueListControlState implements ControlState {
      * The list of values as [ (id1, erMatch), (id2, erMatch) ]
      */
     value: MultiValueListStateValue[];
-
     /**
      * Tracks the most recent elicitation action.
      *
@@ -478,6 +478,8 @@ export class MultiValueListControlState implements ControlState {
      * Tracks if the control state values are confirmed
      */
     confirmed?: boolean;
+
+    validValues: string[];
 }
 
 /**
@@ -757,7 +759,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    private isAddWithValue(input: ControlInput): boolean {
+    public isAddWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, values, valueType } = unpackValueControlIntent(
@@ -774,11 +776,25 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    private async handleAddWithValue(
+    public async handleAddWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
+        const slotValues = InputUtil.getMultiValueResolution(input);
+        await this.setValue(slotValues, input, resultBuilder);
+        return;
+    }
+
+    public async setValueByParent(
+        slotValues: MultiValueSlot[],
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const slotValues = InputUtil.getMultiValueResolution(input);
+        return this.setValue(slotValues, input, resultBuilder);
+    }
+
+    public async setValue(
+        slotValues: MultiValueSlot[],
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ) {
         let values = this.getSlotValues(slotValues);
         const validationResult = await this.validate(values, input);
         const valueIds: string[] = [];
@@ -810,7 +826,6 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                 }),
             );
         }
-        return;
     }
 
     private isRemoveWithValue(input: ControlInput): boolean {
@@ -1230,11 +1245,12 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         this.askElicitationQuestion(input, resultBuilder, $.Action.Add);
     }
 
-    private async validate(values: MultiValueListStateValue[], input: ControlInput) {
+    public async validate(values: MultiValueListStateValue[], input: ControlInput) {
         const listOfValidationFunc: SlotValidationFunction[] =
             typeof this.props.validation === 'function' ? [this.props.validation] : this.props.validation;
         for (const validationFunction of listOfValidationFunc) {
-            const validationResult: true | MultiValueValidationFailure = await validationFunction(
+            const validationResult: true | MultiValueValidationFailure = await validationFunction.call(
+                this,
                 values,
                 input,
             );
@@ -1456,7 +1472,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return [$.Feedback.Affirm, $.Feedback.Disaffirm];
     }
 
-    private getSlotValues(values: MultiValueSlot[]): MultiValueListStateValue[] {
+    public getSlotValues(values: MultiValueSlot[]): MultiValueListStateValue[] {
         const valueIds: MultiValueListStateValue[] = [];
         values.forEach((value) => {
             valueIds.push({

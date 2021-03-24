@@ -247,7 +247,7 @@ export class TestInput {
     public static launchRequest(): ControlInput {
         const launchRequest: LaunchRequest = {
             type: 'LaunchRequest',
-            requestId: 'amzn1.echo-api.request.69ba9cb0-bdac-476c-9e35-b7c4382ef039',
+            requestId: makeRequestId(),
             timestamp: '2019-09-04T00:08:32Z',
             locale: 'en-US',
         };
