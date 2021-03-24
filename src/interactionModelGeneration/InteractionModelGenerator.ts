@@ -117,6 +117,19 @@ export class InteractionModelGenerator {
     }
 
     /**
+     * Add an utterance sample to an existing intent
+     */
+    addUtteranceSample(intentName: string, ...samples: string[]): this {
+        const intent = this.intents.find((x) => x.name === intentName);
+        if (intent === undefined) {
+            throw new Error('intent is not defined');
+        }
+
+        intent.samples!.push(...samples);
+        return this;
+    }
+
+    /**
      * Add a new slot value to an existing slot type
      *
      * If the slot-value already exists, the new data is added.

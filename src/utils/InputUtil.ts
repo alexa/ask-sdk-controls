@@ -81,6 +81,14 @@ export namespace InputUtil {
     }
 
     /**
+     * Test if the input is an AMAZON.GeneralControlIntent.
+     * @param input - Input
+     */
+    export function isGeneralControlIntent(input: ControlInput): boolean {
+        return input.request.type === 'IntentRequest' && input.request.intent.name === 'GeneralControlIntent';
+    }
+
+    /**
      * Test if the input is an Alexa.Presentation.APL.UserEvent and has arguments.
      * @param input - Input
      */

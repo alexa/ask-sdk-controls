@@ -1449,7 +1449,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return this.props.interactionModel.targets;
     }
 
-    private evaluateRenderedValue(value: StringOrList, input: ControlInput): string {
+    public evaluateRenderedValue(value: StringOrList, input: ControlInput): string {
         const renderedValue = Array.isArray(value) ? value : [value];
         return ListFormatting.format(this.props.valueRenderer(renderedValue, input), 'and');
     }
