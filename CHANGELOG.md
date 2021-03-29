@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/alexa/ask-sdk-controls/compare/v0.5.1...v0.6.0) (2021-03-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* Changed the return type of valueRendered from string to ListControlRenderedItem to support ImageList rendering for list Items.
+*  - the default behavior for an exception thrown during canHandle is
+   changed. Revert to the old behavior by setting
+   ControlHandler.canHandleThrowBehavior = 'Rethrow'
+
+### Features
+
+* added APL component mode to render multiple APLs from different controls on each turn ([7f22681](https://github.com/alexa/ask-sdk-controls/commit/7f2268181fc00cd5f7f51ea376bd1b934c52b884))
+* APLComponent Mode in commonControls and refactors ([2fd688a](https://github.com/alexa/ask-sdk-controls/commit/2fd688a05b3afd716ae1be579c4f009cdd0073e1))
+* Greater control over top-level exception handling behavior ([764d43c](https://github.com/alexa/ask-sdk-controls/commit/764d43cbbf31e432a1393d432bcb1ac39c0e80bf)), closes [#1](https://github.com/alexa/ask-sdk-controls/issues/1) [#2](https://github.com/alexa/ask-sdk-controls/issues/2)
+* Introduced a new optional prop in apl `renderComponent` to customize the APL component returned by a control ([222d8e5](https://github.com/alexa/ask-sdk-controls/commit/222d8e5383d1ebaf8fd30b4ec4f9ca5771d29244))
+* **listControl:** refactor default APL for listControl and removed apl customHandling funcs ([bc65af2](https://github.com/alexa/ask-sdk-controls/commit/bc65af207e46cda8d3836a0a260def5f3c4ffd38))
+* made Control.value mandatory in all controls ([8a726c9](https://github.com/alexa/ask-sdk-controls/commit/8a726c9af69deaa5c37ed439a91eb6269b1d6fc0))
+* standardize lastInitiative state tracking on all controls ([864d0f2](https://github.com/alexa/ask-sdk-controls/commit/864d0f20adffe18bfd0c35a1198fdfdf64fc5580))
+
+
+### Bug Fixes
+
+* changed DateRangeControl to use Control.value in its state to be consistent among all controls ([b960421](https://github.com/alexa/ask-sdk-controls/commit/b96042115b120465203f62d87a5941a063599816))
+* changed lastInitiativeState defintion to an interface ([f12ab92](https://github.com/alexa/ask-sdk-controls/commit/f12ab9201dd5347c944b3b89770e8547bfa22396))
+* stub error exceptions thrown during exceptionHandling unit test cases ([53f6835](https://github.com/alexa/ask-sdk-controls/commit/53f6835798c3a9ae14d97a0911df52c524f64a47))
+
 ### [0.5.1](https://github.com/alexa/ask-sdk-controls/compare/v0.5.0...v0.5.1) (2021-01-19)
 
 
