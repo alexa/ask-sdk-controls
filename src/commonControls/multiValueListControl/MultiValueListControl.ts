@@ -478,8 +478,6 @@ export class MultiValueListControlState implements ControlState {
      * Tracks if the control state values are confirmed
      */
     confirmed?: boolean;
-
-    validValues: string[];
 }
 
 /**
@@ -513,7 +511,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     state: MultiValueListControlState = new MultiValueListControlState();
 
     private rawProps: MultiValueListControlProps;
-    private props: DeepRequired<MultiValueListControlProps>;
+    protected props: DeepRequired<MultiValueListControlProps>;
     private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
     private initiativeFunc?: (
         input: ControlInput,
@@ -778,23 +776,6 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     public async handleAddWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
         const slotValues = InputUtil.getMultiValueResolution(input);
-        await this.setValue(slotValues, input, resultBuilder);
-        return;
-    }
-
-    public async setValueByParent(
-        slotValues: MultiValueSlot[],
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ): Promise<void> {
-        return this.setValue(slotValues, input, resultBuilder);
-    }
-
-    public async setValue(
-        slotValues: MultiValueSlot[],
-        input: ControlInput,
-        resultBuilder: ControlResultBuilder,
-    ) {
         let values = this.getSlotValues(slotValues);
         const validationResult = await this.validate(values, input);
         const valueIds: string[] = [];
@@ -1143,6 +1124,14 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
+    removeValue(value: MultiValueListStateValue) {
+        if (this.state.value !== undefined) {
+            this.state.value.push(value);
+        } else {
+            this.state.value = [value];
+        }
+    }
+
     /**
      * Clear the state of this control.
      */
@@ -1268,7 +1257,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return true;
     }
 
-    private askElicitationQuestion(
+    public askElicitationQuestion(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
