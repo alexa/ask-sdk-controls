@@ -1123,15 +1123,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.state.value = [value];
         }
     }
-
-    removeValue(value: MultiValueListStateValue) {
-        if (this.state.value !== undefined) {
-            this.state.value.push(value);
-        } else {
-            this.state.value = [value];
-        }
-    }
-
+    
     /**
      * Clear the state of this control.
      */
