@@ -449,7 +449,7 @@ export class MultiValueListControlState implements ControlState {
      * The list of values as [ (id1, erMatch), (id2, erMatch) ]
      */
     value: MultiValueListStateValue[];
-    
+
     /**
      * Tracks the most recent elicitation action.
      *
