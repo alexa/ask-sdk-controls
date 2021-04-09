@@ -27,6 +27,8 @@ import {
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlIdentifierType } from '../../controls/enums/ControlIdentifierType';
+import { RenderType } from '../../controls/enums/RenderType';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
@@ -39,6 +41,7 @@ import { ActiveAPLInitiativeAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { assert } from '../../utils/AssertionUtils';
 import { StringOrList } from '../../utils/BasicTypes';
+import { renderIdentifierDefaultImpl } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
@@ -418,7 +421,7 @@ export class QuestionnaireControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative: LastInitiativeState;
+    activeDisambiguationInfo: LastInitiativeState;
 
     /**
      * Which questionId is active, aka in focus.
@@ -475,7 +478,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             this.props.interactionModel.filteredSlotType = this.props.interactionModel.slotType;
         }
         this.state.value = {};
-        this.state.lastInitiative = {};
+        this.state.activeDisambiguationInfo = {};
     }
 
     /**
@@ -613,7 +616,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                 customHandlingFuncs: [],
             },
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
 
@@ -715,7 +718,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         }
 
         await this.handleFunc(input, resultBuilder);
-        this.state.lastInitiative.actName = undefined; // clear the initiative state so we don't get confused on subsequent turns.
+        this.state.activeDisambiguationInfo.actName = undefined; // clear the initiative state so we don't get confused on subsequent turns.
     }
 
     private isActivate(input: ControlInput): any {
@@ -756,7 +759,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         try {
             const content = this.getQuestionnaireContent(input);
             okIf(InputUtil.isIntent(input));
-            okIf(this.state.lastInitiative.actName === AskQuestionAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === AskQuestionAct.name);
             okIf(this.state.focusQuestionId !== undefined);
             const intent = (input.request as IntentRequest).intent;
             const mappedValue = this.props.inputHandling.intentToChoiceMapper(intent);
@@ -1079,7 +1082,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
     private isBareYesToCompletionQuestion(input: ControlInput): boolean {
         try {
-            okIf(this.state.lastInitiative.actName === AskIfCompleteAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === AskIfCompleteAct.name);
             okIf(InputUtil.isBareYes(input));
             return true;
         } catch (e) {
@@ -1090,7 +1093,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
 
     private isBareNoToCompletionQuestion(input: ControlInput): boolean {
         try {
-            okIf(this.state.lastInitiative.actName === AskIfCompleteAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === AskIfCompleteAct.name);
             okIf(InputUtil.isBareNo(input));
             return true;
         } catch (e) {
@@ -1177,7 +1180,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         const initiativeAct = new ActiveAPLInitiativeAct(this);
         resultBuilder.addAct(initiativeAct);
         resultBuilder.enterIdleState();
-        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
+        this.state.activeDisambiguationInfo = { actName: initiativeAct.constructor.name };
     }
 
     private wantsToAskLineItemQuestion(input: ControlInput): boolean {
@@ -1221,7 +1224,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         });
 
         resultBuilder.addAct(initiativeAct);
-        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
+        this.state.activeDisambiguationInfo = { actName: initiativeAct.constructor.name };
     }
 
     private wantsToAskIfComplete(input: ControlInput): boolean {
@@ -1248,7 +1251,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         } else {
             initiativeAct = new AskIfCompleteAct(this);
         }
-        this.state.lastInitiative = { actName: initiativeAct.constructor.name };
+        this.state.activeDisambiguationInfo = { actName: initiativeAct.constructor.name };
         resultBuilder.addAct(initiativeAct);
     }
 
@@ -1283,8 +1286,8 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     // tsDoc - see ControlStateDiagramming
     public stringifyStateForDiagram(): string {
         let text = ''; // TODO:Maybe: some representation of the answers?
-        if (this.state.lastInitiative.actName !== undefined) {
-            text += `[${this.state.lastInitiative.actName}]`;
+        if (this.state.activeDisambiguationInfo.actName !== undefined) {
+            text += `[${this.state.activeDisambiguationInfo.actName}]`;
         }
         return text;
     }
@@ -1509,5 +1512,22 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
     ): string {
         const val = typeof propValue === 'function' ? propValue.call(this, this, input) : propValue;
         return val;
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }

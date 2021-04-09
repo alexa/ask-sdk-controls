@@ -28,6 +28,8 @@ import {
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlIdentifierType } from '../../controls/enums/ControlIdentifierType';
+import { RenderType } from '../../controls/enums/RenderType';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
@@ -57,7 +59,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateInputHandlers } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
@@ -449,7 +451,7 @@ export class MultiValueListControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative: LastInitiativeState;
+    activeDisambiguationInfo: LastInitiativeState;
 
     /**
      * Tracks if the control state values are confirmed
@@ -510,7 +512,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             this.props.interactionModel.slotValueConflictExtensions.filteredSlotType = this.props.slotType;
         }
         this.state.value = [];
-        this.state.lastInitiative = {};
+        this.state.activeDisambiguationInfo = {};
     }
 
     /**
@@ -663,7 +665,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             },
             valueRenderer: props.valueRenderer ?? ((value, input) => value),
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
 
@@ -859,7 +861,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -867,10 +869,10 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder) {
-        const valueIds = this.state.lastInitiative.valueIds;
+        const valueIds = this.state.activeDisambiguationInfo.valueIds;
         if (valueIds !== undefined) {
-            this.state.lastInitiative.actName = undefined;
-            this.state.lastInitiative.valueIds = undefined;
+            this.state.activeDisambiguationInfo.actName = undefined;
+            this.state.activeDisambiguationInfo.valueIds = undefined;
             this.state.confirmed = true;
             resultBuilder.addAct(
                 new ValueConfirmedAct(this, {
@@ -885,7 +887,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -894,8 +896,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder) {
         resultBuilder.addAct(new SuggestActionAct(this, {}));
-        this.state.lastInitiative.actName = undefined;
-        this.state.lastInitiative.valueIds = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
+        this.state.activeDisambiguationInfo.valueIds = undefined;
         return;
     }
 
@@ -1076,8 +1078,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     }
 
     private handleSelectDoneByTouch(input: ControlInput, resultBuilder: ControlResultBuilder) {
-        this.state.lastInitiative.actName = undefined;
-        this.state.lastInitiative.valueIds = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
+        this.state.activeDisambiguationInfo.valueIds = undefined;
         this.state.confirmed = true;
         return;
     }
@@ -1169,7 +1171,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         const valueIds = this.getSlotIds();
-        this.state.lastInitiative = {
+        this.state.activeDisambiguationInfo = {
             valueIds,
             actName: ConfirmValueAct.name,
         };
@@ -1891,5 +1893,22 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
             builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
         }
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }

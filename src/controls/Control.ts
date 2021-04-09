@@ -17,6 +17,7 @@ import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBui
 import { SystemAct } from '../systemActs/SystemAct';
 import { randomlyPick } from '../utils/ArrayUtils';
 import { StringOrList } from '../utils/BasicTypes';
+import { DeepRequired } from '../utils/DeepRequired';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { ControlIdentifierType } from './enums/ControlIdentifierType';
@@ -32,7 +33,7 @@ export type RenderIdentifierFunc = (
     identifier: string,
     identifierType: ControlIdentifierType,
     renderType: RenderType,
-) => string;
+) => string | undefined;
 
 /**
  * Defines the mandatory props of a Control.
@@ -46,7 +47,7 @@ export interface ControlProps {
     id: string;
 
     rendering?: {
-        renderIdentifierFunc?: RenderIdentifierFunc;
+        identifierRenderer?: RenderIdentifierFunc;
     };
 }
 
@@ -381,9 +382,6 @@ export abstract class Control implements IControl {
         identifierType: ControlIdentifierType,
         renderType: RenderType,
     ): string {
-        //TODO: introduce default renderings for the built-in targets.
-        //TODO:  if defaultTargetRendering(target) !== undefined, return it.
-
-        return identifier; //Default: just return it verbatim
+        throw new Error("Not implemented.");
     }
 }

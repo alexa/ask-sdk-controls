@@ -49,12 +49,12 @@ export class ControlInput implements IControlInput {
      * 
      * Note:
      *  * Because of the limited scenarios where this should be modified, it is marked readonly. 
-     *    Mutate with caution.
+     *    Mutate with caution, and only via ControlInput.replaceRequest() method
      */
     readonly request: Request;
 
     /**
-     * The original request object
+     * The original request object for this turn.
      *
      * This is a convenience copy of `handlerInput.requestEnvelope.request` and never changes.
      */
@@ -95,5 +95,17 @@ export class ControlInput implements IControlInput {
         this.turnNumber = turnNumber;
         this.controls = controlMap;
         this.aplMode = aplMode;
+    }
+
+    /**
+     * Update the request property.
+     *
+     * Purpose:
+     *  - Used in situations where a container wants to delegate a request to a child that
+     *    is not literally the Request received on this turn. 
+     * @param newRequest 
+     */
+    replaceRequest(newRequest: Request){
+        (this.request as any) = newRequest; 
     }
 }

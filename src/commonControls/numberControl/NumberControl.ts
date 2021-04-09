@@ -28,6 +28,8 @@ import { Strings as $ } from '../../constants/Strings';
 import { Control, ControlInputHandlingProps, ControlProps, ControlState } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlIdentifierType } from '../../controls/enums/ControlIdentifierType';
+import { RenderType } from '../../controls/enums/RenderType';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import {
     evaluateValidationProp,
@@ -57,7 +59,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl, _logIfBothTrue } from '../../utils/ControlUtils';
 import { NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 
 const log = new Logger('AskSdkControls:NumberControl');
@@ -334,7 +336,7 @@ export class NumberControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative: LastInitiativeState;
+    activeDisambiguationInfo: LastInitiativeState;
 }
 
 /**
@@ -370,7 +372,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         super(props.id);
         this.rawProps = props;
         this.props = this.mergeWithDefaultProps(props);
-        this.state.lastInitiative = {};
+        this.state.activeDisambiguationInfo = {};
     }
 
     /**
@@ -484,7 +486,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             },
             valueRenderer: (value: number, input) => value.toString(),
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
         return _.merge(defaults, props);
@@ -876,7 +878,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     private isBareNoWhenConfirmingValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -898,7 +900,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackNoAndWithoutValueWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -910,7 +912,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value!,
@@ -936,7 +938,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsFalse(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackNoAndValueNotChangedWhenConfirmingValue;
             return true;
@@ -949,7 +951,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new InformConfusingDisconfirmationAct(this, {
                 value: this.state.value!,
@@ -1013,7 +1015,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             okIf(this.state.value !== Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueChangedWhenConfirmingValue;
             return true;
@@ -1038,7 +1040,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 reasonCode: 'ConfirmedWithDifferentValue',
             }),
         );
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
+        this.state.activeDisambiguationInfo.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
@@ -1051,7 +1053,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     private isBareYesConfirmingValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -1074,7 +1076,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
@@ -1097,7 +1099,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsTrue(feedback));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleFeedbackYesAndValueNotChangedOrUndefinedWhenConfirmingValue;
             return true;
         } catch (e) {
@@ -1110,7 +1112,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder: ControlResultBuilder,
     ): void {
         this.state.isValueConfirmed = true;
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -1136,7 +1138,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsUndefined(feedback));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             okIf(this.state.value === Number.parseInt(valueStr, 10));
             this.handleFunc = this.handleFeedbackYesAndValueUndefinedWhenConfirmingValue;
             return true;
@@ -1150,7 +1152,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         resultBuilder: ControlResultBuilder,
     ): void {
         this.state.isValueConfirmed = true;
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -1246,7 +1248,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         } else if (!this.isConfirmationRequired(input)) {
             this.state.isValidValue = true;
             this.state.isValueConfirmed = true;
-            this.state.lastInitiative.actName = undefined;
+            this.state.activeDisambiguationInfo.actName = undefined;
             resultBuilder.addAct(
                 new ValueSetAct(this, {
                     value: this.state.value,
@@ -1258,7 +1260,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             );
         } else {
             this.state.isValidValue = true;
-            this.state.lastInitiative.actName = ConfirmValueAct.name;
+            this.state.activeDisambiguationInfo.actName = ConfirmValueAct.name;
             resultBuilder.addAct(
                 new ConfirmValueAct(this, {
                     value: this.state.value,
@@ -1289,7 +1291,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             if (validationResult === true) {
                 // this is to confirm from users for the suggestedValue
                 this.state.isValidValue = true;
-                this.state.lastInitiative.actName = ConfirmValueAct.name;
+                this.state.activeDisambiguationInfo.actName = ConfirmValueAct.name;
                 resultBuilder.addAct(
                     new SuggestValueAct(this, {
                         value: this.state.value,
@@ -1369,7 +1371,7 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
+        this.state.activeDisambiguationInfo.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
@@ -1425,6 +1427,23 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
         const func = prop as FunctionProp<T>;
         return func(input);
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }
 

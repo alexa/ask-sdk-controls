@@ -17,13 +17,16 @@ import _ from 'lodash';
 import { ControlInputHandlingProps, InputUtil, StringOrList, ValueControlIntent } from '../..';
 import { Strings as $ } from '../../constants/Strings';
 import {
-    ImplicitResolutionStrategy,
     ContainerControl,
     ContainerControlProps,
     ContainerControlState,
+    ImplicitResolutionStrategy,
 } from '../../controls/ContainerControl';
+import { RenderIdentifierFunc } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlIdentifierType } from '../../controls/enums/ControlIdentifierType';
+import { RenderType } from '../../controls/enums/RenderType';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
@@ -49,7 +52,7 @@ import {
 } from '../../systemActs/ContentActs';
 import { ConfirmValueAct, RequestValueAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
-import { evaluateInputHandlers, _logIfBothTrue } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 import { DateControl, DateControlPromptProps, DateControlState } from '../DateControl';
@@ -177,6 +180,10 @@ export interface DateRangeControlProps extends ContainerControlProps {
      * Default: returns the value unchanged.
      */
     valueRenderer?: (value: DateRange, component: string, input: ControlInput) => string;
+
+    rendering?: {
+        renderIdentifierFunc?: RenderIdentifierFunc;
+    };
 }
 
 /**
@@ -501,7 +508,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
             id: 'uninitialized',
             dialog: {
                 explicityResolveTargetAmbiguity: false,
-                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative
+                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative,
             },
             validation: {
                 startDateValid: [],
@@ -703,6 +710,9 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                         throw new Error(`Unhandled. Unknown component ${component}`);
                 }
             },
+            rendering: {
+                renderIdentifierFunc: (input, id) => id, // default is to render the identifier verbatim
+            },
         };
 
         return _.mergeWith(defaults, props);
@@ -743,10 +753,13 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
         const customCanHandle = await evaluateInputHandlers(this, input);
+        if (customCanHandle) {
+            return true;
+        }
         const builtInCanHandle =
             (await this.canHandleForFocus(input)) || (await this.canHandleForNoFocus(input));
-        _logIfBothTrue(customCanHandle, builtInCanHandle);
-        return customCanHandle || builtInCanHandle;
+
+        return builtInCanHandle;
     }
 
     // tsDoc - see Control
@@ -758,18 +771,18 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
         // Calling handle function to make changes to state values
         if (this.handleFunc !== undefined) {
-            return this.handleFunc(input, resultBuilder);
+            await this.handleFunc(input, resultBuilder);
+        } else {
+            // If can't handle by DateRangeControl itself, run default container control logic..
+            await super.handle(input, resultBuilder);
+            this.state.onFocus = false;
         }
-
-        // If can't handle by DateRangeControl itself, run default container control logic..
-        await super.handle(input, resultBuilder);
 
         // ..and observe the data captured by child controls
         const newStartDate = this.getStartDateFromChild();
         const newEndDate = this.getEndDateFromChild();
         this.setStartDate(newStartDate);
         this.setEndDate(newEndDate);
-        this.state.onFocus = false;
 
         // After child handle the request and child has no question
         // ask DateRangeControl whether the value is ready
@@ -1387,5 +1400,22 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         } catch (e) {
             return falseIfGuardFailed(e);
         }
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.renderIdentifierFunc,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }

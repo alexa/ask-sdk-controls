@@ -11,9 +11,9 @@
  * permissions and limitations under the License.
  */
 
-import { Intent, IntentRequest } from 'ask-sdk-model';
+import { Intent, IntentRequest, Request } from 'ask-sdk-model';
 import _ from 'lodash';
-import { DeepRequired, failIf, falseIfGuardFailed, InputUtil, okIf, unpackGeneralControlIntent } from '..';
+import { DeepRequired, falseIfGuardFailed, InputUtil, okIf, unpackGeneralControlIntent } from '..';
 import { Strings as $ } from '../constants/Strings';
 import { ListFormatting } from '../intl/ListFormat';
 import { Logger } from '../logging/Logger';
@@ -38,57 +38,42 @@ import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 const log = new Logger('AskSdkControls:ContainerControl');
 
 /**
- * Records the turn that a child control did something of interest.
+ * Records the last child control that took initiative.
+ *
+ * Purpose:
+ *  - for the MRU delegation strategy which biases to the child that most recently took
+ *    initiative.
+ *
  */
-interface ChildActivityRecord {
+interface MostRecentChildInitiativeInfo {
     controlId: string;
     turnNumber: number;
 }
 
-export enum ImplicitResolutionStrategy {
-    FirstMatch = 'firstMatch',
-    MostRecentInitiative = 'mostRecentInitiative',
+/**
+ * Records information regarding ongoing target-disambiguation
+ */
+interface TargetDisambiguationInfo {
+    type: 'TargetDisambiguation';
+    turnNumber: number;
+    candidates: TargetDisambiguationCandidate[];
+    ambiguousRequest: Request;
 }
-
-interface DisambiguateTargetsCandidate extends DisambiguationCandidate {
+interface TargetDisambiguationCandidate {
     controlId: string;
     specificTarget: string;
 }
 
-interface DisambiguationTargetQuestion {
-    type: 'AskTargetDisambiguation';
-    turn: number;
-    candidates: DisambiguateTargetsCandidate[];
-}
-
-interface DelegatedToChild {
-    type: 'DelegatedToChild';
-    turn: number;
-}
-
-type LastInitiativeRecord = DisambiguationTargetQuestion | DelegatedToChild; // todo: add additional types
+type ActiveDisambiguationInfo = TargetDisambiguationInfo; // this type is in anticipation of supporting other kinds of disambiguation
 
 /**
  * Container state for use in arbitration
  */
 export class ContainerControlState implements ControlState {
     value: any;
-    lastHandlingControlRecord?: ChildActivityRecord; // TODO: naming: change to lastHandlingControlInfo | lastHandlingControlRecord
-    lastInitiativeControlRecord?: ChildActivityRecord; // ditto.
-    lastInitiative?: LastInitiativeRecord;
-}
+    mostRecentChildInitiativeInfo?: MostRecentChildInitiativeInfo;
 
-export class ContainerControlDialogProps {
-    explicityResolveTargetAmbiguity?: boolean; // TODO | func to boolean.
-
-    // TODO: make this a function of candidates -> selection so that developer can implement their own.
-    //       and convert enum to built-in strategies.
-    implicitResolutionStrategy?: ImplicitResolutionStrategy; // TODO: | ((candidates: Control[], controlInput: ControlInput) => HandlingAmbiguityStrategy)
-}
-
-export interface ContainerControlInputHandlingProps extends ControlInputHandlingProps {
-    //jsDocs on ControlInputHandlingProps
-    customHandlingFuncs?: ControlInputHandler[];
+    activeDisambiguationInfo?: ActiveDisambiguationInfo;
 }
 
 /**
@@ -102,8 +87,22 @@ export class ContainerControlProps implements ControlProps {
     inputHandling?: ContainerControlInputHandlingProps;
 }
 
-interface DisambiguationCandidate {
-    controlId: string;
+export enum ImplicitResolutionStrategy {
+    FirstMatch = 'firstMatch',
+    MostRecentInitiative = 'mostRecentInitiative',
+}
+
+export class ContainerControlDialogProps {
+    explicityResolveTargetAmbiguity?: boolean; // TODO | func to boolean.
+
+    // TODO: make this a function of candidates -> selection so that developer can implement their own.
+    //       and convert enum to built-in strategies.
+    implicitResolutionStrategy?: ImplicitResolutionStrategy; // TODO: | ((candidates: Control[], controlInput: ControlInput) => HandlingAmbiguityStrategy)
+}
+
+export interface ContainerControlInputHandlingProps extends ControlInputHandlingProps {
+    //jsDocs on ControlInputHandlingProps
+    customHandlingFuncs?: ControlInputHandler[];
 }
 
 /**
@@ -140,7 +139,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
 
     protected handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
     handlerCandidates: Control[];
-    disambiguationQuestion?: DisambiguationTargetQuestion;
+    disambiguationQuestion?: TargetDisambiguationInfo;
 
     // jsDoc: see `Control`
     constructor(props: ContainerControlProps) {
@@ -169,7 +168,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         const defaults: DeepRequired<ContainerControlProps> = {
             id: 'dummy',
             dialog: {
-                explicityResolveTargetAmbiguity: true,
+                explicityResolveTargetAmbiguity: false,
                 implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative,
             },
             inputHandling: {
@@ -206,7 +205,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         {
             name: 'DirectDelegationToChild (built-in)',
             canHandle: this.canDirectlyDelegateToChild,
-            handle: this.handleDirectDelegationToChild,
+            handle: this.handleDirectDelegationToChild, // TODO: need to clean up previous tracking.
         },
     ];
 
@@ -244,6 +243,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             Lets start by looking for specific common patterns, such as unspecified target ambiguity            
         */
         try {
+            okIf(this.handlerCandidates !== undefined);
             okIf(this.handlerCandidates.length > 1);
             okIf(this.props.dialog.explicityResolveTargetAmbiguity === true);
 
@@ -262,22 +262,27 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             }
 
             // create simple array of {control -> specificTarget} mappings for validations and serialization.
-            const simplifiedCandidateList: DisambiguateTargetsCandidate[] = this.handlerCandidates.map(
+            const simplifiedCandidateList: TargetDisambiguationCandidate[] = this.handlerCandidates.map(
                 (x) => ({ controlId: x.id, specificTarget: x.__getSpecificTarget() }),
             );
 
             // Check that there are no duplicates in the set of specific targets
             const specificTargetsSet: Set<string> = new Set<string>();
             for (const candidate of simplifiedCandidateList) {
-                failIf(specificTargetsSet.has(candidate.specificTarget));
+                if (specificTargetsSet.has(candidate.specificTarget)) {
+                    throw new Error(
+                        'Trying to perform explicit target disambiguation but the candidates have same `specificTarget`',                        
+                    );
+                }
                 specificTargetsSet.add(candidate.specificTarget);
             }
 
             // Everything looks good.  record the plan and return true.
             this.disambiguationQuestion = {
-                type: 'AskTargetDisambiguation',
-                turn: input.turnNumber,
+                type: 'TargetDisambiguation',
+                turnNumber: input.turnNumber,
                 candidates: simplifiedCandidateList,
+                ambiguousRequest: input.request,
             };
             log.debug(`${this.id} canHandle=true. AskTargetDisambiguation`);
             return true;
@@ -292,7 +297,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     ): Promise<void> {
         if (
             this.disambiguationQuestion === undefined ||
-            this.disambiguationQuestion.type !== 'AskTargetDisambiguation'
+            this.disambiguationQuestion.type !== 'TargetDisambiguation'
         ) {
             throw new Error(
                 "this.disambiguationQuestion should have been set to 'AskTargetDisambiguation' in isTargetAmbiguity",
@@ -302,7 +307,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         assert(this.disambiguationQuestion !== undefined);
 
         // record what we did in the state
-        this.state.lastInitiative = this.disambiguationQuestion;
+        this.state.activeDisambiguationInfo = this.disambiguationQuestion;
 
         const specificTargets = this.disambiguationQuestion.candidates.map((x) => x.specificTarget);
         const individuallyRenderedSpecificTargets = this.disambiguationQuestion.candidates.map((x) =>
@@ -329,8 +334,8 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             );
             okIf(InputUtil.targetIsDefined(target));
             okIf(InputUtil.actionIsMatchOrUndefined(action, [$.Action.Select])); //todo: make it a nlu capability prop.
-            okIf(this.state.lastInitiative?.type === 'AskTargetDisambiguation');
-            this.state.lastInitiative.candidates.some((x) => x.specificTarget === target);
+            okIf(this.state.activeDisambiguationInfo?.type === 'TargetDisambiguation');
+            this.state.activeDisambiguationInfo.candidates.some((x) => x.specificTarget === target);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -345,11 +350,26 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             (input.request as IntentRequest).intent,
         );
         assert(target !== undefined);
-        assert(this.state.lastInitiative?.type === 'AskTargetDisambiguation');
-        const matches = this.state.lastInitiative.candidates.filter((x) => x.specificTarget === target);
+        assert(this.state.activeDisambiguationInfo?.type === 'TargetDisambiguation');
+        const matches = this.state.activeDisambiguationInfo.candidates.filter(
+            (x) => x.specificTarget === target,
+        );
         assert(matches.length === 1);
         const targetControlId = matches[0].controlId;
         const targetControl = input.controls[targetControlId];
+
+        const ambiguousRequest = this.state.activeDisambiguationInfo.ambiguousRequest;
+        input.replaceRequest(ambiguousRequest);
+
+        const canHandle = targetControl.canHandle(input); // always call canHandle before handle
+        if (!canHandle) {
+            throw Error(
+                `Child that previously said it could handle an ambiguous input is now saying it cannot. targetControl=${JSON.stringify(
+                    targetControl,
+                )}. ambiguousRequest=${JSON.stringify(ambiguousRequest)}`,
+            );
+        }
+        targetControl.handle(input, resultBuilder);
     }
 
     /**
@@ -400,13 +420,9 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     ): Promise<void> {
         if (this.selectedHandlingChild !== undefined) {
             await this.selectedHandlingChild.handle(input, resultBuilder);
-            this.state.lastHandlingControlRecord = {
-                controlId: this.selectedHandlingChild.id,
-                turnNumber: input.turnNumber,
-            };
 
             if (resultBuilder.hasInitiativeAct()) {
-                this.state.lastInitiativeControlRecord = {
+                this.state.mostRecentChildInitiativeInfo = {
                     controlId: this.selectedHandlingChild.id,
                     turnNumber: input.turnNumber,
                 };
@@ -458,7 +474,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         }
 
         if (InputUtil.isFallbackIntent(input)) {
-            const last = findControlById(candidates, this.state.lastInitiativeControlRecord?.controlId);
+            const last = findControlById(candidates, this.state.mostRecentChildInitiativeInfo?.controlId);
             return last ? last : undefined;
         }
 
@@ -468,7 +484,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             case ImplicitResolutionStrategy.MostRecentInitiative:
                 const mruMatch = findControlById(
                     candidates,
-                    this.state.lastInitiativeControlRecord?.controlId,
+                    this.state.mostRecentChildInitiativeInfo?.controlId,
                 );
                 return mruMatch ?? candidates[0];
         }
@@ -527,7 +543,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
             );
         }
         await this.selectedInitiativeChild.takeInitiative(input, resultBuilder);
-        this.state.lastInitiativeControlRecord = {
+        this.state.mostRecentChildInitiativeInfo = {
             controlId: this.selectedInitiativeChild.id,
             turnNumber: input.turnNumber,
         };
@@ -572,13 +588,13 @@ export class ContainerControl extends Control implements IContainerControl, Cont
 
         const handlingControlMatch = findControlById(
             candidates,
-            this.state.lastHandlingControlRecord?.controlId,
+            this.state.mostRecentChildInitiativeInfo?.controlId,
         );
         if (handlingControlMatch !== undefined) {
             return handlingControlMatch;
         }
 
-        const mruMatch = findControlById(candidates, this.state.lastInitiativeControlRecord?.controlId);
+        const mruMatch = findControlById(candidates, this.state.mostRecentChildInitiativeInfo?.controlId);
         return mruMatch ?? candidates[0];
     }
 }

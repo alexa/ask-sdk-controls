@@ -23,6 +23,8 @@ import {
 } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
+import { ControlIdentifierType } from '../controls/enums/ControlIdentifierType';
+import { RenderType } from '../controls/enums/RenderType';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
@@ -42,7 +44,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateInputHandlers } from '../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -326,7 +328,7 @@ export class DateControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative: LastInitiativeState;
+    activeDisambiguationInfo: LastInitiativeState;
 }
 
 /**
@@ -359,7 +361,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         super(props.id);
         this.rawProps = props;
         this.props = DateControl.mergeWithDefaultProps(props);
-        this.state.lastInitiative = {};
+        this.state.activeDisambiguationInfo = {};
     }
 
     /**
@@ -433,7 +435,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             confirmationRequired: false,
             required: true,
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
 
@@ -626,7 +628,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
         } catch (e) {
@@ -635,7 +637,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         this.state.isValueConfirmed = true;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
@@ -648,7 +650,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
@@ -658,7 +660,7 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
@@ -804,7 +806,7 @@ export class DateControl extends Control implements InteractionModelContributor 
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
+        this.state.activeDisambiguationInfo.actName = ConfirmValueAct.name;
         resultBuilder.addAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
@@ -907,6 +909,23 @@ export class DateControl extends Control implements InteractionModelContributor 
             generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
         }
         generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }
 

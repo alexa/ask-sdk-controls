@@ -345,8 +345,7 @@ export const defaultI18nResources: Resource = {
             CONFIRM_VALUE_ACT_DEFAULT_PROMPT: `Was that {{value}}.`,
             SUGGEST_VALUE_ACT_DEFAULT_PROMPT: `Did you perhaps mean {{value}}?`,
             SUGGEST_ACTION_ACT_DEFAULT_PROMPT: 'You can add or update values.',
-            DISAMBIGUATE_TARGET_ACT_DEFAULT_PROMPT: `Is that {{renderedTargets}}?`,  // E.g. "Is that (your firstName or your lastName)"
-            
+            DISAMBIGUATE_TARGET_ACT_DEFAULT_PROMPT: `Is that for {{renderedTargets}}?`, // E.g. "Is that for (your firstName or your lastName)"
 
             // ControlIntent Samples
 
@@ -484,6 +483,45 @@ export const defaultI18nResources: Resource = {
                 '{action} {AMAZON.NUMBER}', // {add} {three}
                 '{action} {preposition} {AMAZON.NUMBER}', // {set} {to} {three}
                 '{action} {target} {preposition} {AMAZON.NUMBER}', // {set} {quantity} {to} {three}
+                '{action} {ordinal} {preposition} {AMAZON.NUMBER}', // {set} {second one} {to} {three}
+                          AMZAON.ORDINAL
+                '{action} {targetRef} {preposition} {AMAZON.NUMBER}', // {set} {second one} {to} {three}
+
+                '{action} {targetRef} {ATTRIBUTE} {preposition} {AMAZON.NUMBER}', // {set} {the one with} {onions} {to} {three}
+
+
+                #1 Adding content to TARGET slot with dyanmic entities.
+                pizza1:  pizza one, first pizza
+                 dyn:    the one with onions, the large, large one, 
+
+                #2 all static models
+                
+                ValueControlIntent< Topping, PizzaRef >
+                                             more targets
+
+                   Add {topping} to {the large pizza}
+                                      != PizzaSize.
+
+                
+                new PizzaControl
+                 NLU  
+                   indirectTargets: {large, medium, small, with onions, with pepperoni.. }
+
+                IMBuilder
+                  indirectTargets:
+                    build_indirect_targets(Toppings)
+                    build_indirect_targets(Size)
+           
+                INDIRECT_TARGETS: "the one with onions", ....
+                
+                ListControl:
+                NLU:{
+                    indirect_ref_func: (target)=>{return BuiltIn.ParseAttribTarget('TOPPING')  && topping in state.value   }
+                }
+
+
+                ValueControlIntent:  value=2, targetID=ATTRIB_TOPPING__ONIONS  controls decice if it applies to them.
+
                 '{target} {preposition} {AMAZON.NUMBER}', // {quantity} {is} {three}
 
                 '{feedback} {AMAZON.NUMBER}', // {yes} {three}

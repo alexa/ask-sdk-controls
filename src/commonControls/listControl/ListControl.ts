@@ -25,6 +25,8 @@ import {
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlIdentifierType } from '../../controls/enums/ControlIdentifierType';
+import { RenderType } from '../../controls/enums/RenderType';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import {
     evaluateValidationProp,
@@ -56,7 +58,7 @@ import {
 } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
-import { evaluateInputHandlers } from '../../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
@@ -423,7 +425,7 @@ export class ListControlState implements ControlState {
     /**
      * Tracks the last initiative act from the control
      */
-    lastInitiative: LastInitiativeState;
+    activeDisambiguationInfo: LastInitiativeState;
 }
 
 const FEEDBACK_TYPES = [$.Feedback.Affirm, $.Feedback.Disaffirm];
@@ -480,7 +482,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
         this.rawProps = props;
         this.props = ListControl.mergeWithDefaultProps(props);
-        this.state.lastInitiative = {};
+        this.state.activeDisambiguationInfo = {};
     }
 
     /**
@@ -603,7 +605,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 }),
             },
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
 
@@ -810,8 +812,8 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isMappedBareValueDuringElicitation(input: ControlInput): any {
         try {
             okIf(InputUtil.isIntent(input));
-            okIf(this.state.lastInitiative !== undefined);
-            okIf(this.state.lastInitiative.actName === RequestValueByListAct.name);
+            okIf(this.state.activeDisambiguationInfo !== undefined);
+            okIf(this.state.activeDisambiguationInfo.actName === RequestValueByListAct.name);
             const intent = (input.request as IntentRequest).intent;
             const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
                 intent,
@@ -841,7 +843,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isConfirmationAffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationAffirmed;
             return true;
         } catch (e) {
@@ -851,7 +853,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationAffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = true;
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueConfirmedAct(this, {
                 value: this.state.value,
@@ -863,7 +865,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isConfirmationDisaffirmed(input: ControlInput): any {
         try {
             okIf(InputUtil.isBareNo(input));
-            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
+            okIf(this.state.activeDisambiguationInfo.actName === ConfirmValueAct.name);
             this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
@@ -873,7 +875,7 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     private handleConfirmationDisaffirmed(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         this.state.isValueConfirmed = false;
-        this.state.lastInitiative.actName = undefined;
+        this.state.activeDisambiguationInfo.actName = undefined;
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
@@ -1170,7 +1172,7 @@ export class ListControl extends Control implements InteractionModelContributor 
     }
 
     addInitiativeAct(initiativeAct: InitiativeAct, resultBuilder: ControlResultBuilder) {
-        this.state.lastInitiative.actName = initiativeAct.constructor.name;
+        this.state.activeDisambiguationInfo.actName = initiativeAct.constructor.name;
         resultBuilder.addAct(initiativeAct);
     }
 
@@ -1543,6 +1545,23 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
         const func = prop as FunctionProp<T>;
         return func(input);
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }
 type FunctionProp<T> = (input: ControlInput) => T;

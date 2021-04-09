@@ -24,6 +24,8 @@ import {
 } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
+import { ControlIdentifierType } from '../controls/enums/ControlIdentifierType';
+import { RenderType } from '../controls/enums/RenderType';
 import { ControlStateDiagramming } from '../controls/mixins/ControlStateDiagramming';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction, ValidationFailure } from '../controls/Validation';
@@ -44,7 +46,7 @@ import {
 import { ConfirmValueAct, RequestChangedValueAct, RequestValueAct } from '../systemActs/InitiativeActs';
 import { SystemAct } from '../systemActs/SystemAct';
 import { StringOrList } from '../utils/BasicTypes';
-import { evaluateInputHandlers } from '../utils/ControlUtils';
+import { evaluateInputHandlers, renderIdentifierDefaultImpl } from '../utils/ControlUtils';
 import { DeepRequired } from '../utils/DeepRequired';
 import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
@@ -414,7 +416,7 @@ export class ValueControl extends Control implements InteractionModelContributor
             },
             valueRenderer: (value: string, input) => value,
             rendering: {
-                renderIdentifierFunc: (input, id)=> id // default is to render the identifier verbatim
+                identifierRenderer: (input, id)=> id // default is to render the identifier verbatim
             }
         };
 
@@ -1083,5 +1085,22 @@ export class ValueControl extends Control implements InteractionModelContributor
     
     __getSpecificTarget(): string {
         return this.props.dialog.targetForDisambiguation;
+    }
+
+    // tsDoc from Control
+    renderIdentifier(
+        input: ControlInput,
+        identifier: string,
+        identifierType: ControlIdentifierType,
+        renderType: RenderType,
+    ): string {
+        return renderIdentifierDefaultImpl(
+            input,
+            this,
+            this.props.rendering.identifierRenderer,
+            identifier,
+            identifierType,
+            renderType,
+        );
     }
 }

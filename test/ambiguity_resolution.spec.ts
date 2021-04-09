@@ -12,34 +12,46 @@
  */
 
 import { suite, test } from 'mocha';
-import { ControlHandler, SkillInvoker } from '../src';
+import { ControlHandler, GeneralControlIntent, SkillInvoker } from '../src';
 import { ValueControl } from '../src/commonControls/ValueControl';
 import { ContainerControl, ImplicitResolutionStrategy } from '../src/controls/ContainerControl';
 import { Control } from '../src/controls/Control';
 import { ControlInput } from '../src/controls/ControlInput';
 import { ControlManager } from '../src/controls/ControlManager';
 import { ValueControlIntent } from '../src/intents/ValueControlIntent';
+import { tryGet } from '../src/utils/ObjectUtils';
 import { TestInput, testTurn } from '../src/utils/testSupport/TestingUtils';
 import { TestStrings as $$ } from './TestStrings';
 
 /**
  * Demonstrate container controls resolving ambiguity by asking questions.
  */
-suite.only('== Ambiguity resolution (ambiguity_resolution.spec.ts) ==', () => {
+suite('== Ambiguity resolution (ambiguity_resolution.spec.ts) ==', () => {
     test('disambiguate between two siblings that share a target.', async () => {
         const requestHandler = new ControlHandler(new DisambiguationManager());
         const invoker = new SkillInvoker(requestHandler);
 
         await testTurn(
             invoker,
-            'U: my name is Fred',
+            'U: my name is Jackson',
             TestInput.of(
                 ValueControlIntent.of('CUSTOM.name', {
                     target: $$.Target.Name,
-                    'CUSTOM.name': 'Fred',
+                    'CUSTOM.name': 'Jackson',
                 }),
             ),
-            'A: Is that your first name or last name?',
+            'A: Is that for your first name or your surname?',
+        );
+
+        await testTurn(
+            invoker,
+            'U: my last name',
+            TestInput.of(
+                GeneralControlIntent.of({
+                    target: $$.Target.LastName,
+                }),
+            ),
+            'A: OK, Jackson. What is your first name?',
         );
     });
 });
@@ -50,7 +62,7 @@ class DisambiguationManager extends ControlManager {
             id: 'root',
             dialog: {
                 explicityResolveTargetAmbiguity: true,
-                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative
+                implicitResolutionStrategy: ImplicitResolutionStrategy.MostRecentInitiative,
             },
         });
 
@@ -63,8 +75,16 @@ class DisambiguationManager extends ControlManager {
                     targets: [$$.Target.Name, $$.Target.FirstName],
                 },
                 dialog: {
-                    targetForDisambiguation: $$.Target.FirstName
-                }
+                    targetForDisambiguation: $$.Target.FirstName,
+                },
+                rendering: {
+                    identifierRenderer: (input, id, idType, renderType) => {
+                        return tryGet(id, {
+                            name: 'your first name',
+                            firstName: 'your first name',
+                        });
+                    },
+                },
             }),
         );
 
@@ -77,8 +97,16 @@ class DisambiguationManager extends ControlManager {
                     targets: [$$.Target.Name, $$.Target.LastName],
                 },
                 dialog: {
-                    targetForDisambiguation: $$.Target.LastName
-                }
+                    targetForDisambiguation: $$.Target.LastName,
+                },
+                rendering: {
+                    identifierRenderer: (input, id) => {
+                        return tryGet(id, {
+                            name: 'your surname',
+                            lastName: 'your surname',
+                        });
+                    },
+                },
             }),
         );
 

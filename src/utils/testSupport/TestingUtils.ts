@@ -392,14 +392,12 @@ function dummyControlInput(request?: Request): ControlInput {
         serviceClientFactory: undefined,
     };
 
-    return {
+    return new ControlInput(
         handlerInput,
-        request: handlerInput.requestEnvelope.request,
-        originalRequest: handlerInput.requestEnvelope.request,
-        turnNumber: TestInput.turnNumber,
-        controls: {},
-        aplMode: APLMode.DIRECT, // TODO: get this wired up from the test configuration.
-    };
+        TestInput.turnNumber,
+        {},
+        APLMode.DIRECT, // TODO: get this wired up from the test configuration.
+    );
 }
 const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({
     requestEnvelope: dummyRequestEnvelope(),

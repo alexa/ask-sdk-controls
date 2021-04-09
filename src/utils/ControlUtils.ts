@@ -10,8 +10,11 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { Control } from '../controls/Control';
+import { IControl } from '..';
+import { Control, RenderIdentifierFunc } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
+import { ControlIdentifierType } from '../controls/enums/ControlIdentifierType';
+import { RenderType } from '../controls/enums/RenderType';
 import { Logger } from '../logging/Logger';
 
 const log = new Logger('AskSdkControls:ControlUtils');
@@ -96,4 +99,28 @@ export function findControlById(controls: Control[], id: string | undefined): Co
         return undefined;
     }
     return controls.find((c) => c.id === id);
+}
+
+
+export function renderIdentifierDefaultImpl(
+    input: ControlInput,
+    control: IControl,
+    customRenderFunc: RenderIdentifierFunc,
+    identifier: string,
+    identifierType: ControlIdentifierType,
+    renderType: RenderType,
+    ): string {
+    
+    let result;
+    if(customRenderFunc !== undefined){
+        result = customRenderFunc.call(control, input, identifier, identifierType, renderType);
+    }
+    if(result !== undefined){
+        return result;
+    }
+    
+    //TODO: introduce default renderings for the built-in targets.
+    //TODO:  if defaultTargetRendering(target) !== undefined, return it.
+
+    return identifier; //Default: just return it verbatim
 }
