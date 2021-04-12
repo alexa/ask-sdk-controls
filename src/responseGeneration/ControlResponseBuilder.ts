@@ -300,6 +300,15 @@ export class ControlResponseBuilder implements ResponseBuilder {
         this.displayUsed = true;
     }
 
+    addAPLExecuteCommandsDirective(token: string, commands: interfaces.alexa.presentation.apl.Command[]) {
+        this.coreBuilder.addDirective({
+            type: 'Alexa.Presentation.APL.ExecuteCommands',
+            token,
+            commands,
+        });
+        this.displayUsed = true;
+    }
+
     /**
      * Builds and returns the complete response.
      */
