@@ -1340,7 +1340,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                 this.evaluatePromptProp(act, this.props.reprompts.acknowledgeNotCompleteAct, input),
             );
         } else if (act instanceof ActiveAPLInitiativeAct) {
-            builder.setDisplayUsed();
+            this.reEnableExistingAPLForUserInput(input, builder);
         } else {
             this.throwUnhandledActError(act);
         }
@@ -1353,6 +1353,41 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         ) {
             const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.askQuestion, input);
             builder.addAPLRenderDocumentDirective(this.id, renderedAPL.document, renderedAPL.dataSource);
+        }
+    }
+
+    /**
+     * Note: this assumes that the root container has `id='root'` and that it defines
+     * variables called `disableContent` and `enableWaitIndicator`.
+     *
+     * Custom APL documents should adhere to these conventions if they want to make use of
+     * input suppression to avoid racing inputs. Alternatively, subclass
+     * `QuestionnaireControl` and and alter the behavior for `render()` when act is an
+     * instance of `ActiveAPLInitiativeAct` changed.
+     *
+     * This solution is not exposed as with props based customization as there may be
+     * better solutions.  Let's not lock this pattern in until we know it is needed.
+     *
+     */
+    private reEnableExistingAPLForUserInput(input: ControlInput, builder: ControlResponseBuilder) {
+        if (
+            this.evaluateBooleanProp(this.props.apl.enabled, input) === true &&
+            getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
+        ) {
+            builder.addAPLExecuteCommandsDirective(this.id, [
+                ({
+                    type: 'SetValue',
+                    componentId: 'root',
+                    property: 'disableContent',
+                    value: false,
+                } as any) as interfaces.alexa.presentation.apl.Command,
+                ({
+                    type: 'SetValue',
+                    componentId: 'root',
+                    property: 'enableWaitIndicator',
+                    value: false,
+                } as any) as interfaces.alexa.presentation.apl.Command,
+            ]);
         }
     }
 

@@ -149,23 +149,46 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                         radioButtonColor: '${radioButtonColor}',
                         onPress: [
                             {
-                                type: 'SetValue',
-                                property: 'selectedIndex',
-                                value: '${selectedIndex == idx ? -1 : idx}',
-                            },
-                            {
-                                type: 'SetValue',
-                                componentId: 'debugText',
-                                property: 'text',
-                                value: 'Question: ${questionId}  Selected:${selectedIndex}',
-                            },
-                            {
-                                type: 'SendEvent',
-                                arguments: [
-                                    '${wrapper.general.controlId}',
-                                    'radioClick',
-                                    '${questionId}',
-                                    '${selectedIndex}',
+                                type: 'Sequential',
+
+                                /* Note: all multi-command  actions should go on custom sequencer, else commands can be lost on user press.
+                                 * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-commands.html#normal-mode
+                                 */
+                                sequencer: 'CustomSequencer',
+                                commands: [
+                                    {
+                                        type: 'SetValue',
+                                        property: 'selectedIndex',
+                                        value: '${selectedIndex == idx ? -1 : idx}',
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'debugText',
+                                        property: 'text',
+                                        value: 'Question: ${questionId}  Selected:${selectedIndex}',
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'disableContent',
+                                        value: true,
+                                    },
+                                    {
+                                        type: 'SetValue',
+                                        componentId: 'root',
+                                        property: 'enableWaitIndicator',
+                                        value: true,
+                                        delay: 1370,
+                                    },
+                                    {
+                                        type: 'SendEvent',
+                                        arguments: [
+                                            '${wrapper.general.controlId}',
+                                            'radioClick',
+                                            '${questionId}',
+                                            '${selectedIndex}',
+                                        ],
+                                    },
                                 ],
                             },
                         ],
@@ -269,10 +292,11 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                     type: 'Container',
                     width: '100vw',
                     height: '100vh',
+                    disabled: '${disableContent}',
                     bind: [
                         {
                             name: 'disableContent',
-                            value: false,
+                            value: '${wrapper.disableScreen}',
                             type: 'boolean',
                         },
                         {
@@ -364,31 +388,41 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                                 type: 'Sequential',
                                 commands: [
                                     {
-                                        type: 'SetValue',
-                                        componentId: 'debugText',
-                                        property: 'text',
-                                        value: 'Complete',
-                                    },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'disableContent',
-                                        value: true,
-                                    },
-                                    {
-                                        type: 'SendEvent',
-                                        arguments: ['${wrapper.general.controlId}', 'complete'],
-                                    },
-                                    {
-                                        type: 'SetValue',
-                                        componentId: 'root',
-                                        property: 'enableWaitIndicator',
-                                        value: true,
-                                        delay: 1370,
+                                        type: 'Sequential',
+                                        /* Note: all multi-command  actions should go on custom sequencer, else commands can be lost on user press.
+                                         * https://developer.amazon.com/en-US/docs/alexa/alexa-presentation-language/apl-commands.html#normal-mode
+                                         */
+                                        sequencer: 'CustomSequencer',
+                                        commands: [
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'debugText',
+                                                property: 'text',
+                                                value: 'Complete',
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'disableContent',
+                                                value: true,
+                                            },
+                                            {
+                                                type: 'SendEvent',
+                                                arguments: ['${wrapper.general.controlId}', 'complete'],
+                                            },
+                                            {
+                                                type: 'SetValue',
+                                                componentId: 'root',
+                                                property: 'enableWaitIndicator',
+                                                value: true,
+                                                delay: 1370,
+                                            },
+                                        ],
                                     },
                                 ],
                             },
                         },
+
                         {
                             type: 'AlexaProgressDots',
                             position: 'absolute',
