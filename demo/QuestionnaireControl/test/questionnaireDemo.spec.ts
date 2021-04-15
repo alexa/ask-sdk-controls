@@ -51,7 +51,7 @@ suite('Questionnaire Demo skill', () => {
             invoker,
             'U: yes',
             TestInput.of(IntentBuilder.of('AMAZON.YesIntent')),
-            'A: Great, thank you. Do you have a sore foot?',
+            'A: yes for cough. Do you have a sore foot?',
         );
 
         // going back to change an answer.
@@ -64,7 +64,7 @@ suite('Questionnaire Demo skill', () => {
                     target: 'cough',
                 }),
             ),
-            'A: OK, no for cough. Great, thank you. Do you have a sore foot?',
+            'A: no for cough. Do you have a sore foot?',
         );
 
         expect(requestHandler.getSerializableControlStates().healthScreen.value).deep.equals({
@@ -127,7 +127,7 @@ suite('Questionnaire Demo skill', () => {
             invoker,
             'U: I cough all the time',
             TestInput.of(GeneralControlIntent.of({ feedback: 'yes', target: 'cough' })),
-            'A: OK, yes for cough. Do you frequently have a headache?',
+            'A: yes for cough. Do you frequently have a headache?',
         );
 
         expect(requestHandler.getSerializableControlStates().healthScreen.value).deep.equals({
