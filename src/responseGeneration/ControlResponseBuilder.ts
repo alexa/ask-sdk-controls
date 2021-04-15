@@ -91,7 +91,7 @@ export class ControlResponseBuilder implements ResponseBuilder {
      * Concatenates the fragments with a single space between each.
      */
     getPrompt(): string {
-        return this.promptFragments.join(' ');
+        return this.promptFragments.filter((x) => x !== '').join(' ');
     }
 
     /**

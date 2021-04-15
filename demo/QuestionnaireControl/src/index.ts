@@ -61,6 +61,21 @@ export namespace MultipleLists {
                             submitButtonText: 'Next >',
                         }),
                     },
+                    prompts: {
+                        questionnaireCompleted: () => '',
+                        questionAnsweredAct: (act, input) =>
+                            /* Demonstrate a contextual prompt. This skips voice feedback
+                         when the screen provides sufficient feedback (which is true for
+                         all questions except the last) */
+                            `${
+                                act.payload.questionId !== 'cough' /* && APL device  */
+                                    ? ''
+                                    : act.payload.renderedChoice +
+                                      ' for ' +
+                                      act.payload.renderedQuestionShortForm +
+                                      '.'
+                            }`,
+                    },
                 }),
             );
 
