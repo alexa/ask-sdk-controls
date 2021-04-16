@@ -296,7 +296,7 @@ export namespace QuestionnaireControlAPLPropsBuiltIns {
                     bind: [
                         {
                             name: 'disableContent',
-                            value: '${wrapper.disableScreen}',
+                            value: false,
                             type: 'boolean',
                         },
                         {
