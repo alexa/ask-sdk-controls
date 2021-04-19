@@ -158,7 +158,7 @@ suite('NumberControl e2e tests', () => {
     test('change age value with explicit confirmation', async () => {
         const requestHandler = new ControlHandler(new AgeControlManager());
         await testE2E(requestHandler, [
-            'U: change my to four',
+            'U: change my age to four',
             TestInput.of(
                 ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     'AMAZON.NUMBER': '4',
@@ -173,10 +173,10 @@ suite('NumberControl e2e tests', () => {
         expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(4);
     });
 
-    test('change age value with explicit disaffirmation', async () => {
+    test('change age value with explicit disaffirmation and no suggestion available', async () => {
         const requestHandler = new ControlHandler(new AgeControlManager());
         await testE2E(requestHandler, [
-            'U: change my to five',
+            'U: change my age to five',
             TestInput.of(
                 ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
                     'AMAZON.NUMBER': '5',
@@ -268,8 +268,8 @@ suite('NumberControl e2e tests', () => {
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
             'U: Clear my age',
-            TestInput.of(GeneralControlIntent.of({ action: $.Action.Remove })),
-            'A: OK, removed 4. How old will you be?',
+            TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
+            'A: Ok, cleared. How old will you be?',
         ]);
         expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(undefined);
     });
@@ -372,12 +372,51 @@ suite('NumberControl e2e tests', () => {
                     feedback: $.Feedback.Disaffirm,
                 }),
             ),
-            'A: My mistake. Did you perhaps mean 50?',
-            'U: yes',
-            TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
+            'A: My mistake. Was that 50?',
+            'U: yes, 50',
+            TestInput.of(
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    'AMAZON.NUMBER': '50',
+                    feedback: $.Feedback.Affirm,
+                }),
+            ),
             'A: Great.',
         ]);
         expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(50);
+    });
+
+    test('change age value with explicit confirmations along with another value', async () => {
+        const requestHandler = new ControlHandler(new AgeControlManager());
+        await testE2E(requestHandler, [
+            'U: change my age to one hundred and thirteen',
+            TestInput.of(
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    'AMAZON.NUMBER': '113',
+                    action: $.Action.Change,
+                }),
+            ),
+            'A: Was that 113?',
+            'U: No',
+            TestInput.of(IntentBuilder.of(AmazonIntent.NoIntent)),
+            'A: My mistake. Did you perhaps mean 130?',
+            'U: no, fifty-one',
+            TestInput.of(
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    'AMAZON.NUMBER': '51',
+                    feedback: $.Feedback.Disaffirm,
+                }),
+            ),
+            'A: My mistake. Was that 51?',
+            'U: yes, 51',
+            TestInput.of(
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    'AMAZON.NUMBER': '51',
+                    feedback: $.Feedback.Affirm,
+                }),
+            ),
+            "A: Great. Sorry but that's not a valid choice because the age must be even. How old will you be?",
+        ]);
+        expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(51);
     });
 });
 

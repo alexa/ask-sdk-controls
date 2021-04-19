@@ -65,6 +65,7 @@ import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { NumberControlAPLComponentBuiltIns, NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
+import { NumberControlBuiltIns } from './NumberControlBuiltIns';
 
 const log = new Logger('AskSdkControls:NumberControl');
 
@@ -115,17 +116,38 @@ export interface NumberControlProps extends ControlProps {
      * If `true`:
      *  - the Control will take initiative to explicitly confirm the value with a yes/no
      *    question.
+     *
+     * Default: false
+     *
+     * Usage:
+     *
+     * 1) Use pre-defined built-ins under NumberControlBuiltIns.* namespace which provides few
+     * default implementations.
+     *
+     * e.g: NumberControlBuiltIns.confirmMostLikelyMisunderstandingInputs returns `true` whenever
+     * an input has a most-likely misunderstanding value defined on the function
+     * NumberControlBuiltIns.defaultMostLikelyMisunderstandingFunc.
      */
     confirmationRequired?: boolean | ((state: NumberControlState, input: ControlInput) => boolean);
 
-    /*
-     * Function that determines the value which is known to be frequently misunderstood by NLU
+    /**
+     * Function that returns the single most likely misunderstanding for a given value, or undefined if none is known.
+     *
+     * Default:  `NumberControl.defaultMostLikelyMisunderstandingFunc(value)`
      *
      * Control behavior:
-     * - If the user disaffirms a value, return value of `mostLikelyMisunderstandings`
-     * function is suggested back to the user.
+     *   - If the user disaffirms a value the most likely misunderstood value is suggested to the user.
+     * e.g:
+     *
+     *   A: What number?
+     *   U: Fourteen
+     *   A: Was the fourteen?
+     *   U: No
+     *   A: My mistake. Did you perhaps say forty?
+     *   U: Yes
+     *   A: Great. 40.
      */
-    mostLikelyMisunderstandings?: (value: number, input: ControlInput) => number;
+    mostLikelyMisunderstanding?: (value: number, input: ControlInput) => number | undefined;
 
     /**
      * Props to customize the relationship between the control and the
@@ -175,7 +197,7 @@ export type NumberControlActionProps = {
     change?: string[];
 
     /**
-     * Action slot value IDs that are associated with the "remove value" capability.
+     * Action slot value IDs that are associated with the "clear value" capability.
      *
      * Default ['builtin_clear', builtin_remove']
      */
@@ -441,10 +463,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                     i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET', {
                         value: act.payload.renderedValue,
                     }),
-                valueCleared: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED', {
-                        value: act.payload.renderedValue,
-                    }),
+                valueCleared: i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED'),
                 invalidValue: (act) => {
                     if (act.payload.renderedReason !== undefined) {
                         return i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON', {
@@ -502,7 +521,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             required: true,
             apl: {
                 enabled: true,
-                validationFailedMessage: NumberControl.defaultValidationFailureText(),
+                validationFailedMessage: NumberControlBuiltIns.defaultValidationFailureText(),
                 requestValue: NumberControlAPLPropsBuiltIns.defaultSelectValueAPLContent({
                     validationFailedMessage: props.apl?.validationFailedMessage,
                 }),
@@ -511,47 +530,10 @@ export class NumberControl extends Control implements InteractionModelContributo
             inputHandling: {
                 customHandlingFuncs: [],
             },
-            mostLikelyMisunderstandings: (value: number) => {
-                switch (value) {
-                    case 13:
-                        return 30;
-                    case 14:
-                        return 40;
-                    case 15:
-                        return 50;
-                    case 16:
-                        return 60;
-                    case 17:
-                        return 70;
-                    case 18:
-                        return 80;
-                    case 19:
-                        return 90;
-                    case 113:
-                        return 130;
-                    case 114:
-                        return 140;
-                    case 115:
-                        return 150;
-                    case 116:
-                        return 160;
-                    case 117:
-                        return 170;
-                    case 118:
-                        return 180;
-                    case 119:
-                        return 190;
-                    default:
-                        return value;
-                }
-            },
+            mostLikelyMisunderstanding: NumberControlBuiltIns.defaultMostLikelyMisunderstandingFunc,
             valueRenderer: (value: number, input) => value.toString(),
         };
         return _.merge(defaults, props);
-    }
-
-    static defaultValidationFailureText(): (value?: number) => string {
-        return (value?: number) => i18next.t('NUMBER_CONTROL_DEFAULT_APL_INVALID_VALUE', { value });
     }
 
     standardInputHandlers: ControlInputHandler[] = [
@@ -591,9 +573,14 @@ export class NumberControl extends Control implements InteractionModelContributo
             handle: this.handleConfirmationDisaffirmed,
         },
         {
-            name: 'FeedbackWithValue (built-in)',
-            canHandle: this.isFeedbackWithValue,
-            handle: this.handleFeedbackWithValue,
+            name: 'isAffirmWithValue (built-in)',
+            canHandle: this.isAffirmWithValue,
+            handle: this.handleAffirmWithValue,
+        },
+        {
+            name: 'isDisaffirmWithValue (built-in)',
+            canHandle: this.isDisaffirmWithValue,
+            handle: this.handleDisaffirmWithValue,
         },
         {
             name: 'ClearValue (builtin)',
@@ -604,6 +591,11 @@ export class NumberControl extends Control implements InteractionModelContributo
             name: 'SelectChoiceByTouch (built-in)',
             canHandle: this.isSelectChoiceByTouch,
             handle: this.handleSelectChoiceByTouch,
+        },
+        {
+            name: 'SuggestionAccepted (built-in)',
+            canHandle: this.isSuggestionAccepted,
+            handle: this.handleSuggestionAccepted,
         },
     ];
 
@@ -646,7 +638,6 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.valueStrDefined(valueStr));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
-            this.handleFunc = this.handleSetWithValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -675,7 +666,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 resultBuilder,
             );
         } else {
-            await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+            await this.validateAndAddCommonFeedbackActs(input, resultBuilder, $.Action.Set);
         }
         return;
     }
@@ -689,7 +680,6 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
-            this.handleFunc = this.handleSetWithoutValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -712,7 +702,6 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.valueStrDefined(valueStr));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
-            this.handleFunc = this.handleChangeWithValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -734,7 +723,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                 resultBuilder,
             );
         } else {
-            await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+            await this.validateAndAddCommonFeedbackActs(input, resultBuilder, $.Action.Change);
         }
         return;
     }
@@ -748,7 +737,6 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.change));
-            this.handleFunc = this.handleChangeWithoutValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -760,7 +748,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         return;
     }
 
-    private isBareValue(input: ControlInput): any {
+    private isBareValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
             const { feedback, action, target, values } = unpackValueControlIntent(
@@ -771,7 +759,6 @@ export class NumberControl extends Control implements InteractionModelContributo
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
-            this.handleFunc = this.handleBareValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -790,19 +777,19 @@ export class NumberControl extends Control implements InteractionModelContributo
                 resultBuilder,
             );
         } else {
-            await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set);
+            await this.validateAndAddCommonFeedbackActs(
+                input,
+                resultBuilder,
+                this.state.elicitationAction ?? $.Action.Set,
+            );
         }
         return;
     }
 
-    private isConfirmationAffirmed(input: ControlInput): any {
+    private isConfirmationAffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareYes(input));
-            okIf(
-                this.state.lastInitiative.actName === ConfirmValueAct.name ||
-                    this.state.lastInitiative.actName === SuggestValueAct.name,
-            );
-            this.handleFunc = this.handleConfirmationAffirmed;
+            okIf(this.state.lastInitiative.actName === ConfirmValueAct.name);
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -840,14 +827,53 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private isConfirmationDisaffirmed(input: ControlInput): any {
+    private isSuggestionAccepted(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isBareYes(input));
+            okIf(this.state.lastInitiative.actName === SuggestValueAct.name);
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private async handleSuggestionAccepted(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
+        const validationResult: true | ValidationFailure = await evaluateValidationProp(
+            this.props.validation,
+            this.state,
+            input,
+        );
+        if (validationResult === true) {
+            this.state.confirmed = true;
+            this.state.lastInitiative.actName = undefined;
+            resultBuilder.addAct(
+                new ValueConfirmedAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+            );
+        } else {
+            resultBuilder.addAct(
+                new InvalidValueAct<number>(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value!, input),
+                    reasonCode: validationResult.reasonCode,
+                    renderedReason: validationResult.renderedReason,
+                }),
+            );
+            this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
+        }
+    }
+    private isConfirmationDisaffirmed(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isBareNo(input));
             okIf(
                 this.state.lastInitiative.actName === ConfirmValueAct.name ||
                     this.state.lastInitiative.actName === SuggestValueAct.name,
             );
-            this.handleFunc = this.handleConfirmationDisaffirmed;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -861,8 +887,12 @@ export class NumberControl extends Control implements InteractionModelContributo
                 renderedValue: this.props.valueRenderer(this.state.value, input),
             }),
         );
-        const suggestValue = this.getAmbiguousPair(this.state.value, input);
-        if (suggestValue !== this.state.value) {
+        const suggestValue = this.getSuggestionForMisunderstoodValue(this.state.value, input);
+        if (
+            suggestValue !== undefined &&
+            suggestValue !== this.state.value &&
+            this.state.lastInitiative.actName !== SuggestValueAct.name
+        ) {
             this.setValue(suggestValue);
             this.addInitiativeAct(
                 new SuggestValueAct(this, {
@@ -878,25 +908,65 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
     }
 
-    private isFeedbackWithValue(input: ControlInput): any {
+    private isAffirmWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
             const { feedback, action, target, values } = unpackValueControlIntent(
                 (input.request as IntentRequest).intent,
             );
             const valueStr = values[0].slotValue;
-            okIf(InputUtil.feedbackIsMatch(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.feedbackIsMatch(feedback, [$.Feedback.Affirm]));
             okIf(InputUtil.actionIsUndefined(action));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
             okIf(InputUtil.valueStrDefined(valueStr));
-            this.handleFunc = this.handleFeedbackWithValue;
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
         }
     }
 
-    private handleFeedbackWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+    private handleAffirmWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
+        const { valueStr } = InputUtil.getValueResolution(input);
+        const suggestValue = Number.parseInt(valueStr, 10);
+        if (suggestValue !== this.state.value) {
+            this.setValue(suggestValue);
+            this.addInitiativeAct(
+                new ConfirmValueAct(this, {
+                    value: suggestValue,
+                    renderedValue: this.props.valueRenderer(suggestValue!, input),
+                }),
+                resultBuilder,
+            );
+        } else {
+            this.state.confirmed = true;
+            this.state.lastInitiative.actName = undefined;
+            resultBuilder.addAct(
+                new ValueConfirmedAct(this, {
+                    value: this.state.value,
+                    renderedValue: this.props.valueRenderer(this.state.value, input),
+                }),
+            );
+        }
+    }
+
+    private isDisaffirmWithValue(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.NUMBER));
+            const { feedback, action, target, values } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
+            const valueStr = values[0].slotValue;
+            okIf(InputUtil.feedbackIsMatch(feedback, [$.Feedback.Disaffirm]));
+            okIf(InputUtil.actionIsUndefined(action));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueStrDefined(valueStr));
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private handleDisaffirmWithValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
         resultBuilder.addAct(
             new ValueDisconfirmedAct(this, {
                 value: this.state.value,
@@ -908,7 +978,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         if (suggestValue !== this.state.value) {
             this.setValue(suggestValue);
             this.addInitiativeAct(
-                new SuggestValueAct(this, {
+                new ConfirmValueAct(this, {
                     value: suggestValue,
                     renderedValue: this.props.valueRenderer(suggestValue!, input),
                 }),
@@ -967,11 +1037,11 @@ export class NumberControl extends Control implements InteractionModelContributo
             .arguments![1] as string;
         this.setValue(valueStr);
         this.state.confirmed = true;
-        await this.validateAndAddActs(input, resultBuilder, $.Action.Set);
+        await this.validateAndAddCommonFeedbackActs(input, resultBuilder, $.Action.Set);
         return;
     }
 
-    async validateAndAddActs(
+    async validateAndAddCommonFeedbackActs(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
         elicitationAction: string,
@@ -1040,29 +1110,29 @@ export class NumberControl extends Control implements InteractionModelContributo
     }
 
     private confirmValue(input: ControlInput, resultBuilder: ControlResultBuilder): void {
-        this.state.lastInitiative.actName = ConfirmValueAct.name;
-        resultBuilder.addAct(
+        this.addInitiativeAct(
             new ConfirmValueAct(this, {
                 value: this.state.value,
                 renderedValue:
                     this.state.value !== undefined ? this.props.valueRenderer(this.state.value, input) : '',
             }),
+            resultBuilder,
         );
     }
 
     standardInitiativeHandlers: ControlInitiativeHandler[] = [
         {
-            name: 'std:elicitValue',
+            name: 'ElicitValue (built-in)',
             canTakeInitiative: this.wantsToElicitValue,
             takeInitiative: this.elicitValue,
         },
         {
-            name: 'std:invalidValue',
-            canTakeInitiative: this.wantsToFixInvalidValue,
-            takeInitiative: this.fixInvalidValue,
+            name: 'RequestReplacementForInvalidValue (built-in)',
+            canTakeInitiative: this.wantsToRequestReplacementForInvalidValue,
+            takeInitiative: this.requestReplacementForInvalidValue,
         },
         {
-            name: 'std::confirmValue',
+            name: 'ConfirmValue (built-in)',
             canTakeInitiative: this.wantsToConfirmValue,
             takeInitiative: this.confirmValue,
         },
@@ -1119,7 +1189,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         this.askElicitationQuestion(input, resultBuilder, $.Action.Set);
     }
 
-    private async wantsToFixInvalidValue(input: ControlInput): Promise<boolean> {
+    private async wantsToRequestReplacementForInvalidValue(input: ControlInput): Promise<boolean> {
         if (
             this.state.value !== undefined &&
             (await evaluateValidationProp(this.props.validation, this.state, input)) !== true
@@ -1129,8 +1199,11 @@ export class NumberControl extends Control implements InteractionModelContributo
         return false;
     }
 
-    private async fixInvalidValue(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        await this.validateAndAddActs(input, resultBuilder, $.Action.Change);
+    private async requestReplacementForInvalidValue(
+        input: ControlInput,
+        resultBuilder: ControlResultBuilder,
+    ): Promise<void> {
+        await this.validateAndAddCommonFeedbackActs(input, resultBuilder, $.Action.Change);
     }
 
     private wantsToConfirmValue(input: ControlInput): boolean {
@@ -1253,8 +1326,8 @@ export class NumberControl extends Control implements InteractionModelContributo
         return aplRenderFunc.call(this, this, defaultProps, input, resultBuilder);
     }
 
-    private getAmbiguousPair(value: number, input: ControlInput): number {
-        return this.props.mostLikelyMisunderstandings(value, input);
+    private getSuggestionForMisunderstoodValue(value: number, input: ControlInput): number | undefined {
+        return this.props.mostLikelyMisunderstanding(value, input);
     }
 
     private async evaluateAPLPropNewStyle(

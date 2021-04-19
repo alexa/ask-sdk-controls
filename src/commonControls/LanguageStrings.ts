@@ -49,7 +49,7 @@ export const defaultI18nResources: Resource = {
             // NumberControl Runtime
             NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'Ok. Value set to {{value}}.',
             NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED: 'Ok. Value changed to {{value}}.',
-            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: `OK, removed {{value}}.`,
+            NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'Ok, cleared.',
             NUMBER_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
                 "Sorry but that's not a valid choice because {{reason}}.",
             NUMBER_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE: "Sorry but that's not a valid choice.",
@@ -61,7 +61,7 @@ export const defaultI18nResources: Resource = {
 
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'Ok. Value set to {{value}}.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'Ok. Value changed to {{value}}.',
-            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: `OK, removed {{value}}.`,
+            NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'Ok, cleared.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
                 "Sorry but that's not a valid choice because {{reason}}.",
             NUMBER_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE: "Sorry but that's not a valid choice.",
