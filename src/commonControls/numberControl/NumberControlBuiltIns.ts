@@ -24,65 +24,37 @@ export namespace NumberControlBuiltIns {
         defaultMostLikelyMisunderstandingFunc(state.value) !== undefined;
 
     export function defaultMostLikelyMisunderstandingFunc(value: number): number | undefined {
-        switch (value) {
-            case 13:
-                return 30;
-            case 14:
-                return 40;
-            case 15:
-                return 50;
-            case 16:
-                return 60;
-            case 17:
-                return 70;
-            case 18:
-                return 80;
-            case 19:
-                return 90;
-            case 30:
-                return 13;
-            case 40:
-                return 14;
-            case 50:
-                return 15;
-            case 60:
-                return 16;
-            case 70:
-                return 17;
-            case 80:
-                return 18;
-            case 90:
-                return 19;
-            case 113:
-                return 130;
-            case 114:
-                return 140;
-            case 115:
-                return 150;
-            case 116:
-                return 160;
-            case 117:
-                return 170;
-            case 118:
-                return 180;
-            case 119:
-                return 190;
-            case 130:
-                return 113;
-            case 140:
-                return 114;
-            case 150:
-                return 115;
-            case 160:
-                return 116;
-            case 170:
-                return 117;
-            case 180:
-                return 118;
-            case 190:
-                return 119;
-            default:
-                return undefined;
-        }
+        // Static map of common ambiguous pairs among integers misinterpreted by NLU.
+        const ambiguousPairs: { [key: number]: number } = {
+            13: 30,
+            14: 40,
+            15: 50,
+            16: 60,
+            17: 70,
+            18: 80,
+            19: 90,
+            30: 13,
+            40: 14,
+            50: 15,
+            60: 16,
+            70: 17,
+            80: 18,
+            90: 19,
+            113: 130,
+            114: 140,
+            115: 150,
+            116: 160,
+            117: 170,
+            118: 180,
+            119: 190,
+            130: 113,
+            140: 114,
+            150: 115,
+            160: 160,
+            170: 170,
+            180: 118,
+            190: 119,
+        };
+        return ambiguousPairs[value];
     }
 }
