@@ -133,7 +133,7 @@ export interface NumberControlProps extends ControlProps {
     /**
      * Function that returns the single most likely misunderstanding for a given value, or undefined if none is known.
      *
-     * Default:  `NumberControl.defaultMostLikelyMisunderstandingFunc(value)`
+     * Default:  `NumberControlBuiltIns.defaultMostLikelyMisunderstandingFunc(value)`
      *
      * Control behavior:
      *   - If the user disaffirms a value the most likely misunderstood value is suggested to the user.
