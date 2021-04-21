@@ -10,21 +10,21 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { suite, test } from 'mocha';
 import { expect } from 'chai';
+import { suite, test } from 'mocha';
 import {
-    waitForDebugger,
     ControlHandler,
-    SkillInvoker,
-    testTurn,
-    TestInput,
-    IntentBuilder,
     GeneralControlIntent,
+    IntentBuilder,
+    SkillInvoker,
+    TestInput,
+    testTurn,
+    waitForDebugger,
 } from '../../../src';
 import { Strings as $ } from '../../../src/constants/Strings';
+import { ValueControlIntent } from '../../../src/intents/ValueControlIntent';
 import { MultiValueListDemo } from '../src';
 import { MultiValueListDemoIM } from '../src/buildInteractionModel';
-import { ValueControlIntent } from '../../../src/intents/ValueControlIntent';
 waitForDebugger();
 
 suite('MultiValueList Demo', () => {
@@ -88,7 +88,7 @@ suite('MultiValueList Demo', () => {
             invoker,
             'U: Clear all items',
             TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
-            'A: OK, removed Bread, Eggs and Milk from the list. What is your selection? Some suggestions are Milk, Eggs or Cereal.',
+            'A: OK, cleared Bread, Eggs and Milk from the list. What is your selection? Some suggestions are Milk, Eggs or Cereal.',
         );
     });
 });

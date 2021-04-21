@@ -271,100 +271,6 @@ export class ValueDisconfirmedAct<T> extends ContentAct {
 }
 
 /**
- * Communicates that a confusing value confirmation was received.
- *
- * Default rendering (en-US): "I'm confused whether you want (value1) or (value2)."
- *
- * Usage:
- *  * Typically issued when the system issued a ConfirmValueAct and received an `affirm` in reply with a different value .
- *
- * Example:
- * ```
- * "A: Did you say three?"             ConfirmValueAct
- * "U: Yes, four"                      AMAZON_NUMBER_ValueControlIntent( feedback = affirm, AMAZON.NUMBER = 4 )
- * "A: I'm confused... <initiative>."  ValueConfirmedAct, <InitiativeAct>
- * ```
- */
-export class InformConfusingConfirmationAct<T> extends ContentAct {
-    payload: ProblematicInputValuePayload<T>;
-    constructor(control: Control, payload: ProblematicInputValuePayload<T>) {
-        super(control);
-        this.payload = payload;
-    }
-
-    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(
-            i18next.t('INFORM_CONFUSING_CONFIRMATION_ACT', {
-                controlValue: this.control.state.value,
-                value: this.payload.value,
-            }),
-        );
-    }
-}
-
-/**
- * Communicates that a confusing value disconfirmation was received.
- *
- * Default rendering (en-US): "I'm confused whether you want (value) or not."
- *
- * Usage:
- *  * Typically issued when the system issued a ConfirmValueAct and received an `disaffirm` in reply with the mentioned value repeated.
- *
- * Example:
- * ```
- * "A: Did you say three?"             ConfirmValueAct
- * "U: No, three"                      AMAZON_NUMBER_ValueControlIntent( feedback = affirm, AMAZON.NUMBER = 4 )
- * "A: I'm confused... <initiative>."  ValueConfirmedAct, <InitiativeAct>
- * ```
- */
-export class InformConfusingDisconfirmationAct<T> extends ContentAct {
-    payload: InvalidValuePayload<T>;
-    constructor(control: Control, payload: ProblematicInputValuePayload<T>) {
-        super(control);
-        this.payload = payload;
-    }
-
-    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(
-            i18next.t('INFORM_CONFUSING_CONFIRMATION_ACT', {
-                value: this.control.state.value,
-            }),
-        );
-    }
-}
-
-/**
- * Communicates that a value was received which is considered to be problematic.
- *
- * Default rendering (en-US): "I'm really sorry but I heard (value) again."
- *
- * Usage:
- *  * Typically issued if the user has already disconfirmed that value but we hear it again.
- *
- * "U: three"
- * "A: Did you say three?"
- * "U: No"
- * "A: My mistake, how many would you like?"
- * "U: three"
- * "A: I'm really sorry but I heard three again."
- */
-export class ProblematicInputValueAct<T> extends ContentAct {
-    payload: ProblematicInputValuePayload<T>;
-    constructor(control: Control, payload: ProblematicInputValuePayload<T>) {
-        super(control);
-        this.payload = payload;
-    }
-
-    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(
-            i18next.t('PROBLEMATIC_INPUT_VALUE_ACT', {
-                value: this.payload.value,
-            }),
-        );
-    }
-}
-
-/**
  * Communicates that the user's input could not be understood.
  *
  * Default rendering (en-US): "Sorry I didn't understand that."
@@ -388,7 +294,7 @@ export class NonUnderstandingAct extends ContentAct {
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(i18next.t('NON_UNDERSTANDING_ACT'));
+        controlResponseBuilder.addPromptFragment(i18next.t('NON_UNDERSTANDING_ACT_DEFAULT_PROMPT'));
     }
 }
 

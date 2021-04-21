@@ -58,7 +58,7 @@ export const defaultI18nResources: Resource = {
             NUMBER_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
             NUMBER_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE: 'Did you perhaps mean {{value}}?',
-
+            // RePrompts
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'Ok. Value set to {{value}}.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'Ok. Value changed to {{value}}.',
             NUMBER_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'Ok, cleared.',
@@ -84,6 +84,7 @@ export const defaultI18nResources: Resource = {
             VALUE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
             VALUE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
             VALUE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
+            // RePrompts
             VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
             VALUE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
             VALUE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
@@ -129,44 +130,10 @@ export const defaultI18nResources: Resource = {
             LIST_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
             LIST_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select',
 
-            // Questionnaire Control Runtime
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_VALUE_SET: 'OK, {{value}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE:
-                'Sorry, {{value}} is not a valid choice.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_INVALID_VALUE_WITH_REASON:
-                'Sorry, {{value}} is not a valid choice because {{reason}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_UNUSABLE_INPUT_VALUE: "Sorry, I'm not sure how to do that.",
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_REQUEST_VALUE:
-                'What is your selection? Some suggestions are {{suggestions}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_REQUEST_CHANGED_VALUE:
-                'What should I change it to? Some suggestions are {{suggestions}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_VALUE_AFFIRMED: 'Great.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_PROMPT_VALUE_DISAFFIRMED: 'My mistake.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_SET: 'OK, {{value}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_CHANGED: 'OK, I changed it to {{value}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE:
-                'Sorry, {{value}} is not a valid choice.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_INVALID_VALUE_WITH_REASON:
-                'Sorry, {{value}} is not a valid choice because {{reason}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_UNUSABLE_INPUT_VALUE:
-                "Sorry, I'm not sure how to do that.",
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_REQUEST_VALUE:
-                'What is your selection? Some suggestions are {{suggestions}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_REQUEST_CHANGED_VALUE:
-                'What should I change it to? Some suggestions are {{suggestions}}.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_CONFIRM_VALUE: 'Was that {{value}}?',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_AFFIRMED: 'Great.',
-            QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_VALUE_DISAFFIRMED: 'My mistake.',
-
-            QUESTIONNAIRE_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
-            QUESTIONNAIRE_CONTROL_DEFAULT_APL_SUBMIT_TEXT: 'Submit >',
-
             // MultiValueListControl Runtime
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_ADD: 'OK, added {{value}}.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
-            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_VALUE_CLEARED: 'OK, cleared {{value}} from the list.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_ACTION_SUGGEST:
                 'You can add new values or update existing values',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_INVALID_VALUE:
@@ -186,7 +153,7 @@ export const defaultI18nResources: Resource = {
             // RePrompts
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_ADD: 'OK, added {{value}}.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_REMOVE: 'OK, removed {{value}}.',
-            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, removed {{value}} from the list.',
+            MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_VALUE_CLEARED: 'OK, cleared {{value}} from the list.',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_ACTION_SUGGEST:
                 'You can add new values or update existing values',
             MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_INVALID_VALUE:
@@ -308,6 +275,8 @@ export const defaultI18nResources: Resource = {
                 'No problem. Just let me know when you are done.',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE: 'Are you happy with all answers?',
             QUESTIONNAIRE_CONTROL_DEFAULT_REPROMPT_ASK_IF_COMPLETE_TERSE: '',
+            QUESTIONNAIRE_CONTROL_DEFAULT_APL_HEADER_TITLE: 'Please select...',
+            QUESTIONNAIRE_CONTROL_DEFAULT_APL_SUBMIT_TEXT: 'Submit >',
 
             // Content Act default prompts
             UNUSABLE_INPUT_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}}.`,
@@ -317,15 +286,12 @@ export const defaultI18nResources: Resource = {
             INVALID_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}}.`,
             VALUE_CONFIRMED_ACT_DEFAULT_PROMPT: 'Great.',
             VALUE_DISCONFIRMED_ACT_DEFAULT_PROMPT: 'My mistake.',
-            INFORM_CONFUSING_CONFIRMATION_ACT_DEFAULT_PROMPT: `I'm confused whether you want {{controlValue}} or {{value}}.`,
-            INFORM_CONFUSING_DISCONFIRMATION_ACT_DEFAULT_PROMPT: `I'm confused whether you want {{value}} or not.`,
-            PROBLEMATIC_INPUT_VALUE_ACT_DEFAULT_PROMPT: `I'm really sorry but I heard {{value}} again.`,
             NON_UNDERSTANDING_ACT_DEFAULT_PROMPT: "Sorry I didn't understand that.",
             LAUNCH_ACT_DEFAULT_PROMPT: 'Welcome.',
             VALUE_ADDED_ACT_DEFAULT_PROMPT: `OK, added {{value}}.`,
             VALUE_REMOVED_ACT_DEFAULT_PROMPT: `OK, removed {{value}}.`,
-            VALUE_CLEARED_ACT_DEFAULT_PROMPT: `OK, removed all {{value}}.`,
-            INVALID_REMOVE_VALUE_ACT_DEFAULT_PROMPT: `Sorry, {{value}} is not in the list.`,
+            VALUE_CLEARED_ACT_DEFAULT_PROMPT: `OK, cleared {{value}}.`,
+            INVALID_REMOVE_VALUE_ACT_DEFAULT_PROMPT: `Sorry, invalid {{value}}.`,
 
             // Initiative Act default prompts
             REQUEST_VALUE_ACT_DEFAULT_PROMPT: `What value for {{value}}.`,
