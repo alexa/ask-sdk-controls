@@ -48,7 +48,9 @@
             "Controls Framework (Major types)": {
                 "Control": "classes/_controls_control_.control",
                 "ContainerControl": "modules/_controls_containercontrol_",
+                "DynamicContainerControl": "modules/_controls_dynamiccontainercontrol_",
                 "ControlManager": "modules/_controls_controlmanager_",
+                "ComponentModeControlManager": "modules/_controls_componentmodecontrolmanager_",
                 "ControlInput": "classes/_controls_controlinput_.controlinput",
                 "ControlResultBuilder": "classes/_controls_controlresult_.controlresultbuilder",
                 "ControlResponseBuilder": "classes/_responsegeneration_controlresponsebuilder_.controlresponsebuilder"

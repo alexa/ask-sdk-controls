@@ -184,7 +184,7 @@ suite('MultiValueListControl e2e tests', () => {
                 'A: OK, added AirPods. Is that all?',
                 'U: Clear all items from cart',
                 TestInput.of(GeneralControlIntent.of({ action: $.Action.Clear })),
-                'A: OK, removed iPhone, iPad and AirPods from the list. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
+                'A: OK, cleared iPhone, iPad and AirPods from the list. What is your selection? Some suggestions are AirPods, iWatch or iPhone.',
                 'U: Remove iPhone',
                 TestInput.of(
                     ValueControlIntent.of('AppleSuite', {

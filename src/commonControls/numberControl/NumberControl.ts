@@ -476,7 +476,7 @@ export class NumberControl extends Control implements InteractionModelContributo
                     });
                 },
                 suggestValue: (act) =>
-                    i18next.t('NUMBER_CONTROL_DEFAULT_REPROMPT_SUGGEST_VALUE', {
+                    i18next.t('NUMBER_CONTROL_DEFAULT_PROMPT_SUGGEST_VALUE', {
                         value: act.payload.renderedValue,
                     }),
             },

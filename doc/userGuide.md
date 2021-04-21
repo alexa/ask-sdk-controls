@@ -689,10 +689,12 @@ Final configuration:
 21.             }
 22.         },
 23.         apl: {
-24.             requestAPLDocument: generateProductListDocument()
-25.         }
-26.     }
-27. );
+24.                requestValue: { 
+25.                    document: generateProductListDocument()
+26.                }
+27.         }
+28.     }
+29. );
 ```
 
 -   **Line 6**: Alexa's NLU system does not guarantee that a slot value will be filled
@@ -1537,25 +1539,23 @@ The content acts defined by the Framework controls include:
 -   **ValueSetAct**: A value was obtained from the user and recorded.
 -   **ValueChangedAct**: A value was obtained from the user and it changed a previously
     recorded value.
+-   **ValueAddedAct**: A value was obtained from the user from a list of choices and recorded.
+-   **ValueRemovedAct**: A value was obtained from user and removed from recorded list.
+-   **ValueClearedAct**: The skill cleared all its recorded values.
 -   **ValueConfirmedAct**: The skill received 'yes' in response to a confirmation question
     or otherwise learned that value being tracked meets the user's expectations.
 -   **ValueDisconfirmedAct**: The skill received a 'no' in response to a confirmation
     question or otherwise has learned that a value being tracked is not what the user
     wants.
 -   **AcknowledgeInputAct**: The input was heard and made sense.
--   **InformConfusingConfirmationAct**. The skill heard something like "Yes, {value}" but
-    the value isn't the same as what the skill asked.
--   **InformConfusingDisconfirmationAct**. The skill heard something like "No, {value} but
-    the value was exactly the value the system was asking about.
 -   **InvalidValueAct**: A value the system is tracking failed validation.
+-   **InvalidRemoveValueAct**: The input value provided to remove from recorded 
+    list is invalid.
 -   **LaunchAct**: The skill has just launched.
--   **NonUnderstandingAct**: The skill does not understand what the user said. The input
-    cannot be used.
--   **ProblematicInputValueAct**: There is confusion about the value being provided. It
-    isn't passing validations but the user seems to be insisting it must be used. (Perhaps
-    NLU is repeatedly misunderstanding the user).
 -   **LiteralContentAct**: A catch-all. This can be used to transfer literal content
     without defining a new act for every unique need.
+-   **NonUnderstandingAct**: The skill does not understand what the user said. The input
+    cannot be used.
 
 ### 5.4.2. Initiative acts
 
@@ -1577,14 +1577,17 @@ The initiative acts defined by the framework include:
     your event?"
 -   **RequestChangedValueAct**: Ask the user for a _new_ value with an open question.
 -   **RequestValueByListAct**: Ask the user for a value by presenting them a list.
+-   **RequestRemovedValueByListAct**: Ask the user for a value to be removed by 
+    presenting them a list.
 -   **RequestChangedValueByListAct**: Ask the user for a _new_ value by presenting them a
     list.
 -   **ConfirmValueAct**: Ask the user if a value has been captured correctly. e.g. "Was
     that five?"
 -   **SuggestValueAct**: Suggest a specific value by means of a yes/no question. e.g. "Is
     the table for five?"
--   LiteralInitiativeAct: A catch-all with no specific semantics that simply represents
+-   **LiteralInitiativeAct**: A catch-all with no specific semantics that simply represents
     some literal content.
+-   **SuggestActionAct**: Suggest specific actions supported by the control."
 
 ## 5.5. State management
 
@@ -1735,21 +1738,20 @@ a bottom-layer predicate function.
 isSetWithValue(input: ControlInput): boolean {
         try {
             okIf(isExpectedIntent(...))
-            const { feedback, action, target, values, valueType } =
-                unpackValueControlIntent((input.request as IntentRequest).intent);
+            const { feedback, action, target, values, valueType } = unpackValueControlIntent(
+                (input.request as IntentRequest).intent,
+            );
             const valueStr = values[0].slotValue;
-            okIf(InputUtil.targetIsMatchOrUndefined(target,
-                this.props.interactionModel.targets));
-            okIf(InputUtil.valueTypeMatch(valueType, this.props.slotType));
+            okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));
+            okIf(InputUtil.valueTypeMatch(valueType, this.getSlotTypes()));
             okIf(InputUtil.valueStrDefined(valueStr));
-            okIf(InputUtil.feedbackIsAffirmOrUndefined(feedback));
-            okIf(InputUtil.actionIsMatch(action,
-                this.props.interactionModel.actions.set));
-
+            okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.set));
             this.handleFunc = this.handleSetWithValue;
             return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
         }
-        catch (e) { return falseIfGuardFailed(e); }
     }
 ```
 
@@ -1842,7 +1844,7 @@ class NumberControl {
     canTakeInitiative(input: ControlInput): boolean {
         return (
             this.wantsToElicitValue(input) ||
-            this.wantsToFixInvalidValue(input) ||
+            this.wantsToRequestReplacementForInvalidValue(input) ||
             this.wantsToConfirmValue(input)
         );
     }
@@ -2261,16 +2263,16 @@ Example:
 
 ```js
  1. new ControlInteractionModelGenerator()
- 2.     .buildCoreModelForControls(new MyControlManager())
- 3.     .withInvocationName('my invocation phrase')
- 4.
- 5.     .addValuesToSlotType('target', {
- 6.         id: 'partySize',
- 7.         name: {
- 8.             value: 'party size',
- 9.             synonyms: ['number of folks attending', 'people joining us', 'attendees' ]
-10.         }
-11.     })
+ 2.     .withInvocationName('my invocation phrase')
+ 3.
+ 4.     .addValuesToSlotType('target', {
+ 5.         id: 'partySize',
+ 6.         name: {
+ 7.             value: 'party size',
+ 8.             synonyms: ['number of folks attending', 'people joining us', 'attendees' ]
+ 9.         }
+10.     })
+11.
 12.
 13.     .addValuesToSlotType('action', {
 14.         id: 'increase',
@@ -2279,7 +2281,7 @@ Example:
 17.             synonyms: ['more', 'be more', 'additional' ]
 18.         }
 19.     })
-20.
+20.     .buildCoreModelForControls(new MyControlManager())
 21.     .buildAndWrite('en-US-generated.json');
 22. console.log('done.');
 ```
@@ -2457,9 +2459,9 @@ Use new translations at build time by updating the interaction model generator s
 
 ```js
 1. new ControlInteractionModelGenerator()
-2.     .buildCoreModelForControls(
-3.         new MyControlManager( {locale: 'es-ES', i18nResources: myResources }))
-4.     .withInvocationName('my invocation phrase')
+2.     .withInvocationName('my invocation phrase')
+3.     .buildCoreModelForControls(
+4.         new MyControlManager( {locale: 'es-ES', i18nResources: myResources }))
 5.     .buildAndWrite('es-ES-generated.json');
 6. console.log('done.');
 ```

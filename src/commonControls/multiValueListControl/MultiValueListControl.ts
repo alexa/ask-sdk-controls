@@ -672,7 +672,9 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                             suggestions: ListFormatting.format(act.payload.renderedChoicesFromActivePage),
                         });
                     }
-                    return i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_PROMPT_GENERAL_REQUEST_REMOVED_VALUE');
+                    return i18next.t(
+                        'MULTI_VALUE_LIST_CONTROL_DEFAULT_REPROMPT_GENERAL_REQUEST_REMOVED_VALUE',
+                    );
                 },
             },
             apl: {

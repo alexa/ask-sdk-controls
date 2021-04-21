@@ -244,13 +244,13 @@ export class RequestRemovedValueByListAct extends InitiativeAct {
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
             controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
             );
             controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
