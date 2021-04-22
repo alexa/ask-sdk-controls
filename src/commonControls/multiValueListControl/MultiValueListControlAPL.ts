@@ -103,15 +103,16 @@ export namespace MultiValueListControlAPLPropsBuiltIns {
         return {
             general: {
                 headerTitle:
-                    contentProps.title ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
+                    contentProps.title ?? i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
                 headerSubtitle:
-                    contentProps.subtitle ?? i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
+                    contentProps.subtitle ??
+                    i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
                 selectionListTitle:
                     contentProps.selectionListTitle ??
-                    i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
+                    i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
                 selectionListSubtitle:
                     contentProps.selectionListSubtitle ??
-                    i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
+                    i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
                 controlId: control.id,
             },
             choices: {
@@ -697,10 +698,10 @@ export namespace MultiValueListControlComponentAPLBuiltIns {
 
         const payload = {
             general: {
-                headerTitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
-                headerSubtitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
-                selectionListTitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
-                selectionListSubtitle: i18next.t('MULTIVALUELIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
+                headerTitle: i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_HEADER_TITLE'),
+                headerSubtitle: i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_HEADER_SUBTITLE'),
+                selectionListTitle: i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_SELECTION_TITLE'),
+                selectionListSubtitle: i18next.t('MULTI_VALUE_LIST_CONTROL_DEFAULT_APL_SELECTION_SUBTITLE'),
                 controlId: control.id,
             },
             choices: {
