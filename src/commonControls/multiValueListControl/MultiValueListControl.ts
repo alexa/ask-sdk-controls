@@ -25,6 +25,7 @@ import {
     ControlInputHandlingProps,
     ControlProps,
     ControlState,
+    CustomControlInputHandler,
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
@@ -738,6 +739,16 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
         return evaluateInputHandlers(this, input);
+    }
+
+    public setCustomHandlingFuncs(customHandlingFuncs: CustomControlInputHandler[]): void {
+        this.props.inputHandling.customHandlingFuncs = [];
+        customHandlingFuncs.forEach((customHandlingFunc) => {
+            const defaultOverride = {
+                standardOverrides: [],
+            };
+            this.props.inputHandling.customHandlingFuncs.push(_.merge(defaultOverride, customHandlingFunc));
+        });
     }
 
     // tsDoc - see Control

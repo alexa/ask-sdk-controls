@@ -240,7 +240,7 @@ suite(
 
 suite('== Custom Handler function scenarios ==', () => {
     class DateSelectorManager extends ControlManager {
-        createControlTree(): Control {
+        createControlTree(withCustomHandlingFuncsOverrides?: boolean): Control {
             const topControl = new ContainerControl({ id: 'root' });
 
             // DateControl
@@ -269,6 +269,22 @@ suite('== Custom Handler function scenarios ==', () => {
                 },
             });
 
+            if (withCustomHandlingFuncsOverrides === true) {
+                dateControl.setCustomHandlingFuncs([
+                    {
+                        name: 'SetDateEvent',
+                        canHandle: isSetDateEvent,
+                        handle: handleSetDateEvent,
+                    },
+                    {
+                        name: 'SetValue',
+                        canHandle: isSetValue,
+                        handle: handleSetValue,
+                        standardOverrides: ['SetWithValue (built-in)'],
+                    },
+                ]);
+            }
+
             function isSetDateEvent(input: ControlInput) {
                 return InputUtil.isIntent(input, 'SetDateEventIntent');
             }
@@ -285,10 +301,11 @@ suite('== Custom Handler function scenarios ==', () => {
                 return InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE);
             }
 
-            function handleSetValue(input: ControlInput) {
+            async function handleSetValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
                 const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
                 const valueStr = values[0];
                 dateControl.setValue(valueStr.slotValue);
+                await dateControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
             }
 
             topControl.addChild(dateControl);
@@ -312,7 +329,7 @@ suite('== Custom Handler function scenarios ==', () => {
         expect(dateControlState.state.value).eq('2020-01-01');
     });
 
-    test('Check conflicts in canHandle throws a error log', async () => {
+    test('Check conflicts in canHandle throws an error', async () => {
         const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
             ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -320,18 +337,27 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const result = new ControlResultBuilder(undefined!);
+        try {
+            await rootControl.canHandle(input);
+        } catch (e) {
+            expect(e.message).eq(
+                'Matching custom and standard handler found in control: dateControl. Handlers in a single control should be mutually exclusive. handlers: ["SetValue","SetWithValue (built-in)"].One solution is to set the standardOverrides prop in the customHandlerFunc to override the standard built in handler.',
+            );
+        }
+    });
+
+    test('Check conflicts overrides on customHandlingFuncs in canHandle', async () => {
+        const rootControl = new DateSelectorManager().createControlTree(true);
+        const input = TestInput.of(
+            ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
+                'AMAZON.DATE': '2018',
+                action: $.Action.Set,
+            }),
+        );
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
-
-        expect(
-            spy.calledOnceWith(
-                'More than one handler matched. Handlers in a single control should be mutually exclusive. Defaulting to the first. handlers: ["SetWithValue (built-in)","SetValue"]',
-            ),
-        ).eq(true);
-
-        spy.restore();
 
         const dateControlState = findControlInTreeById(rootControl, 'dateControl');
         expect(dateControlState.state.value).eq('2018');

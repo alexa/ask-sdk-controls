@@ -10,7 +10,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import { Control } from '../controls/Control';
+import { Control, ControlInputHandler, CustomControlInputHandler } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { Logger } from '../logging/Logger';
 
@@ -45,6 +45,34 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
         });
     }
 
+    const stdHandlerMatches = await getMatchingHandlers(stdHandlers, control, input);
+    const customHandlerMatches = await getMatchingHandlers(customHandlers, control, input);
+
+    const allMatchingHandlers = customHandlerMatches.concat(stdHandlerMatches);
+    if (allMatchingHandlers.length === 0) {
+        log.error(`No matching handlers`);
+        return false;
+    } else if (allMatchingHandlers.length === 2) {
+        if (
+            (allMatchingHandlers[0] as CustomControlInputHandler).standardOverrides?.includes(
+                allMatchingHandlers[1].name,
+            ) === true
+        ) {
+            (control as any).handleFunc = allMatchingHandlers[0].handle.bind(control as any);
+            return true;
+        } else {
+            throw new Error(
+                `Matching custom and standard handler found in control: ${control.id}. Handlers in a single control should be mutually exclusive. ` +
+                    `handlers: ${JSON.stringify(allMatchingHandlers.map((x) => x.name))}.` +
+                    `One solution is to set the standardOverrides prop in the customHandlerFunc to override the standard built in handler.`,
+            );
+        }
+    } else {
+        (control as any).handleFunc = allMatchingHandlers[0].handle.bind(control as any);
+        return true;
+    }
+
+    /*
     const matches = [];
     for (const handler of stdHandlers.concat(customHandlers)) {
         if ((await handler.canHandle.call(control as any, input)) === true) {
@@ -53,7 +81,7 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
     }
 
     if (matches.length > 1) {
-        log.error(
+        throw new Error(
             `More than one handler matched. Handlers in a single control should be mutually exclusive. ` +
                 `Defaulting to the first. handlers: ${JSON.stringify(matches.map((x) => x.name))}`,
         );
@@ -64,7 +92,23 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
         return true;
     } else {
         return false;
+    }*/
+}
+
+async function getMatchingHandlers(handlers: ControlInputHandler[], control: Control, input: ControlInput) {
+    const matchingHandlers: ControlInputHandler[] = [];
+    for (const handler of handlers) {
+        if ((await handler.canHandle.call(control as any, input)) === true) {
+            matchingHandlers.push(handler);
+        }
     }
+    if (matchingHandlers.length > 1) {
+        throw new Error(
+            `More than one handler matched in control ${control.id}. Handlers in a single control should be mutually exclusive. ` +
+                `handlers: ${JSON.stringify(matchingHandlers.map((x) => x.name))}`,
+        );
+    }
+    return matchingHandlers;
 }
 
 //Exported for internal use only. Not sufficiently well-defined or valuable for public export.
