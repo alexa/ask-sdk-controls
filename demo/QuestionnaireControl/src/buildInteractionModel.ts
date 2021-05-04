@@ -11,16 +11,13 @@
  * permissions and limitations under the License.
  */
 
-import { v1 } from 'ask-smapi-model';
 import { MultipleLists } from '.';
+import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
-import { Logger } from '../../../src/logging/Logger';
 
-import SlotType = v1.skill.interactionModel.SlotType;
-import TypeValue = v1.skill.interactionModel.TypeValue;
-import Intent = v1.skill.interactionModel.Intent;
-
-const log = new Logger('QuestionnaireControlDemo:InteractionModel');
+const MODULE_NAME = 'QuestionnaireControlDemo:InteractionModel';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()
@@ -191,5 +188,5 @@ export namespace TwoListsIM {
 if (require.main === module) {
     // Build and write
     TwoListsIM.imGen.buildAndWrite('en-US-generated.json');
-    console.log('Wrote ./en-US-generated.json');
+    log.info('Wrote ./en-US-generated.json');
 }

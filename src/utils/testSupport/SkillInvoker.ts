@@ -56,8 +56,9 @@ export class SkillInvoker {
         const promptSSML = (responseEnvelope.response?.outputSpeech as ui.SsmlOutputSpeech)?.ssml;
         const prompt = promptSSML?.replace('<speak>', '').replace('</speak>', '');
 
-        const repromptSSML = ((responseEnvelope.response?.reprompt as ui.Reprompt)
-            ?.outputSpeech as ui.SsmlOutputSpeech)?.ssml;
+        const repromptSSML = (
+            (responseEnvelope.response?.reprompt as ui.Reprompt)?.outputSpeech as ui.SsmlOutputSpeech
+        )?.ssml;
         const reprompt = repromptSSML?.replace('<speak>', '').replace('</speak>', '');
 
         const directive: Directive[] | undefined = responseEnvelope.response?.directives;

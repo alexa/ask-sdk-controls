@@ -36,6 +36,8 @@ import {
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlServices, ControlServicesProps } from '../../controls/ControlServices';
+import { ILogger } from '../../controls/interfaces/ILogger';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import {
     evaluateValidationProp,
@@ -44,7 +46,6 @@ import {
 } from '../../controls/Validation';
 import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/GeneralControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
-import { Logger } from '../../logging/Logger';
 import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
@@ -67,8 +68,7 @@ import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { NumberControlAPLComponentBuiltIns, NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 import { NumberControlBuiltIns } from './NumberControlBuiltIns';
 
-const log = new Logger('AskSdkControls:NumberControl');
-
+const MODULE_NAME = 'AskSdkControls:NumberControl';
 /**
  * Props for a NumberControl.
  */
@@ -172,6 +172,11 @@ export interface NumberControlProps extends ControlProps {
      * Default: returns the value unchanged in string format.
      */
     valueRenderer?: (value: number, input: ControlInput) => string;
+
+    /**
+     * Props to customize services used by the control.
+     */
+    services?: ControlServicesProps;
 }
 
 /**
@@ -423,12 +428,14 @@ export class NumberControl extends Control implements InteractionModelContributo
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ) => void | Promise<void>;
+    private log: ILogger;
 
     constructor(props: NumberControlProps) {
         super(props.id);
         this.rawProps = props;
         this.props = NumberControl.mergeWithDefaultProps(props);
         this.state.lastInitiative = {};
+        this.log = this.props.services.logger.getLogger(MODULE_NAME);
     }
 
     /**
@@ -532,6 +539,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             },
             mostLikelyMisunderstanding: NumberControlBuiltIns.defaultMostLikelyMisunderstandingFunc,
             valueRenderer: (value: number, input) => value.toString(),
+            services: props.services ?? ControlServices.getDefaults(),
         };
         return _.merge(defaults, props);
     }
@@ -606,7 +614,7 @@ export class NumberControl extends Control implements InteractionModelContributo
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        log.debug(`NumberControl[${this.id}]: handle(). Entering`);
+        this.log.debug(`NumberControl[${this.id}]: handle(). Entering`);
 
         const intent: Intent = (input.request as IntentRequest).intent;
         if (this.handleFunc === undefined) {
@@ -1150,7 +1158,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
 
         if (matches.length > 1) {
-            log.error(
+            this.log.error(
                 `More than one handler matched. Initiative Handlers in a single control should be mutually exclusive. ` +
                     `Defaulting to the first. Initiative handlers: ${JSON.stringify(
                         matches.map((x) => x.name),
@@ -1171,7 +1179,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         if (this.initiativeFunc === undefined) {
             const errorMsg =
                 'NumberControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
-            log.error(errorMsg);
+            this.log.error(errorMsg);
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);

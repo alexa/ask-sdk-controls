@@ -12,9 +12,11 @@
  */
 import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
-import { Logger } from '../logging/Logger';
+import { ControlServices } from '../controls/ControlServices';
 
-const log = new Logger('AskSdkControls:ControlUtils');
+const MODULE_NAME = 'AskSdkControls:ControlUtils';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /*
  * //    TODO: tighten up the contract.. what props are supported, precisely.

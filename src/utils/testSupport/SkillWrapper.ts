@@ -12,9 +12,11 @@
  */
 
 import { ErrorHandler, HandlerInput, RequestHandler, Skill, SkillBuilders } from 'ask-sdk-core';
-import { Logger } from '../../logging/Logger';
+import { ControlServices } from '../../controls/ControlServices';
 
-const log = new Logger('AskSdkControls:SkillWrapper');
+const MODULE_NAME = 'AskSdkControls:SkillWrapper';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Wraps a single RequestHandler as a Skill for testing.

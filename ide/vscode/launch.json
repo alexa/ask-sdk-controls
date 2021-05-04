@@ -33,13 +33,14 @@
             "env": {
                 // "DEBUG": "error:*, warn:*, info:*"  // uncomment for logs
                 // "ASK_SDK_CONTROLS_LOG_RESPONSE_FILEPATH": <file_path> // uncomment to write out response for debugging
+                //"ASK_SDK_RESTRICTIVE_LOGGING": "true" // uncomment to restrict sensitive information from logging such as slot values
             },
             // "smartStep": true,
             "skipFiles": [
                 "node_modules/**",
                 "<node_internals>/**"
             ],
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
 
         }
     ]

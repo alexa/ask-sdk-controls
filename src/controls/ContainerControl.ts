@@ -13,15 +13,17 @@
 
 import _ from 'lodash';
 import { InputUtil } from '..';
-import { Logger } from '../logging/Logger';
 import { findControlById } from '../utils/ControlUtils';
 import { Control, ControlProps, ControlState } from './Control';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
+import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const log = new Logger('AskSdkControls:ContainerControl');
+const MODULE_NAME = 'AskSdkControls:ContainerControl';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Records the turn that a child control did something of interest.

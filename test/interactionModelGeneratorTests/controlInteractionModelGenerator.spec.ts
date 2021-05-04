@@ -16,13 +16,12 @@ import { expect } from 'chai';
 import { Resource } from 'i18next';
 import { suite, test } from 'mocha';
 import sinon from 'sinon';
-import { ContainerControl, Control, ControlManager, ModelData } from '../../src';
+import { ContainerControl, Control, ControlManager, DefaultLogger, ModelData } from '../../src';
 import { InteractionModelContributor } from '../../src/controls/mixins/InteractionModelContributor';
 import { GeneralControlIntent } from '../../src/intents/GeneralControlIntent';
 import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { SharedSlotType } from '../../src/interactionModelGeneration/ModelTypes';
-import { Logger } from '../../src/logging/Logger';
 import { jsonProvider } from './interactionModelForTest';
 
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
@@ -75,7 +74,7 @@ suite('ControlInteractionModel Generator tests', () => {
     });
     suite('buildCoreModelForControls tests', () => {
         test('buildCoreModelForControls should successfully build IM for controls tree', () => {
-            sinon.stub(Logger.prototype, 'warn');
+            sinon.stub(DefaultLogger.prototype, 'warn');
             const interactionModel = new ControlInteractionModelGenerator()
                 .buildCoreModelForControls(new TestControlManager())
                 .withInvocationName(TEST_INVOCATION_NAME)
@@ -100,7 +99,7 @@ suite('ControlInteractionModel Generator tests', () => {
         });
 
         test('i18nOverride should work as expected', () => {
-            sinon.stub(Logger.prototype, 'warn');
+            sinon.stub(DefaultLogger.prototype, 'warn');
             const targetInFR = {
                 name: SharedSlotType.TARGET,
                 values: [

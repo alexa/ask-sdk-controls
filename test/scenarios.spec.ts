@@ -21,10 +21,10 @@ import {
     ControlHandler,
     ControlResponseBuilder,
     DateControl,
+    DefaultLogger,
     InputUtil,
     IntentBuilder,
     ListControl,
-    Logger,
     SimplifiedIntent,
     SkillInvoker,
     wrapRequestHandlerAsSkill,
@@ -320,7 +320,7 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const spy = sinon.stub(DefaultLogger.prototype, 'error');
         const result = new ControlResultBuilder(undefined!);
         await rootControl.canHandle(input);
         await rootControl.handle(input, result);
@@ -510,7 +510,7 @@ class ExceptionHandlingControlManager2 extends ControlManager {
 
 suite('== Top-level exception handling ==', () => {
     test('Top-level exception during canHandle can produce response.', async () => {
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const spy = sinon.stub(DefaultLogger.prototype, 'error');
         const requestHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
         const response = await skill.invoke(TestInput.launchRequest());
@@ -521,7 +521,7 @@ suite('== Top-level exception handling ==', () => {
     });
 
     test('Top-level exception during canHandle can return false.', async () => {
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const spy = sinon.stub(DefaultLogger.prototype, 'error');
         const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         controlHandler.canHandleThrowBehavior = 'ReturnFalse';
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
@@ -533,7 +533,7 @@ suite('== Top-level exception handling ==', () => {
     });
 
     test('Top-level exception during canHandle can throw.', async () => {
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const spy = sinon.stub(DefaultLogger.prototype, 'error');
         const controlHandler = new ControlHandler(new ExceptionHandlingControlManager1());
         controlHandler.canHandleThrowBehavior = 'Rethrow';
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(controlHandler));
@@ -545,7 +545,7 @@ suite('== Top-level exception handling ==', () => {
     });
 
     test('Top-level exception during handle can end the session.', async () => {
-        const spy = sinon.stub(Logger.prototype, 'error');
+        const spy = sinon.stub(DefaultLogger.prototype, 'error');
         const requestHandler = new ControlHandler(new ExceptionHandlingControlManager2());
         const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
         const response = await skill.invoke(TestInput.launchRequest());

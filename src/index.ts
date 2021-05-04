@@ -52,22 +52,22 @@ export {
     ListControl,
     ListControlActionProps,
     ListControlAPLProps,
+    ListControlAplRenderComponentFunc,
     ListControlInteractionModelProps,
     ListControlPromptProps,
     ListControlProps,
     ListControlState,
-    ListControlAplRenderComponentFunc,
 } from './commonControls/listControl/ListControl';
 export { ListControlAPLPropsBuiltIns } from './commonControls/listControl/ListControlAPL';
 export {
     NumberControl,
     NumberControlActionProps,
+    NumberControlAPLProps,
+    NumberControlAplRenderComponentFunc,
     NumberControlInteractionModelProps,
     NumberControlPromptsProps,
     NumberControlProps,
     NumberControlState,
-    NumberControlAPLProps,
-    NumberControlAplRenderComponentFunc,
 } from './commonControls/numberControl/NumberControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControlBuiltIns';
@@ -164,7 +164,7 @@ export {
 } from './interactionModelGeneration/ModelTypes';
 export { EnglishGrammar } from './intl/EnglishGrammar';
 export { ListFormatting } from './intl/ListFormat';
-export { Logger } from './logging/Logger';
+export { DefaultLogger } from './logging/DefaultLogger';
 export { ControlResponseBuilder } from './responseGeneration/ControlResponseBuilder';
 export {
     CanHandleExceptionBehavior as CanHandleThrowBehavior,
