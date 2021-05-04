@@ -12,10 +12,12 @@
  */
 
 import { BasicNumberDemo } from '.';
+import { ControlServices } from '../../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
-import { Logger } from '../../../../src/logging/Logger';
 
-const log = new Logger('NumberControlDemo:InteractionModel');
+const MODULE_NAME = 'NumberControlDemo:InteractionModel';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 export namespace BasicNumberDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
@@ -35,5 +37,5 @@ export namespace BasicNumberDemoIM {
 if (require.main === module) {
     // Build and write
     BasicNumberDemoIM.imGen.buildAndWrite('en-US-generated.json');
-    console.log('Wrote ./en-US-generated.json');
+    log.info('Wrote ./en-US-generated.json');
 }

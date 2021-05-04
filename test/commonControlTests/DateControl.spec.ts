@@ -19,9 +19,9 @@ import {
     AmazonIntent,
     ContentAct,
     ControlInput,
+    DefaultLogger,
     IntentBuilder,
     InvalidValueAct,
-    Logger,
     RequestChangedValueAct,
     RequestValueAct,
     ValueControlIntent,
@@ -225,7 +225,7 @@ suite('DateControl tests', () => {
             const control = dateControlUnderTest();
             const input = emptyInput;
             const result = new ControlResultBuilder(undefined!);
-            const spy = sinon.stub(Logger.prototype, 'error');
+            const spy = sinon.stub(DefaultLogger.prototype, 'error');
             try {
                 await control.takeInitiative(input, result);
             } catch (err) {

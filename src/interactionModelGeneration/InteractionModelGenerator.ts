@@ -14,7 +14,7 @@ import { v1 } from 'ask-smapi-model';
 import fs from 'fs';
 import _ from 'lodash';
 import { join } from 'path';
-import { Logger } from '../logging/Logger';
+import { ControlServices } from '../controls/ControlServices';
 
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import InteractionModelSchema = v1.skill.interactionModel.InteractionModelSchema;
@@ -27,7 +27,9 @@ import Dialog = v1.skill.interactionModel.Dialog;
 import DelegationStrategyType = v1.skill.interactionModel.DelegationStrategyType;
 import Prompt = v1.skill.interactionModel.Prompt;
 
-const log = new Logger('AskSdkControls:InteractionModelGenerator');
+const MODULE_NAME = 'AskSdkControls:InteractionModelGenerator';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Interaction model generator

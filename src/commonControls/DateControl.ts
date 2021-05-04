@@ -23,6 +23,8 @@ import {
 } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
+import { ControlServices, ControlServicesProps } from '../controls/ControlServices';
+import { ILogger } from '../controls/interfaces/ILogger';
 import { InteractionModelContributor } from '../controls/mixins/InteractionModelContributor';
 import { evaluateValidationProp, StateValidationFunction, ValidationFailure } from '../controls/Validation';
 import { AmazonBuiltInSlotType } from '../intents/AmazonBuiltInSlotType';
@@ -30,7 +32,6 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../intents/Gen
 import { unpackValueControlIntent, ValueControlIntent } from '../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
-import { Logger } from '../logging/Logger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import {
     InvalidValueAct,
@@ -48,7 +49,7 @@ import { InputUtil } from '../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../utils/Predicates';
 import { getEndDateOfRange, getStartDateOfRange, getUTCDate } from './dateRangeControl/DateHelper';
 
-const log = new Logger('AskSdkControls:DateControl');
+const MODULE_NAME = 'AskSdkControls:DateControl';
 
 /**
  * Props for a DateControl.
@@ -124,6 +125,11 @@ export interface DateControlProps extends ControlProps {
      * Default: returns the value unchanged.
      */
     valueRenderer?: (value: string, input: ControlInput) => string;
+
+    /**
+     * Props to customize services used by the control.
+     */
+    services?: ControlServicesProps;
 }
 
 /**
@@ -354,12 +360,14 @@ export class DateControl extends Control implements InteractionModelContributor 
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ) => void | Promise<void>;
+    private log: ILogger;
 
     constructor(props: DateControlProps) {
         super(props.id);
         this.rawProps = props;
         this.props = DateControl.mergeWithDefaultProps(props);
         this.state.lastInitiative = {};
+        this.log = this.props.services.logger.getLogger(MODULE_NAME);
     }
 
     /**
@@ -432,6 +440,7 @@ export class DateControl extends Control implements InteractionModelContributor 
             validation: [],
             confirmationRequired: false,
             required: true,
+            services: props.services ?? ControlServices.getDefaults(),
         };
 
         return _.merge(defaults, props);
@@ -667,7 +676,7 @@ export class DateControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        log.debug(`DateControl[${this.id}]: handle(). Entering`);
+        this.log.debug(`DateControl[${this.id}]: handle(). Entering`);
 
         if (this.handleFunc === undefined) {
             const intent: Intent = (input.request as IntentRequest).intent;
@@ -694,7 +703,7 @@ export class DateControl extends Control implements InteractionModelContributor 
         if (this.initiativeFunc === undefined) {
             const errorMsg =
                 'DateControl: takeInitiative called but this.initiativeFunc is not set. canTakeInitiative() should be called first to set this.initiativeFunc.';
-            log.error(errorMsg);
+            this.log.error(errorMsg);
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);

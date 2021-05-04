@@ -12,13 +12,16 @@
  */
 
 import { MultiValueListDemo } from '.';
-import { Logger, ControlInteractionModelGenerator } from '../../../src';
+import { ControlInteractionModelGenerator } from '../../../src';
+import { ControlServices } from '../../../src/controls/ControlServices';
 import {
-    yesNoMaybeSlotType,
     filteredYesNoMaybeSlotType,
+    yesNoMaybeSlotType,
 } from '../../ListControl/YesNoMaybe/src/interactionModelTypes';
 
-const log = new Logger('MultiValueListDemo:InteractionModel');
+const MODULE_NAME = 'MultiValueListDemo:InteractionModel';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 export namespace MultiValueListDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
@@ -80,5 +83,5 @@ export namespace MultiValueListDemoIM {
 if (require.main === module) {
     // Build and write
     MultiValueListDemoIM.imGen.buildAndWrite('en-US-generated.json');
-    console.log('Wrote ./en-US-generated.json');
+    log.info('Wrote ./en-US-generated.json');
 }

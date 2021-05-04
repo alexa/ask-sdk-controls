@@ -12,13 +12,15 @@
  */
 
 import _ from 'lodash';
-import { Logger } from '../logging/Logger';
 import { ContainerControl, ContainerControlProps, ContainerControlState } from './ContainerControl';
 import { Control } from './Control';
+import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const log = new Logger('AskSdkControls:DynamicContainerControl');
+const MODULE_NAME = 'AskSdkControls:DynamicContainerControl';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Defines the minimal information for a dynamic control specification.
@@ -151,7 +153,8 @@ export class DynamicContainerControlState extends ContainerControlState {
  */
 export abstract class DynamicContainerControl
     extends ContainerControl
-    implements IContainerControl, ControlStateDiagramming {
+    implements IContainerControl, ControlStateDiagramming
+{
     state: DynamicContainerControlState;
 
     constructor(props: ContainerControlProps) {

@@ -11,11 +11,12 @@
  * permissions and limitations under the License.
  */
 import Debug from 'debug';
+import { ILogger } from '../controls/interfaces/ILogger';
 
 const DEFAULT_LOG_LEVEL = 'error:*, warn:*';
 
 /**
- * Logger
+ * Default Logger Implementation.
  *
  * This wraps the Debug object from npm 'Debug' package to provide "log-levels".
  * The log-levels are handled as top-level namespaces.
@@ -34,7 +35,7 @@ const DEFAULT_LOG_LEVEL = 'error:*, warn:*';
  * function that logs with amended name "error:moduleName". Likewise for `warn()`,
  * `info()`, and `debug()`.
  */
-export class Logger {
+export class DefaultLogger implements ILogger {
     moduleName: string;
 
     constructor(moduleName: string) {
@@ -74,5 +75,43 @@ export class Logger {
      */
     debug(message: string): void {
         Debug(`debug:${this.moduleName}`)(message);
+    }
+
+    /**
+     * Log an object with pretty print formatting and also
+     * masking sensitive information if required
+     *
+     * @param id - Unique label.
+     * @param object - Object to be logged
+     */
+    logObject(logLevel: string, id: string, object: any, stringify?: true): void {
+        const objectToLogJson: string = stringify !== true ? object : JSON.stringify(object, null, 2);
+        const message = this.sanitize(objectToLogJson);
+        Debug(`${logLevel}:${this.moduleName} ${id}`)(message);
+    }
+
+    /**
+     * Function that returns string with actual message if sensitive logging is
+     * turned off or returns special character string masking the information.
+     *
+     * @param message - Logging message
+     *
+     * Eg: When sensitive logging is turned on
+     * "env": \{
+     *      "ASK_SDK_RESTRICTIVE_LOGGING": "true"
+     * \}
+     *
+     * All messages which are wrapped around `sanitize()` in log.info for example
+     * are masked using special characters.
+     */
+    sanitize(message: any): string {
+        if (
+            process.env.ASK_SDK_RESTRICTIVE_LOGGING !== undefined &&
+            process.env.ASK_SDK_RESTRICTIVE_LOGGING === 'true'
+        ) {
+            return '****';
+        } else {
+            return message;
+        }
     }
 }

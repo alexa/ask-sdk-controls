@@ -22,18 +22,18 @@ import {
     _generateModelData,
 } from '../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../interactionModelGeneration/ModelTypes';
-import { Logger } from '../logging/Logger';
 import { APLMode } from '../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { SystemAct } from '../systemActs/SystemAct';
 import { ControlInput } from './ControlInput';
 import { ControlResult } from './ControlResult';
+import { ControlServices, ControlServicesProps } from './ControlServices';
 import { isContainerControl } from './interfaces/IContainerControl';
 import { IControl } from './interfaces/IControl';
 import { IControlManager } from './interfaces/IControlManager';
+import { ILogger } from './interfaces/ILogger';
 
-const log = new Logger('AskSdkControls:ControlManager');
-
+const MODULE_NAME = 'AskSdkControls:ControlManager';
 /**
  * Properties for creating a ControlManager instance.
  */
@@ -122,14 +122,28 @@ export abstract class ControlManager implements IControlManager {
     props: Readonly<Required<ControlManagerProps>>;
 
     /**
+     * The services props used to set global configuration
+     * to be used across all Controls.
+     */
+    services: ControlServicesProps;
+
+    /**
+     * The logger implementation.
+     */
+    log: ILogger;
+
+    /**
      * Creates an instance of a Control Manager.
      * @param props - props
      */
-    constructor(props?: ControlManagerProps) {
+    constructor(props?: ControlManagerProps, services?: ControlServicesProps) {
         this.rawProps = props;
         this.props = ControlManager.mergeWithDefaultProps(props);
         const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
         i18nInit(this.props.locale, resource);
+
+        this.services = services ?? ControlServices.getDefaults();
+        this.log = this.services.logger.getLogger(MODULE_NAME);
     }
 
     /**
@@ -244,7 +258,7 @@ export abstract class ControlManager implements IControlManager {
     ): void {
         const err =
             error.stack !== undefined ? { name: error.name, msg: error.message, stack: error.stack } : error; // Error doesn't have enumerable properties, so we convert it.
-        log.error(`Error handled: ${JSON.stringify(err)}`);
+        this.log.error(`Error handled: ${JSON.stringify(err)}`);
     }
 
     /**
@@ -368,4 +382,22 @@ function i18nInit(locale: string, resources: Resource): void {
         resources,
         fallbackLng: 'en',
     });
+}
+
+/**
+ * Format the Control state map for logging.
+ *
+ * @param state - Control state map
+ */
+export function formatStateObjectForLogging(state: { [key: string]: any }): string {
+    return JSON.stringify(state, null, 2);
+}
+
+/**
+ * Format the context information for logging.
+ *
+ * @param context - Session context information in addition to that provided by Alexa Service.
+ */
+export function formatContextObjectForLogging(context: { [key: string]: any }): string {
+    return JSON.stringify(context);
 }

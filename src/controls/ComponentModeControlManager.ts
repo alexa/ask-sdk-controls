@@ -12,14 +12,16 @@
  */
 
 import { IControlManager } from '..';
-import { Logger } from '../logging/Logger';
 import { APLMode } from '../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { ControlInput } from './ControlInput';
 import { ControlManager, renderActsInSequence } from './ControlManager';
 import { ControlResult } from './ControlResult';
+import { ControlServices } from './ControlServices';
 
-const log = new Logger('AskSdkControls:ComponentModeControlManager');
+const MODULE_NAME = 'AskSdkControls:ComponentModeControlManager';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  *  ControlManager used to render APL in Component Mode.

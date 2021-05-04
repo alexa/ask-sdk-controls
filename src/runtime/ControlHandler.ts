@@ -15,24 +15,23 @@ import { HandlerInput, RequestHandler, UserAgentManager } from 'ask-sdk-core';
 import { Response } from 'ask-sdk-model';
 import fs from 'fs';
 import _ from 'lodash';
+import { IControlResult, requestToString } from '..';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
+import { ControlServices, ControlServicesProps } from '../controls/ControlServices';
 import { isContainerControl } from '../controls/interfaces/IContainerControl';
 import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
-import { IControlResult } from '../controls/interfaces/IControlResult';
 import { IControlResultBuilder } from '../controls/interfaces/IControlResultBuilder';
-import { Logger } from '../logging/Logger';
+import { ILogger } from '../controls/interfaces/ILogger';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { generateControlTreeTextDiagram } from '../utils/ControlTreeVisualization';
 import { visitControls } from '../utils/ControlVisitor';
-import { requestToString } from '../utils/RequestUtils';
 import { validateSerializedState } from '../utils/SerializationValidator';
 import { SessionBehavior } from './SessionBehavior';
 
-const log = new Logger('AskSdkControls:ControlHandler');
-
+const MODULE_NAME = 'AskSdkControls:ControlHandler';
 /**
  * Session context information in addition to that provided by Alexa Service.
  */
@@ -89,8 +88,21 @@ export class ControlHandler implements RequestHandler {
     canHandleThrowBehavior: CanHandleExceptionBehavior = 'ProduceResponse';
     protected canHandleFailureResponse?: Response;
 
-    constructor(controlManager: IControlManager) {
+    /**
+     * The services props used to set global configuration
+     * to be used across all Controls.
+     */
+    services: ControlServicesProps;
+
+    /**
+     * The logger implementation.
+     */
+    log: ILogger;
+
+    constructor(controlManager: IControlManager, services?: ControlServicesProps) {
         this.controlManager = controlManager;
+        this.services = services ?? ControlServices.getDefaults();
+        this.log = this.services.logger.getLogger(MODULE_NAME);
     }
 
     private async prepare(handlerInput: HandlerInput): Promise<void> {
@@ -100,9 +112,8 @@ export class ControlHandler implements RequestHandler {
         this.preparedRequestId = handlerInput.requestEnvelope.request.requestId;
 
         // retrieve and update the context object.
-        const retrievedContext = handlerInput.attributesManager.getSessionAttributes()[
-            ControlHandler.attributeNameContext
-        ];
+        const retrievedContext =
+            handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameContext];
         this.additionalSessionContext =
             retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
         this.additionalSessionContext.turnNumber += 1;
@@ -189,6 +200,7 @@ export class ControlHandler implements RequestHandler {
                 this.preparedRequestId,
                 resultBuilder,
                 processInput,
+                this.services,
             );
 
             // Compose the response
@@ -208,10 +220,10 @@ export class ControlHandler implements RequestHandler {
             const mergedStateMap = { ...priorStateMap, ...currentStateMap };
 
             const stateToSaveJson = JSON.stringify(mergedStateMap, null, 2);
-            log.info(`Saving state...\n${stateToSaveJson} `);
+            this.log.logObject('info', 'Saving state...', mergedStateMap);
 
             const contextToSaveJson = JSON.stringify(this.additionalSessionContext, null, 2);
-            log.info(`Saving context...\n${contextToSaveJson}`);
+            this.log.logObject('info', 'Saving context...', this.additionalSessionContext);
 
             await this.controlManager.saveControlStateMap(stateToSaveJson, handlerInput);
 
@@ -270,12 +282,14 @@ export class ControlHandler implements RequestHandler {
         preparedRequestId: string | undefined,
         resultBuilder: IControlResultBuilder,
         handleInput = true,
+        services: ControlServicesProps,
     ): Promise<void> {
+        const log = services.logger.getLogger(MODULE_NAME);
         log.info(
             '-------------------------------------------------------------------------------------------------',
         );
         log.info(`Turn ${input.turnNumber} started`);
-        log.info(`Input: ${requestToString(input.handlerInput.requestEnvelope.request)}`);
+        log.logObject('info', 'Input:', requestToString(input.handlerInput.requestEnvelope.request));
         log.info(`UI at start: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
 
         if (handleInput) {
@@ -300,13 +314,14 @@ export class ControlHandler implements RequestHandler {
 
         // Optional INITIATIVE PHASE
         if (!resultBuilder.hasInitiativeAct() && resultBuilder.sessionBehavior === SessionBehavior.OPEN) {
-            await ControlHandler.initiativePhase(rootControl, input, resultBuilder);
+            await ControlHandler.initiativePhase(rootControl, input, resultBuilder, services);
         }
 
         // TODO: track the specific controlID that generated the initiative. make it available so that controls
         // can use a hasInitiative() predicate and reason about whether they are actively running the conversation.
 
-        log.info(`HandleResponse: ${resultBuilder}`);
+        // TODO: Formatting to be fix
+        log.logObject('info', 'HandleResponse: ', resultBuilder, false);
         log.info(`UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
     }
 
@@ -314,7 +329,9 @@ export class ControlHandler implements RequestHandler {
         rootControl: IControl,
         input: IControlInput,
         resultBuilder: IControlResultBuilder,
+        services: ControlServicesProps,
     ): Promise<void> {
+        const log = services.logger.getLogger(MODULE_NAME);
         log.debug(
             `UI at start of initiative phase: \n${generateControlTreeTextDiagram(
                 rootControl,

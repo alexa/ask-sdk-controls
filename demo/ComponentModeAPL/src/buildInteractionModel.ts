@@ -12,10 +12,12 @@
  */
 
 import { ComponentModeDemo } from '.';
+import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
-import { Logger } from '../../../src/logging/Logger';
 
-const log = new Logger('ComponentModeDemo:InteractionModel');
+const MODULE_NAME = 'ComponentModeDemo:InteractionModel';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 export namespace ComponentModeDemoIM {
     export const imGen = new ControlInteractionModelGenerator()

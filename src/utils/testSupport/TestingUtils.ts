@@ -25,17 +25,19 @@ import _ from 'lodash';
 import { Control } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlServices, ControlServicesProps } from '../../controls/ControlServices';
 import { IControl } from '../../controls/interfaces/IControl';
 import { IControlInput } from '../../controls/interfaces/IControlInput';
 import { IControlResult } from '../../controls/interfaces/IControlResult';
-import { Logger } from '../../logging/Logger';
 import { ControlHandler } from '../../runtime/ControlHandler';
 import { IntentBuilder } from '../IntentUtils';
 import { SkillInvoker, TestResponseObject } from './SkillInvoker';
 import { wrapRequestHandlerAsSkill } from './SkillWrapper';
 import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
 
-const log = new Logger('AskSdkControls:TestingUtils');
+const MODULE_NAME = 'AskSdkControls:TestingUtils';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Utility to sleep a short duration to give the debugger some time to get
@@ -113,9 +115,14 @@ function find(object: any, key: string, value: any): any {
  * @param rootControl - Root control
  * @param input - Input
  */
-export async function simpleInvoke(rootControl: Control, input: ControlInput): Promise<IControlResult> {
+export async function simpleInvoke(
+    rootControl: Control,
+    input: ControlInput,
+    customServices?: ControlServicesProps,
+): Promise<IControlResult> {
     const resultBuilder = new ControlResultBuilder();
-    await ControlHandler.handleCore(rootControl, input, undefined, resultBuilder);
+    const services = customServices ?? ControlServices.getDefaults();
+    await ControlHandler.handleCore(rootControl, input, undefined, resultBuilder, undefined, services);
     return resultBuilder.build();
 }
 

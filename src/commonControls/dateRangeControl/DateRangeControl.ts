@@ -23,6 +23,8 @@ import {
 } from '../../controls/ContainerControl';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
+import { ControlServices, ControlServicesProps } from '../../controls/ControlServices';
+import { ILogger } from '../../controls/interfaces/ILogger';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
@@ -37,7 +39,6 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { unpackValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
-import { Logger } from '../../logging/Logger';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
     InvalidValueAct,
@@ -55,7 +56,7 @@ import { DateControl, DateControlPromptProps, DateControlState } from '../DateCo
 import { alexaDateFormatToDate, findEdgeDateOfDateRange } from './DateHelper';
 import { DateRangeControlIntentInput, generateDatesInputGroups } from './DateRangeNLUHelper';
 
-const log = new Logger('AskSdkControls:DateRangeControl');
+const MODULE_NAME = 'AskSdkControls:DateRangeControl';
 
 /**
  * Props for a ValueControl.
@@ -176,6 +177,11 @@ export interface DateRangeControlProps extends ContainerControlProps {
      * Default: returns the value unchanged.
      */
     valueRenderer?: (value: DateRange, component: string, input: ControlInput) => string;
+
+    /**
+     * Props to customize services used by the control.
+     */
+    services?: ControlServicesProps;
 }
 
 /**
@@ -494,6 +500,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private takeInitiativeFunc:
         | ((input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>)
         | undefined;
+    private log: ILogger;
 
     static mergeWithDefaultProps(props: DateRangeControlProps): DeepRequired<DateRangeControlProps> {
         const defaults: DeepRequired<DateRangeControlProps> = {
@@ -698,6 +705,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
                         throw new Error(`Unhandled. Unknown component ${component}`);
                 }
             },
+            services: props.services ?? ControlServices.getDefaults(),
         };
 
         return _.mergeWith(defaults, props);
@@ -707,6 +715,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         super(props);
         this.state = new DateRangeControlState();
         this.props = DateRangeControl.mergeWithDefaultProps(props);
+        this.log = this.props.services.logger.getLogger(MODULE_NAME);
         this.state.value = {};
         this.startDateControl = new DateControl({
             id: `${this.props.id}_startDate`,
@@ -746,7 +755,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     // tsDoc - see Control
     async handle(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        log.debug(`DateRangeControl[${this.id}]: handle(). Entering`);
+        this.log.debug(`DateRangeControl[${this.id}]: handle(). Entering`);
 
         // update the priorStartDate and priorEndDate before new operation
         this.updatePrior();
@@ -1201,7 +1210,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
         for (const validationFunction of listOfValidationFunc) {
             const validationResult: true | ValidationFailure = await validationFunction(this.state, input);
             if (validationResult !== true) {
-                log.debug(
+                this.log.debug(
                     `DateRangeControl.validate(): validation failed. Reason: ${JSON.stringify(
                         validationResult,
                         null,
@@ -1269,7 +1278,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
 
     // tsDoc - see Control
     async takeInitiative(input: ControlInput, resultBuilder: ControlResultBuilder): Promise<void> {
-        log.debug(`DateRangeControl[${this.id}]: takeInitiative(). Entering`);
+        this.log.debug(`DateRangeControl[${this.id}]: takeInitiative(). Entering`);
         if (this.takeInitiativeFunc !== undefined) {
             await this.takeInitiativeFunc(input, resultBuilder);
         }

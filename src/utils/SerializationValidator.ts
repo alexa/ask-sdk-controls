@@ -12,12 +12,15 @@
  */
 
 import _ from 'lodash';
+import { ControlServices } from '../controls/ControlServices';
 import { IControl } from '../controls/interfaces/IControl';
 import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
-import { Logger } from '../logging/Logger';
 import { _extractStateFromControlTree } from '../runtime/ControlHandler';
-const log = new Logger('AskSdkControls:SerializationValidator');
+
+const MODULE_NAME = 'AskSdkControls:SerializationValidator';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 /**
  * Validates that the serialized state will survive the round-trip successfully.

@@ -14,13 +14,13 @@ import { v1 } from 'ask-smapi-model';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { ControlManager } from '../controls/ControlManager';
+import { ControlServices } from '../controls/ControlServices';
 import { BaseControlIntent } from '../intents/BaseControlIntent';
 import { ConjunctionControlIntent } from '../intents/ConjunctionControlIntent';
 import { DateRangeControlIntent } from '../intents/DateRangeControlIntent';
 import { GeneralControlIntent } from '../intents/GeneralControlIntent';
 import { OrdinalControlIntent } from '../intents/OrdinalControlIntent';
 import { ValueControlIntent } from '../intents/ValueControlIntent';
-import { Logger } from '../logging/Logger';
 import { InteractionModelGenerator } from './InteractionModelGenerator';
 import { IntentUtterances, ModelData } from './ModelTypes';
 
@@ -30,7 +30,9 @@ import Prompt = v1.skill.interactionModel.Prompt;
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import SlotType = v1.skill.interactionModel.SlotType;
 
-const log = new Logger('AskSdkControls:ControlInteractionModelGenerator');
+const MODULE_NAME = 'AskSdkControls:ControlInteractionModelGenerator';
+const services = ControlServices.getDefaults();
+const log = services.logger.getLogger(MODULE_NAME);
 
 const dummyPrompts: Prompt[] = [
     {
@@ -38,8 +40,7 @@ const dummyPrompts: Prompt[] = [
         variations: [
             {
                 type: 'PlainText',
-                value:
-                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
             },
         ],
     },
