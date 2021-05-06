@@ -56,9 +56,8 @@ export namespace MultipleLists {
                         confirmationRequired: false,
                     },
                     apl: {
-                        askQuestion: QuestionnaireControlAPLPropsBuiltIns.defaultAskQuestion({
-                            title: 'Do you have these symptoms?',
-                            submitButtonText: 'Next >',
+                        askQuestion: QuestionnaireControlAPLPropsBuiltIns.DefaultAskQuestion({
+                            radioButtonPressesBlockUI: false,
                         }),
                     },
                     prompts: {

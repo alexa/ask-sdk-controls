@@ -372,8 +372,11 @@ export class QuestionnaireControlPromptProps {
 
 //TODO: centralize these types.
 export type AplContent = { document: any; dataSource: any };
-export type AplContentFunc = (control: QuestionnaireControl, input: ControlInput) => AplContent;
-export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
+export type QuestionnaireControlAplDocumentPropNewStyle = AplContent | QuestionnaireControlAplContentFunc;
+export type QuestionnaireControlAplContentFunc = (
+    control: QuestionnaireControl,
+    input: ControlInput,
+) => AplContent;
 
 /**
  * Props associated with the APL produced by QuestionnaireControl.
@@ -388,8 +391,17 @@ export class QuestionnaireControlAPLProps {
 
     /**
      * Custom APL to show all questions while asking one in particular.
+     * 
+     * Default:  
+```
+       QuestionnaireControlAPLPropsBuiltIns.DefaultAskQuestion({
+          title: 'Please select...', 
+          submitButtonText: 'Submit >',
+          radioButtonPressesBlockUI: true
+        }
+```
      */
-    askQuestion: AplDocumentPropNewStyle;
+    askQuestion?: QuestionnaireControlAplDocumentPropNewStyle;
 }
 
 export type QuestionnaireUserAnswers = {
@@ -602,9 +614,10 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             },
             apl: {
                 enabled: true,
-                askQuestion: QuestionnaireControlAPLPropsBuiltIns.defaultAskQuestion({
+                askQuestion: QuestionnaireControlAPLPropsBuiltIns.DefaultAskQuestion({
                     title: undefined, // the default is wired up in defaultAskQuestion()
                     submitButtonText: undefined, // the default is wired up in defaultAskQuestion()
+                    radioButtonPressesBlockUI: true,
                 }),
             },
             inputHandling: {
@@ -1272,8 +1285,13 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         return deepRequiredContent;
     }
 
-    private evaluateAPLPropNewStyle(prop: AplDocumentPropNewStyle, input: ControlInput): AplContent {
-        return typeof prop === 'function' ? (prop as AplContentFunc).call(this, this, input) : prop;
+    private evaluateAPLPropNewStyle(
+        prop: QuestionnaireControlAplDocumentPropNewStyle,
+        input: ControlInput,
+    ): AplContent {
+        return typeof prop === 'function'
+            ? (prop as QuestionnaireControlAplContentFunc).call(this, this, input)
+            : prop;
     }
 
     // tsDoc - see ControlStateDiagramming
