@@ -56,6 +56,7 @@ export {
     ListControlPromptProps,
     ListControlProps,
     ListControlState,
+    ListControlAplRenderComponentFunc,
 } from './commonControls/listControl/ListControl';
 export { ListControlAPLPropsBuiltIns } from './commonControls/listControl/ListControlAPL';
 export {
@@ -65,6 +66,8 @@ export {
     NumberControlPromptsProps,
     NumberControlProps,
     NumberControlState,
+    NumberControlAPLProps,
+    NumberControlAplRenderComponentFunc,
 } from './commonControls/numberControl/NumberControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControl';
 export * from './commonControls/questionnaireControl/QuestionnaireControlBuiltIns';

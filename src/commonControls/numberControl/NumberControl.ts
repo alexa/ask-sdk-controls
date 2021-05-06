@@ -289,7 +289,7 @@ export type AplContentFunc = (
     input: ControlInput,
 ) => AplContent | Promise<AplContent>;
 export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
-export type AplRenderComponentFunc = (
+export type NumberControlAplRenderComponentFunc = (
     control: NumberControl,
     props: NumberControlAPLComponentProps,
     input: ControlInput,
@@ -332,7 +332,7 @@ export class NumberControlAPLProps {
      *
      * Default: NumberControlAPLComponentBuiltIns.ModalKeyPadRender.default
      */
-    renderComponent?: AplRenderComponentFunc;
+    renderComponent?: NumberControlAplRenderComponentFunc;
 }
 
 /**

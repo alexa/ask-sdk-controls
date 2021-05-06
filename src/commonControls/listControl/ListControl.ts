@@ -368,7 +368,7 @@ export class ListControlPromptProps {
 export type AplContent = { document: { [key: string]: any }; dataSource: { [key: string]: any } };
 export type AplContentFunc = (control: ListControl, input: ControlInput) => AplContent;
 export type AplDocumentPropNewStyle = AplContent | AplContentFunc;
-export type AplRenderComponentFunc = (
+export type ListControlAplRenderComponentFunc = (
     control: ListControl,
     props: ListAPLComponentProps,
     input: ControlInput,
@@ -406,7 +406,7 @@ export class ListControlAPLProps {
      *
      * Default: ListControlComponentAPLBuiltIns.TextListRenderer.default
      */
-    renderComponent?: AplRenderComponentFunc;
+    renderComponent?: ListControlAplRenderComponentFunc;
 }
 
 /**
