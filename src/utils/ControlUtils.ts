@@ -53,9 +53,9 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
     }
 
     if (matches.length > 1) {
-        log.error(
+        throw Error(
             `More than one handler matched. Handlers in a single control should be mutually exclusive. ` +
-                `Defaulting to the first. handlers: ${JSON.stringify(matches.map((x) => x.name))}`,
+                `handlers: ${JSON.stringify(matches.map((x) => x.name))}`,
         );
     }
 

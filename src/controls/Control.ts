@@ -57,7 +57,6 @@ export interface ControlInputHandler {
     canHandle: (this: Control, input: ControlInput) => boolean | Promise<boolean>;
     handle: (this: Control, input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
 }
-
 export interface ControlInitiativeHandler {
     name: string;
     canTakeInitiative(input: ControlInput): boolean | Promise<boolean>;

@@ -320,23 +320,13 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const spy = sinon.stub(Logger.prototype, 'error');
-        const result = new ControlResultBuilder(undefined!);
-        await rootControl.canHandle(input);
-        await rootControl.handle(input, result);
-
-        expect(
-            spy.calledOnceWith(
-                'More than one handler matched. Handlers in a single control should be mutually exclusive. Defaulting to the first. handlers: ["SetWithValue (built-in)","SetValue"]',
-            ),
-        ).eq(true);
-
-        spy.restore();
-
-        const dateControlState = findControlInTreeById(rootControl, 'dateControl');
-        expect(dateControlState.state.value).eq('2018');
-        expect(result.acts).length(1);
-        expect(result.acts[0]).instanceOf(ValueSetAct);
+        try {
+            await rootControl.canHandle(input);
+        } catch (e) {
+            expect(e.message).eq(
+                'More than one handler matched. Handlers in a single control should be mutually exclusive. handlers: ["SetWithValue (built-in)","SetValue"]',
+            );
+        }
     });
 });
 
