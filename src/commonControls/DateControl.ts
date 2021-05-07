@@ -20,7 +20,6 @@ import {
     ControlInputHandlingProps,
     ControlProps,
     ControlState,
-    CustomControlInputHandler,
 } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlResultBuilder } from '../controls/ControlResult';
@@ -905,16 +904,6 @@ export class DateControl extends Control implements InteractionModelContributor 
             generator.ensureSlotValueIDsAreDefined(this.id, 'action', actionSlotIds);
         }
         generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
-    }
-
-    public setCustomHandlingFuncs(customHandlingFuncs: CustomControlInputHandler[]): void {
-        this.props.inputHandling.customHandlingFuncs = [];
-        customHandlingFuncs.forEach((customHandlingFunc) => {
-            const defaultOverride = {
-                standardOverrides: [],
-            };
-            this.props.inputHandling.customHandlingFuncs.push(_.merge(defaultOverride, customHandlingFunc));
-        });
     }
 }
 

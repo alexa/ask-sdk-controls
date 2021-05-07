@@ -269,22 +269,6 @@ suite('== Custom Handler function scenarios ==', () => {
                 },
             });
 
-            if (withCustomHandlingFuncsOverrides === true) {
-                dateControl.setCustomHandlingFuncs([
-                    {
-                        name: 'SetDateEvent',
-                        canHandle: isSetDateEvent,
-                        handle: handleSetDateEvent,
-                    },
-                    {
-                        name: 'SetValue',
-                        canHandle: isSetValue,
-                        handle: handleSetValue,
-                        standardOverrides: ['SetWithValue (built-in)'],
-                    },
-                ]);
-            }
-
             function isSetDateEvent(input: ControlInput) {
                 return InputUtil.isIntent(input, 'SetDateEventIntent');
             }
@@ -301,11 +285,10 @@ suite('== Custom Handler function scenarios ==', () => {
                 return InputUtil.isValueControlIntent(input, AmazonBuiltInSlotType.DATE);
             }
 
-            async function handleSetValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
+            function handleSetValue(input: ControlInput) {
                 const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
                 const valueStr = values[0];
                 dateControl.setValue(valueStr.slotValue);
-                await dateControl.validateAndAddActs(input, resultBuilder, $.Action.Set);
             }
 
             topControl.addChild(dateControl);
@@ -337,32 +320,13 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const result = new ControlResultBuilder(undefined!);
         try {
             await rootControl.canHandle(input);
         } catch (e) {
             expect(e.message).eq(
-                'Matching custom and standard handler found in control: dateControl. Handlers in a single control should be mutually exclusive. handlers: ["SetValue","SetWithValue (built-in)"].One solution is to set the standardOverrides prop in the customHandlerFunc to override the standard built in handler.',
+                'More than one handler matched. Handlers in a single control should be mutually exclusive. handlers: ["SetWithValue (built-in)","SetValue"]',
             );
         }
-    });
-
-    test('Check conflicts overrides on customHandlingFuncs in canHandle', async () => {
-        const rootControl = new DateSelectorManager().createControlTree(true);
-        const input = TestInput.of(
-            ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
-                'AMAZON.DATE': '2018',
-                action: $.Action.Set,
-            }),
-        );
-        const result = new ControlResultBuilder(undefined!);
-        await rootControl.canHandle(input);
-        await rootControl.handle(input, result);
-
-        const dateControlState = findControlInTreeById(rootControl, 'dateControl');
-        expect(dateControlState.state.value).eq('2018');
-        expect(result.acts).length(1);
-        expect(result.acts[0]).instanceOf(ValueSetAct);
     });
 });
 

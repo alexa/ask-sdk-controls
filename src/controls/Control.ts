@@ -57,11 +57,6 @@ export interface ControlInputHandler {
     canHandle: (this: Control, input: ControlInput) => boolean | Promise<boolean>;
     handle: (this: Control, input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
 }
-
-export interface CustomControlInputHandler extends ControlInputHandler {
-    standardOverrides?: string[];
-}
-
 export interface ControlInitiativeHandler {
     name: string;
     canTakeInitiative(input: ControlInput): boolean | Promise<boolean>;
@@ -75,7 +70,7 @@ export interface ControlInputHandlingProps {
     /**
      * Custom handling functions
      */
-    customHandlingFuncs?: CustomControlInputHandler[];
+    customHandlingFuncs?: ControlInputHandler[];
 }
 
 /**

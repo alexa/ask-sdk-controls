@@ -25,7 +25,6 @@ import {
     ControlInputHandlingProps,
     ControlProps,
     ControlState,
-    CustomControlInputHandler,
 } from '../../controls/Control';
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
@@ -512,7 +511,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     state: MultiValueListControlState = new MultiValueListControlState();
 
     private rawProps: MultiValueListControlProps;
-    private props: DeepRequired<MultiValueListControlProps>;
+    protected props: DeepRequired<MultiValueListControlProps>;
     private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
     private initiativeFunc?: (
         input: ControlInput,
@@ -739,16 +738,6 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     // tsDoc - see Control
     async canHandle(input: ControlInput): Promise<boolean> {
         return evaluateInputHandlers(this, input);
-    }
-
-    public setCustomHandlingFuncs(customHandlingFuncs: CustomControlInputHandler[]): void {
-        this.props.inputHandling.customHandlingFuncs = [];
-        customHandlingFuncs.forEach((customHandlingFunc) => {
-            const defaultOverride = {
-                standardOverrides: [],
-            };
-            this.props.inputHandling.customHandlingFuncs.push(_.merge(defaultOverride, customHandlingFunc));
-        });
     }
 
     // tsDoc - see Control
