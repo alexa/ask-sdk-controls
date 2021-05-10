@@ -615,8 +615,8 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             apl: {
                 enabled: true,
                 askQuestion: QuestionnaireControlAPLPropsBuiltIns.DefaultAskQuestion({
-                    title: undefined, // the default is wired up in defaultAskQuestion()
-                    submitButtonText: undefined, // the default is wired up in defaultAskQuestion()
+                    title: undefined, // the default is wired up in DefaultAskQuestion()
+                    submitButtonText: undefined, // the default is wired up in DefaultAskQuestion()
                     radioButtonPressesBlockUI: true,
                 }),
             },
