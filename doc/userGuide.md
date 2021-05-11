@@ -76,13 +76,13 @@ Documentation](https://ask-sdk-controls-typedoc.s3.amazonaws.com/index.html).
     - [2.5. Creating a launch configuration for vscode launch.json](#25-creating-a-launch-configuration-for-vscode-launchjson)
     - [2.6. Run the regression tests](#26-run-the-regression-tests)
     - [2.7. Build the interaction model for the skill](#27-build-the-interaction-model-for-the-skill)
-- [3. Exploring the Hello World Controls skill](#3-exploring-the-helloworld-controls-skill)
+- [3. Exploring the Hello World Controls skill](#3-exploring-the-hello-world-controls-skill)
     - [3.1. Code overview](#31-code-overview)
     - [3.2. Interaction model](#32-interaction-model)
     - [3.3. Deploying Hello World](#33-deploying-hello-world)
     - [3.4. Live testing with local debugging](#34-live-testing-with-local-debugging)
     - [3.5. Running the regression tests](#35-running-the-regression-tests)
-- [4. Exploring the Fruit Shop demo skill](#4-exploring-the-fruitshop-demo-skill)
+- [4. Exploring the Fruit Shop demo skill](#4-exploring-the-fruit-shop-demo-skill)
     - [4.1. Code overview](#41-code-overview)
     - [4.2. Category control](#42-category-control)
     - [4.3. Checkout control](#43-checkout-control)
@@ -376,8 +376,8 @@ Points of interest:
 -   **Line 10**: The framework separates response logic from rendering. A _system act_ is
     a simple object representing "something to communicate to the user." In this case the
     `LiteralContentAct` is used to communicate some arbitrary literal content. The
-    framework defines various system acts that have precise purposes, and developers can
-    create new ones, too. System acts are an intermediate representation that are converted
+    framework defines various system acts that have precise purposes and developers can
+    create new ones too. System acts are an intermediate representation that are converted
     to a complete `Response` during the rendering phase; in this skill the default
     rendering logic is sufficient and causes the `LiteralContentAct` to add its literal
     content to the `Response.outputSpeech`.
@@ -743,20 +743,19 @@ Final configuration:
     control listen for inputs that have a target-slot with `value = "category"`. This is
     how this control can tell that it should handle inputs such as "U: Change the
     category".
--   **Line 10**: The `ListControl` has two _action capabilities_, called "set" and
-    "change". There may be different verbs associated with these capabilities and line 10
-    shows how to set the list of verbs associated with the "set" capability. This line
-    declares that if the user says "set", "select", or one of their synonyms,
-    the control should interpret it as an effort to set the value of this control. So, for
-    example, if the user says "U: Select fruit please" this control will respond
-    `canHandle = true` and set `this.state.value = "fruit"` during `handle()`. Each item
-    in the array is the ID of a slot value for the Action slot type. New action slot
-    value IDs should be added for semantically different verbs and synonyms can be added
-    when there are not major semantic differences. So, for example, the action slot value for
-    "select" has the synonym "choose". If the user says "U: I choose fruit", it will
-    arrive as `action = "set"` and be recognized by this control. All controls test the
-    `action` and `target` of an input to determine whether the input is relevant. If there
-    is not a match the control will return `canHandle = false`.
+-   **Line 10**: The `ListControl` has two _capabilities_, called "set" and "change".
+    There can be different verbs associated with these capabilities and so line 10
+    declares the list of verbs associated with the "set" capability to be "set", "add",
+    "select" and their synonyms. So, for example, if the user says "U: Select fruit
+    please" this control will respond `canHandle = true` and set `this.state.value =
+    "fruit"` during `handle()`. Each item in the array is the ID of a slot value for the
+    Action slot type. New action slot value IDs should be added for semantically different
+    verbs and synonyms can be added when there are not major semantic differences. So, for
+    example, if we assume the the Action slot value with `id="select"` has the synonym
+    "choose" then an utterance "U: I choose fruit" will arrive as `action = "select"` and
+    be recognized by this control as a request to use the "set" capability. All controls
+    test the `action` and `target` of an input to determine whether the input is relevant.
+    If there is any mismatch the control will return `canHandle = false`.
 
     Ultimately, the aim of the `interactionModel` prop is to ensure the control responds
     `canHandle = true` for inputs that are relevant and does not attempt to handle inputs
@@ -1172,7 +1171,7 @@ There may be situations where it is reasonable for two or more controls to respo
 with `canHandle = true`: in these cases a parent control must pick a winner.
 
 Regarding "what information to collect," low-level controls collect simple things such as
-a single date representing a birthdate or perhaps the date of an upcoming event. The
+a single date representing a birth date or perhaps the date of an upcoming event. The
 built-in `DateControl`, for example, is a control that collects a single date from the
 user. It normally receives a date via a single `AMAZON.DATE` slot but it can be extended
 to implement other strategies such as asking for the year, month, and day in sequence. The
