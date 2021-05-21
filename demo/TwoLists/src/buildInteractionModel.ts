@@ -24,8 +24,7 @@ const log = new Logger('HelloWorld:InteractionModel');
 
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()
-        .buildCoreModelForControls(new MultipleLists.DemoControlManager())
-        .withInvocationName('controls demo')
+        .withInvocationName('multilist demo')
         .addIntent({ name: 'AMAZON.StopIntent' })
         .addIntent({ name: 'AMAZON.NavigateHomeIntent' })
         .addIntent({ name: 'AMAZON.HelpIntent' })
@@ -109,6 +108,7 @@ export namespace TwoListsIM {
             ],
         })
 
+        .addOrMergeSlotTypes({ name: 'target', values: [] })
         .addValuesToSlotType(
             'target',
             {
@@ -133,6 +133,8 @@ export namespace TwoListsIM {
 // If launched directly, build and write to a file
 if (require.main === module) {
     // Build and write
-    TwoListsIM.imGen.buildAndWrite('en-US-generated.json');
+    TwoListsIM.imGen
+        .buildCoreModelForControls(new MultipleLists.DemoControlManager())
+        .buildAndWrite('en-US-generated.json');
     console.log('Wrote ./en-US-generated.json');
 }
