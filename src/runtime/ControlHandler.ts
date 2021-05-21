@@ -112,8 +112,9 @@ export class ControlHandler implements RequestHandler {
         this.preparedRequestId = handlerInput.requestEnvelope.request.requestId;
 
         // retrieve and update the context object.
-        const retrievedContext =
-            handlerInput.attributesManager.getSessionAttributes()[ControlHandler.attributeNameContext];
+        const retrievedContext = handlerInput.attributesManager.getSessionAttributes()[
+            ControlHandler.attributeNameContext
+        ];
         this.additionalSessionContext =
             retrievedContext !== undefined ? JSON.parse(retrievedContext) : new AdditionalSessionContext();
         this.additionalSessionContext.turnNumber += 1;
