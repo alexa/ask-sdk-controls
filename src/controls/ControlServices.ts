@@ -12,6 +12,7 @@
  */
 
 import { DefaultLoggerFactory } from '../logging/DefaultLoggerFactory';
+import { ILogger } from './interfaces/ILogger';
 import { ILoggerFactory } from './interfaces/ILoggerFactory';
 
 /**
@@ -68,5 +69,24 @@ export namespace ControlServices {
         }
         const defaultServices = new DefaultControlServices();
         return defaultServices.services;
+    }
+
+    /**
+     * Function to retrieve logger implementation with a provided
+     * namespace.
+     *
+     * Usage:
+     * - ControlServices.getLogger('AskSdkControls:ControlManager');
+     * returns a logger implementation containing methods to log
+     * info/debug/error and sanitize restrictive information.
+     *
+     *
+     * @param namespace - Input Module Name
+     */
+    export function getLogger(namespace: string): ILogger {
+        if (namespace !== undefined) {
+            return ControlServices.getDefaults().logger.getLogger(namespace);
+        }
+        throw new Error('Invalid Namespace provided');
     }
 }

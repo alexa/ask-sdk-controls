@@ -19,9 +19,7 @@ import { ControlManager, renderActsInSequence } from './ControlManager';
 import { ControlResult } from './ControlResult';
 import { ControlServices } from './ControlServices';
 
-const MODULE_NAME = 'AskSdkControls:ComponentModeControlManager';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:ComponentModeControlManager');
 
 /**
  *  ControlManager used to render APL in Component Mode.

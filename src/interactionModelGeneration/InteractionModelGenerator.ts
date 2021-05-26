@@ -27,9 +27,7 @@ import Dialog = v1.skill.interactionModel.Dialog;
 import DelegationStrategyType = v1.skill.interactionModel.DelegationStrategyType;
 import Prompt = v1.skill.interactionModel.Prompt;
 
-const MODULE_NAME = 'AskSdkControls:InteractionModelGenerator';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:InteractionModelGenerator');
 
 /**
  * Interaction model generator

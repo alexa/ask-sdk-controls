@@ -15,9 +15,7 @@ import { MultipleLists } from '.';
 import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
-const MODULE_NAME = 'QuestionnaireControlDemo:InteractionModel';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('QuestionnaireControlDemo:InteractionModel');
 
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()

@@ -35,9 +35,7 @@ import { SkillInvoker, TestResponseObject } from './SkillInvoker';
 import { wrapRequestHandlerAsSkill } from './SkillWrapper';
 import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
 
-const MODULE_NAME = 'AskSdkControls:TestingUtils';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:TestingUtils');
 
 /**
  * Utility to sleep a short duration to give the debugger some time to get

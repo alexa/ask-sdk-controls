@@ -18,9 +18,7 @@ import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
 import { _extractStateFromControlTree } from '../runtime/ControlHandler';
 
-const MODULE_NAME = 'AskSdkControls:SerializationValidator';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:SerializationValidator');
 
 /**
  * Validates that the serialized state will survive the round-trip successfully.

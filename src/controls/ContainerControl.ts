@@ -21,9 +21,7 @@ import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const MODULE_NAME = 'AskSdkControls:ContainerControl';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:ContainerControl');
 
 /**
  * Records the turn that a child control did something of interest.

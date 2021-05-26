@@ -15,9 +15,7 @@ import { ComponentModeDemo } from '.';
 import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
-const MODULE_NAME = 'ComponentModeDemo:InteractionModel';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('ComponentModeDemo:InteractionModel');
 
 export namespace ComponentModeDemoIM {
     export const imGen = new ControlInteractionModelGenerator()

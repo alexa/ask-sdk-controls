@@ -18,7 +18,7 @@ export class CustomLoggerFactory implements ILoggerFactory {
 
 export class CustomLogger extends DefaultLogger {
     info(message: string): void {
-        Debug(`info:Redfox:${this.moduleName}`)(message);
+        Debug(`info:CustomLogger:${this.moduleName}`)(message);
     }
 
     sanitize(message: any): string {

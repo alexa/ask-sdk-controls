@@ -59,6 +59,12 @@ export interface ControlManagerProps {
      * TODO: finish localizing all strings,
      */
     i18nResources?: Resource;
+
+    /**
+     * The services props used to set global configuration
+     * to be used across all Controls.
+     */
+    services?: ControlServicesProps;
 }
 
 /**
@@ -122,12 +128,6 @@ export abstract class ControlManager implements IControlManager {
     props: Readonly<Required<ControlManagerProps>>;
 
     /**
-     * The services props used to set global configuration
-     * to be used across all Controls.
-     */
-    services: ControlServicesProps;
-
-    /**
      * The logger implementation.
      */
     log: ILogger;
@@ -136,14 +136,12 @@ export abstract class ControlManager implements IControlManager {
      * Creates an instance of a Control Manager.
      * @param props - props
      */
-    constructor(props?: ControlManagerProps, services?: ControlServicesProps) {
+    constructor(props?: ControlManagerProps) {
         this.rawProps = props;
         this.props = ControlManager.mergeWithDefaultProps(props);
+        this.log = this.props.services.logger.getLogger(MODULE_NAME);
         const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
         i18nInit(this.props.locale, resource);
-
-        this.services = services ?? ControlServices.getDefaults();
-        this.log = this.services.logger.getLogger(MODULE_NAME);
     }
 
     /**
@@ -155,6 +153,7 @@ export abstract class ControlManager implements IControlManager {
         const defaults: Required<ControlManagerProps> = {
             locale: 'en-US',
             i18nResources: {},
+            services: ControlServices.getDefaults(),
         };
 
         return _.mergeWith(defaults, props);
@@ -258,7 +257,7 @@ export abstract class ControlManager implements IControlManager {
     ): void {
         const err =
             error.stack !== undefined ? { name: error.name, msg: error.message, stack: error.stack } : error; // Error doesn't have enumerable properties, so we convert it.
-        this.log.error(`Error handled: ${JSON.stringify(err)}`);
+        this.log.error(`Error handled: ${this.log.sanitize(JSON.stringify(err))}`);
     }
 
     /**

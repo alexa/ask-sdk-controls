@@ -3,9 +3,7 @@ import { Strings as $ } from '../constants/Strings';
 import { ControlServices } from '../controls/ControlServices';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
 
-const MODULE_NAME = 'AskSdkControls:i18n';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:i18n');
 
 //todo: move this somewhere more appropriate. consider splitting prompts/intents
 

@@ -86,8 +86,7 @@ export class DefaultLogger implements ILogger {
      */
     logObject(logLevel: string, id: string, object: any, stringify?: true): void {
         const objectToLogJson: string = stringify !== true ? object : JSON.stringify(object, null, 2);
-        const message = this.sanitize(objectToLogJson);
-        Debug(`${logLevel}:${this.moduleName} ${id}`)(message);
+        Debug(`${logLevel}:${this.moduleName} ${id}`)(objectToLogJson);
     }
 
     /**

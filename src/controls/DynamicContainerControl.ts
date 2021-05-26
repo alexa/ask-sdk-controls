@@ -18,9 +18,7 @@ import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const MODULE_NAME = 'AskSdkControls:DynamicContainerControl';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:DynamicContainerControl');
 
 /**
  * Defines the minimal information for a dynamic control specification.
