@@ -54,26 +54,26 @@ export function validateSerializedState(
             for (const [i, line1] of lines1.entries()) {
                 const line2 = lines2[i];
                 if (line1 !== line2) {
-                    log.info(`${i}: Expected: ${line1}`);
-                    log.info(`${i}: Actual:   ${line2}`);
+                    log.info(`${i}: Expected: ${log.sanitize(line1)}`);
+                    log.info(`${i}: Actual:   ${log.sanitize(line2)}`);
                 }
             }
             log.info('=================================================');
         } else {
             log.info('Diff is complicated.. use a text differ on the following');
             log.info('=================================================');
-            log.info(serializedState);
+            log.info(log.sanitize(serializedState));
             log.info('=================================================');
             log.info('=================================================');
-            log.info(roundTrippedUISerialized);
+            log.info(log.sanitize(roundTrippedUISerialized));
             log.info('=================================================');
 
             log.info('First diff:');
             for (const [i, line1] of lines1.entries()) {
                 const line2 = lines2[i];
                 if (line1 !== line2) {
-                    log.info(`${i}: Expected: ${line1}`);
-                    log.info(`${i}: Actual:   ${line2}`);
+                    log.info(`${i}: Expected: ${log.sanitize(line1)}`);
+                    log.info(`${i}: Actual:   ${log.sanitize(line2)}`);
                     break;
                 }
             }
