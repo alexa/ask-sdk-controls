@@ -14,9 +14,7 @@ import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlServices } from '../controls/ControlServices';
 
-const MODULE_NAME = 'AskSdkControls:ControlUtils';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:ControlUtils');
 
 /*
  * //    TODO: tighten up the contract.. what props are supported, precisely.

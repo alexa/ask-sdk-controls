@@ -15,9 +15,7 @@ import { BasicNumberDemo } from '.';
 import { ControlServices } from '../../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
-const MODULE_NAME = 'NumberControlDemo:InteractionModel';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('NumberControlDemo:InteractionModel');
 
 export namespace BasicNumberDemoIM {
     export const imGen = new ControlInteractionModelGenerator()

@@ -16,9 +16,7 @@ import { ControlServices } from '../../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { filteredYesNoMaybeSlotType, yesNoMaybeSlotType } from './interactionModelTypes';
 
-const MODULE_NAME = 'HelloWorld:InteractionModel';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('HelloWorld:InteractionModel');
 
 export namespace ListDemo1IM {
     export const imGen = new ControlInteractionModelGenerator()

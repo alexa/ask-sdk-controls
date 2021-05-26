@@ -19,9 +19,7 @@ import {
     yesNoMaybeSlotType,
 } from '../../ListControl/YesNoMaybe/src/interactionModelTypes';
 
-const MODULE_NAME = 'MultiValueListDemo:InteractionModel';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('MultiValueListDemo:InteractionModel');
 
 export namespace MultiValueListDemoIM {
     export const imGen = new ControlInteractionModelGenerator()

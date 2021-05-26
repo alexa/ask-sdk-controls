@@ -14,9 +14,7 @@
 import { ErrorHandler, HandlerInput, RequestHandler, Skill, SkillBuilders } from 'ask-sdk-core';
 import { ControlServices } from '../../controls/ControlServices';
 
-const MODULE_NAME = 'AskSdkControls:SkillWrapper';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:SkillWrapper');
 
 /**
  * Wraps a single RequestHandler as a Skill for testing.

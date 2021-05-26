@@ -221,10 +221,10 @@ export class ControlHandler implements RequestHandler {
             const mergedStateMap = { ...priorStateMap, ...currentStateMap };
 
             const stateToSaveJson = JSON.stringify(mergedStateMap, null, 2);
-            this.log.logObject('info', 'Saving state...', mergedStateMap);
+            this.log.logObject('info', 'Saving state...', this.log.sanitize(mergedStateMap));
 
             const contextToSaveJson = JSON.stringify(this.additionalSessionContext, null, 2);
-            this.log.logObject('info', 'Saving context...', this.additionalSessionContext);
+            this.log.logObject('info', 'Saving context...', this.log.sanitize(this.additionalSessionContext));
 
             await this.controlManager.saveControlStateMap(stateToSaveJson, handlerInput);
 
@@ -290,7 +290,8 @@ export class ControlHandler implements RequestHandler {
             '-------------------------------------------------------------------------------------------------',
         );
         log.info(`Turn ${input.turnNumber} started`);
-        log.logObject('info', 'Input:', requestToString(input.handlerInput.requestEnvelope.request));
+        const inputRequest = input.handlerInput.requestEnvelope.request;
+        log.logObject('info', 'Input:', log.sanitize(requestToString(inputRequest)));
         log.info(`UI at start: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
 
         if (handleInput) {
@@ -322,7 +323,7 @@ export class ControlHandler implements RequestHandler {
         // can use a hasInitiative() predicate and reason about whether they are actively running the conversation.
 
         // TODO: Formatting to be fix
-        log.logObject('info', 'HandleResponse: ', resultBuilder, false);
+        log.logObject('info', 'HandleResponse: ', log.sanitize(resultBuilder), false);
         log.info(`UI at end of turn: \n${generateControlTreeTextDiagram(rootControl, input.turnNumber)}`);
     }
 

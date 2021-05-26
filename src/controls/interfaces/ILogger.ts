@@ -28,5 +28,5 @@ export interface ILogger {
 
     logObject(level: string, id: string, object: any, stringify?: boolean): void;
 
-    sanitize(message: string): string;
+    sanitize(message: any): string;
 }

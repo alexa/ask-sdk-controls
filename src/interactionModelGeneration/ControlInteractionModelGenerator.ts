@@ -30,9 +30,7 @@ import Prompt = v1.skill.interactionModel.Prompt;
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import SlotType = v1.skill.interactionModel.SlotType;
 
-const MODULE_NAME = 'AskSdkControls:ControlInteractionModelGenerator';
-const services = ControlServices.getDefaults();
-const log = services.logger.getLogger(MODULE_NAME);
+const log = ControlServices.getLogger('AskSdkControls:ControlInteractionModelGenerator');
 
 const dummyPrompts: Prompt[] = [
     {
