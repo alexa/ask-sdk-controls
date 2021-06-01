@@ -18,15 +18,44 @@
 export interface ILogger {
     moduleName: string;
 
+    /**
+     * Log a message as an "error".
+     * @param message - Message
+     */
     error(message: string): void;
 
+    /**
+     * Log a message as an "informational" message.
+     * @param message - Message
+     */
     info(message: string): void;
 
+    /**
+     * Log a message as an "warning".
+     * @param message - Message
+     */
     warn(message: string): void;
 
+    /**
+     * Log a message as an "low-level debug message".
+     * @param message - Message
+     */
     debug(message: string): void;
 
+    /**
+     * Log an object with pretty print formatting and also
+     * masking sensitive information if required
+     *
+     * @param id - Unique label.
+     * @param object - Object to be logged
+     */
     logObject(level: string, id: string, object: any, stringify?: boolean): void;
 
+    /**
+     * Function that returns string with special characters to
+     *  mask restrictive information.
+     *
+     * @param message - Logging message
+     */
     sanitize(message: any): string;
 }
