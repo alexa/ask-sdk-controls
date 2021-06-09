@@ -1308,7 +1308,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     // tsDoc - see ControlStateDiagramming
     stringifyStateForDiagram(): string {
-        let text = this.state.value.length > 0 ? this.state.value.join(', ') : '<none>';
+        let text = this.state.value.length > 0 ? JSON.stringify(this.state.value) : '<none>';
         if (this.state.elicitationAction !== undefined) {
             text += `[eliciting, ${this.state.elicitationAction}]`;
         }
