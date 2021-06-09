@@ -18,7 +18,7 @@ import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
 import { _extractStateFromControlTree } from '../runtime/ControlHandler';
 
-const log = ControlServices.getLogger('AskSdkControls:SerializationValidator');
+const MODULE_NAME = 'AskSdkControls:SerializationValidator';
 
 /**
  * Validates that the serialized state will survive the round-trip successfully.
@@ -34,6 +34,8 @@ export function validateSerializedState(
     controlManager: IControlManager,
     input: IControlInput,
 ): void {
+    const log = ControlServices.getLogger(MODULE_NAME);
+
     // perform deserialization
     const deserializedState = JSON.parse(serializedState);
     const rebuiltTopControl: IControl = controlManager.createControlTree();

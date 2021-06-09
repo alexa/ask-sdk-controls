@@ -1,9 +1,6 @@
 import { Resource } from 'i18next';
 import { Strings as $ } from '../constants/Strings';
-import { ControlServices } from '../controls/ControlServices';
 import { SharedSlotType } from '../interactionModelGeneration/ModelTypes';
-
-const log = ControlServices.getLogger('AskSdkControls:i18n');
 
 //todo: move this somewhere more appropriate. consider splitting prompts/intents
 

@@ -30,7 +30,7 @@ import Prompt = v1.skill.interactionModel.Prompt;
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import SlotType = v1.skill.interactionModel.SlotType;
 
-const log = ControlServices.getLogger('AskSdkControls:ControlInteractionModelGenerator');
+const MODULE_NAME = 'AskSdkControls:ControlInteractionModelGenerator';
 
 const dummyPrompts: Prompt[] = [
     {
@@ -53,6 +53,10 @@ const dummyPrompts: Prompt[] = [
 export class ControlInteractionModelGenerator extends InteractionModelGenerator {
     public targetSlotIds: Set<string> = new Set();
 
+    constructor() {
+        super();
+        this.log = ControlServices.getLogger(MODULE_NAME);
+    }
     /**
      * Adds content to the interaction model from a ControlManager.
      *
@@ -260,6 +264,7 @@ function addDummyValidationRule(targetSlot: v1.skill.interactionModel.DialogSlot
  */
 function validateTargetSlots(interactionModel: InteractionModelData, targetSlotIds: Set<string>): void {
     const presentSlotTypes: SlotType[] | undefined = interactionModel.interactionModel?.languageModel?.types;
+    const log = ControlServices.getLogger(MODULE_NAME);
     for (const targetSlotId of targetSlotIds) {
         if (presentSlotTypes === undefined) {
             log.warn(`target slot with id ${targetSlotId} is not present in InteractionModel.`);

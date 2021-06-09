@@ -14,8 +14,7 @@ import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ControlServices } from '../controls/ControlServices';
 
-const log = ControlServices.getLogger('AskSdkControls:ControlUtils');
-
+const MODULE_NAME = 'AskSdkControls:ControlUtils';
 /*
  * //    TODO: tighten up the contract.. what props are supported, precisely.
  *       probably also good to factor into gatherFuncs() and evaluateFuncs()
@@ -31,6 +30,7 @@ const log = ControlServices.getLogger('AskSdkControls:ControlUtils');
  * @param input - input
  */
 export async function evaluateInputHandlers(control: Control, input: ControlInput): Promise<boolean> {
+    const log = ControlServices.getLogger(MODULE_NAME);
     const stdHandlers = (control as any).standardInputHandlers ?? [];
     const customHandlers = (control as any).props.inputHandling.customHandlingFuncs ?? [];
 
@@ -69,6 +69,7 @@ export async function evaluateInputHandlers(control: Control, input: ControlInpu
 
 //Exported for internal use only. Not sufficiently well-defined or valuable for public export.
 export function _logIfBothTrue(customCanHandle: boolean, builtInCanHandle: boolean) {
+    const log = ControlServices.getLogger(MODULE_NAME);
     if (customCanHandle === true && builtInCanHandle === true) {
         log.warn(
             'Custom canHandle function and built-in canHandle function both returned true. Turn on debug logging for more information',

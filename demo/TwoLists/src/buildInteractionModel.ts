@@ -15,8 +15,6 @@ import { MultipleLists } from '.';
 import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
-const log = ControlServices.getLogger('HelloWorld:InteractionModel');
-
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()
         .buildCoreModelForControls(new MultipleLists.DemoControlManager())
@@ -127,6 +125,7 @@ export namespace TwoListsIM {
 
 // If launched directly, build and write to a file
 if (require.main === module) {
+    const log = ControlServices.getLogger('HelloWorld:InteractionModel');
     // Build and write
     TwoListsIM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');

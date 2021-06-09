@@ -19,10 +19,10 @@ import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
+import { ILogger } from './interfaces/ILogger';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const log = ControlServices.getLogger('AskSdkControls:ContainerControl');
-
+const MODULE_NAME = 'AskSdkControls:ContainerControl';
 /**
  * Records the turn that a child control did something of interest.
  */
@@ -90,6 +90,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     props: ContainerControlCompleteProps;
     selectedHandlingChild: Control | undefined;
     selectedInitiativeChild: Control | undefined;
+    log: ILogger;
 
     // jsDoc: see `Control`
     constructor(props: ContainerControlProps) {
@@ -97,6 +98,7 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         super(props.id);
         this.rawProps = props;
         this.props = ContainerControl.mergeWithDefaultProps(props);
+        this.log = ControlServices.getLogger(MODULE_NAME);
     }
 
     // jsDoc: see `Control`
@@ -173,13 +175,13 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         const candidates = await this.gatherHandlingCandidates(input);
         this.selectedHandlingChild = await this.decideHandlingChild(candidates, input);
         if (this.selectedHandlingChild !== undefined) {
-            log.debug(
+            this.log.debug(
                 `${this.id} canHandleByChild=true. selectedHandlingChild = ${this.selectedHandlingChild.id}`,
             );
             return true;
         }
 
-        log.debug(`${this.id} canHandleByChild=false.`);
+        this.log.debug(`${this.id} canHandleByChild=false.`);
         return false;
     }
 
@@ -278,12 +280,12 @@ export class ContainerControl extends Control implements IContainerControl, Cont
         const candidates = await this.gatherInitiativeCandidates(input);
         this.selectedInitiativeChild = await this.decideInitiativeChild(candidates, input);
         if (this.selectedInitiativeChild !== undefined) {
-            log.debug(
+            this.log.debug(
                 `${this.id} canTakeInitiative=true. this.selectedInitiativeChild = ${this.selectedInitiativeChild.id}`,
             );
             return true;
         } else {
-            log.debug(`${this.id} canTakeInitiative=false. No child wants it`);
+            this.log.debug(`${this.id} canTakeInitiative=false. No child wants it`);
             return false;
         }
     }

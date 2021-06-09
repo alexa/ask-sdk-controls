@@ -15,16 +15,21 @@ import { IControlManager } from '..';
 import { APLMode } from '../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { ControlInput } from './ControlInput';
-import { ControlManager, renderActsInSequence } from './ControlManager';
+import { ControlManager, ControlManagerProps, renderActsInSequence } from './ControlManager';
 import { ControlResult } from './ControlResult';
 import { ControlServices } from './ControlServices';
 
-const log = ControlServices.getLogger('AskSdkControls:ComponentModeControlManager');
+const MODULE_NAME = 'AskSdkControls:ComponentModeControlManager';
 
 /**
  *  ControlManager used to render APL in Component Mode.
  */
 export abstract class ComponentModeControlManager extends ControlManager implements IControlManager {
+    constructor(props?: ControlManagerProps) {
+        super(props);
+        this.log = ControlServices.getLogger(MODULE_NAME);
+    }
+
     async render(
         result: ControlResult,
         input: ControlInput,

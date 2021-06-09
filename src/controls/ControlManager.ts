@@ -138,6 +138,9 @@ export abstract class ControlManager implements IControlManager {
      */
     constructor(props?: ControlManagerProps) {
         this.rawProps = props;
+        if (props !== undefined && props.services !== undefined) {
+            ControlServices.setDefaults(props.services);
+        }
         this.props = ControlManager.mergeWithDefaultProps(props);
         this.log = this.props.services.logger.getLogger(MODULE_NAME);
         const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
