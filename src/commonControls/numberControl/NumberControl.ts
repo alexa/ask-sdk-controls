@@ -1387,6 +1387,7 @@ function generateSlotElicitation(): { intent: Intent; slotName: string } {
             head: { name: 'head', value: '', confirmationStatus: 'NONE' },
             tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
             preposition: { name: 'preposition', value: '', confirmationStatus: 'NONE' },
+            __Conjunction: { name: '__Conjunction', value: '', confirmationStatus: 'NONE' },
         },
         confirmationStatus: 'NONE',
     };
