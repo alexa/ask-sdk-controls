@@ -15,6 +15,8 @@ import { ComponentModeDemo } from '.';
 import { ControlServices } from '../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
+const log = ControlServices.getLogger('ComponentModeDemo:InteractionModel');
+
 export namespace ComponentModeDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
         .withInvocationName('controls demo')
@@ -99,7 +101,6 @@ export namespace ComponentModeDemoIM {
 
 // If launched directly, build and write to a file
 if (require.main === module) {
-    const log = ControlServices.getLogger('ComponentModeDemo:InteractionModel');
     // Build and write
     ComponentModeDemoIM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');

@@ -16,6 +16,8 @@ import { ControlServices } from '../../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 import { filteredYesNoMaybeSlotType, yesNoMaybeSlotType } from './interactionModelTypes';
 
+const log = ControlServices.getLogger('ComponentModeDemo:InteractionModel');
+
 export namespace ListDemo1IM {
     export const imGen = new ControlInteractionModelGenerator()
         .withInvocationName('controls demo')
@@ -40,7 +42,6 @@ export namespace ListDemo1IM {
 
 // If launched directly, build and write to a file
 if (require.main === module) {
-    const log = ControlServices.getLogger('ComponentModeDemo:InteractionModel');
     // Build and write
     ListDemo1IM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');

@@ -101,9 +101,6 @@ export class ControlHandler implements RequestHandler {
 
     constructor(controlManager: IControlManager, services?: ControlServicesProps) {
         this.controlManager = controlManager;
-        if (services !== undefined) {
-            ControlServices.setDefaults(services);
-        }
         this.services = services ?? ControlServices.getDefaults();
         this.log = this.services.logger.getLogger(MODULE_NAME);
     }

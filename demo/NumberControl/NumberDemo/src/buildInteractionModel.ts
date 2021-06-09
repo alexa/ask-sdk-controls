@@ -18,6 +18,8 @@ import { ControlInteractionModelGenerator } from '../../../../src/interactionMod
 const services = { logger: new CustomLoggerFactory() };
 ControlServices.setDefaults(services);
 
+const log = ControlServices.getLogger('NumberControlDemo:InteractionModel');
+
 export namespace BasicNumberDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
         .withInvocationName('control demos')
@@ -34,8 +36,6 @@ export namespace BasicNumberDemoIM {
 
 // If launched directly, build and write to a file
 if (require.main === module) {
-    // get logger
-    const log = ControlServices.getLogger('NumberControlDemo:InteractionModel');
     // Build and write
     BasicNumberDemoIM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');
