@@ -15,6 +15,7 @@ import fs from 'fs';
 import _ from 'lodash';
 import { join } from 'path';
 import { ControlServices } from '../controls/ControlServices';
+import { ILogger } from '../controls/interfaces/ILogger';
 
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import InteractionModelSchema = v1.skill.interactionModel.InteractionModelSchema;
@@ -27,7 +28,7 @@ import Dialog = v1.skill.interactionModel.Dialog;
 import DelegationStrategyType = v1.skill.interactionModel.DelegationStrategyType;
 import Prompt = v1.skill.interactionModel.Prompt;
 
-const log = ControlServices.getLogger('AskSdkControls:InteractionModelGenerator');
+const MODULE_NAME = 'AskSdkControls:InteractionModelGenerator';
 
 /**
  * Interaction model generator
@@ -42,6 +43,11 @@ export class InteractionModelGenerator {
     protected delegationStrategy: DelegationStrategyType;
     protected prompts: Prompt[] = [];
     protected invocationName: string;
+    protected log: ILogger;
+
+    constructor() {
+        this.log = ControlServices.getLogger(MODULE_NAME);
+    }
 
     setModelConfiguration(modelConfiguration: ModelConfiguration): this {
         this.modelConfiguration = modelConfiguration;
@@ -205,7 +211,7 @@ export class InteractionModelGenerator {
      */
     withInvocationName(name: string): this {
         if (this.invocationName) {
-            log.warn(`Skill invocation name ${this.invocationName} has been overwritten to ${name}.`);
+            this.log.warn(`Skill invocation name ${this.invocationName} has been overwritten to ${name}.`);
         }
         this.invocationName = name;
 
@@ -301,11 +307,11 @@ export class InteractionModelGenerator {
         const interactionModelJson: string = JSON.stringify(this.build(), null, 2);
         if (filename === undefined) {
             process.stdout.write(interactionModelJson);
-            log.info('Wrote to standard output');
+            this.log.info('Wrote to standard output');
         } else {
             const path: string = join(process.cwd(), filename);
             fs.writeFileSync(path, interactionModelJson);
-            log.info(`Wrote interactionModel: ${path}`);
+            this.log.info(`Wrote interactionModel: ${path}`);
         }
     }
 

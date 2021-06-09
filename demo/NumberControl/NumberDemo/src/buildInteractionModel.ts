@@ -11,11 +11,12 @@
  * permissions and limitations under the License.
  */
 
-import { BasicNumberDemo } from '.';
+import { BasicNumberDemo, CustomLoggerFactory } from '.';
 import { ControlServices } from '../../../../src/controls/ControlServices';
 import { ControlInteractionModelGenerator } from '../../../../src/interactionModelGeneration/ControlInteractionModelGenerator';
 
-const log = ControlServices.getLogger('NumberControlDemo:InteractionModel');
+const services = { logger: new CustomLoggerFactory() };
+ControlServices.setDefaults(services);
 
 export namespace BasicNumberDemoIM {
     export const imGen = new ControlInteractionModelGenerator()
@@ -33,6 +34,8 @@ export namespace BasicNumberDemoIM {
 
 // If launched directly, build and write to a file
 if (require.main === module) {
+    // get logger
+    const log = ControlServices.getLogger('NumberControlDemo:InteractionModel');
     // Build and write
     BasicNumberDemoIM.imGen.buildAndWrite('en-US-generated.json');
     log.info('Wrote ./en-US-generated.json');

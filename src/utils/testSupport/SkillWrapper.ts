@@ -14,7 +14,7 @@
 import { ErrorHandler, HandlerInput, RequestHandler, Skill, SkillBuilders } from 'ask-sdk-core';
 import { ControlServices } from '../../controls/ControlServices';
 
-const log = ControlServices.getLogger('AskSdkControls:SkillWrapper');
+const MODULE_NAME = 'AskSdkControls:SkillWrapper';
 
 /**
  * Wraps a single RequestHandler as a Skill for testing.
@@ -25,6 +25,7 @@ const log = ControlServices.getLogger('AskSdkControls:SkillWrapper');
  * @param requestHandler - Request handler
  */
 export function wrapRequestHandlerAsSkill(requestHandler: RequestHandler): Skill {
+    const log = ControlServices.getLogger(MODULE_NAME);
     const errorHandler: ErrorHandler = {
         canHandle() {
             return true;

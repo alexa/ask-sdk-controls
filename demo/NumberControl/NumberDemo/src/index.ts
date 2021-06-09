@@ -17,6 +17,10 @@ export class CustomLoggerFactory implements ILoggerFactory {
 }
 
 export class CustomLogger extends DefaultLogger {
+    debug(message: string): void {
+        Debug(`debug:CustomLogger:${this.moduleName}`)(message);
+    }
+
     info(message: string): void {
         Debug(`info:CustomLogger:${this.moduleName}`)(message);
     }

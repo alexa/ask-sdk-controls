@@ -500,7 +500,7 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private takeInitiativeFunc:
         | ((input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>)
         | undefined;
-    private log: ILogger;
+    // private log: ILogger;
 
     static mergeWithDefaultProps(props: DateRangeControlProps): DeepRequired<DateRangeControlProps> {
         const defaults: DeepRequired<DateRangeControlProps> = {

@@ -16,9 +16,10 @@ import { ContainerControl, ContainerControlProps, ContainerControlState } from '
 import { Control } from './Control';
 import { ControlServices } from './ControlServices';
 import { IContainerControl } from './interfaces/IContainerControl';
+import { ILogger } from './interfaces/ILogger';
 import { ControlStateDiagramming } from './mixins/ControlStateDiagramming';
 
-const log = ControlServices.getLogger('AskSdkControls:DynamicContainerControl');
+const MODULE_NAME = 'AskSdkControls:DynamicContainerControl';
 
 /**
  * Defines the minimal information for a dynamic control specification.
@@ -153,10 +154,12 @@ export abstract class DynamicContainerControl
     extends ContainerControl
     implements IContainerControl, ControlStateDiagramming {
     state: DynamicContainerControlState;
+    log: ILogger;
 
     constructor(props: ContainerControlProps) {
         super(props);
         this.state = new DynamicContainerControlState();
+        this.log = ControlServices.getLogger(MODULE_NAME);
     }
 
     /**
