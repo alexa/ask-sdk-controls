@@ -24,7 +24,6 @@ import {
 import { ControlInput } from '../../controls/ControlInput';
 import { ControlResultBuilder } from '../../controls/ControlResult';
 import { ControlServices, ControlServicesProps } from '../../controls/ControlServices';
-import { ILogger } from '../../controls/interfaces/ILogger';
 import { InteractionModelContributor } from '../../controls/mixins/InteractionModelContributor';
 import { StateValidationFunction, ValidationFailure } from '../../controls/Validation';
 import { AmazonBuiltInSlotType } from '../../intents/AmazonBuiltInSlotType';
@@ -500,7 +499,6 @@ export class DateRangeControl extends ContainerControl implements InteractionMod
     private takeInitiativeFunc:
         | ((input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>)
         | undefined;
-    // private log: ILogger;
 
     static mergeWithDefaultProps(props: DateRangeControlProps): DeepRequired<DateRangeControlProps> {
         const defaults: DeepRequired<DateRangeControlProps> = {
