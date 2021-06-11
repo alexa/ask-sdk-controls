@@ -1406,18 +1406,18 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             getSupportedInterfaces(input.handlerInput.requestEnvelope)['Alexa.Presentation.APL']
         ) {
             builder.addAPLExecuteCommandsDirective(this.id, [
-                ({
+                {
                     type: 'SetValue',
                     componentId: 'root',
                     property: 'disableContent',
                     value: false,
-                } as any) as interfaces.alexa.presentation.apl.Command,
-                ({
+                } as any as interfaces.alexa.presentation.apl.Command,
+                {
                     type: 'SetValue',
                     componentId: 'root',
                     property: 'enableWaitIndicator',
                     value: false,
-                } as any) as interfaces.alexa.presentation.apl.Command,
+                } as any as interfaces.alexa.presentation.apl.Command,
             ]);
         }
     }

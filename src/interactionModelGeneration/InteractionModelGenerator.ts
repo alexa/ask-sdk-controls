@@ -233,9 +233,8 @@ export class InteractionModelGenerator {
         // fetch all info from json
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const interactionModel: InteractionModelSchema = require(inputPath).interactionModel;
-        const intents: Intent[] = interactionModel.languageModel!.intents
-            ? interactionModel.languageModel!.intents
-            : [];
+        const intents: Intent[] =
+            interactionModel.languageModel!.intents.length > 0 ? interactionModel.languageModel!.intents : [];
         const slotTypes: SlotType[] = interactionModel.languageModel!.types
             ? interactionModel.languageModel!.types
             : [];
@@ -244,9 +243,9 @@ export class InteractionModelGenerator {
 
         const invocationName: string = interactionModel.languageModel!.invocationName!;
         const prompts: Prompt[] = interactionModel.prompts ? interactionModel.prompts : [];
-        const dialog: Dialog = interactionModel.dialog ? interactionModel.dialog : {};
+        const dialog: Dialog = interactionModel.dialog ? interactionModel.dialog : { intents: [] };
 
-        const dialogIntents: DialogIntent[] = dialog.intents ? dialog.intents : [];
+        const dialogIntents: DialogIntent[] = dialog.intents.length > 0 ? dialog.intents : [];
         const delegationStrategy: DelegationStrategyType | undefined = dialog.delegationStrategy;
 
         this.addIntents(...intents);
@@ -274,15 +273,20 @@ export class InteractionModelGenerator {
             console.warn('Invocation name is not defined');
         }
         const interactionModel: InteractionModelSchema = {
-            languageModel: {},
+            languageModel: {
+                invocationName: '',
+                intents: [],
+            },
             prompts: [],
         };
 
-        interactionModel.languageModel!.types = this.slotTypes;
-        interactionModel.languageModel!.intents = this.intents;
-        interactionModel.languageModel!.modelConfiguration = this.modelConfiguration;
+        interactionModel.languageModel.types = this.slotTypes;
+        interactionModel.languageModel.intents = this.intents;
+        interactionModel.languageModel.modelConfiguration = this.modelConfiguration;
         if (this.dialogIntents.length > 0 || this.delegationStrategy) {
-            interactionModel.dialog = {};
+            interactionModel.dialog = {
+                intents: [],
+            };
         }
         if (this.dialogIntents.length > 0) {
             interactionModel.dialog!.intents = this.dialogIntents;

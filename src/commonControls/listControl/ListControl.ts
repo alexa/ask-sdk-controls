@@ -874,9 +874,8 @@ export class ListControl extends Control implements InteractionModelContributor 
             okIf(this.state.lastInitiative !== undefined);
             okIf(this.state.lastInitiative.actName === RequestValueByListAct.name);
             const intent = (input.request as IntentRequest).intent;
-            const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
-                intent,
-            );
+            const mappedValue =
+                this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(intent);
             okIf(mappedValue !== undefined);
             okIf(this.getChoicesList(input).includes(mappedValue));
             this.handleFunc = this.handleMappedBareValue;
@@ -891,9 +890,8 @@ export class ListControl extends Control implements InteractionModelContributor 
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
         const intent = (input.request as IntentRequest).intent;
-        const mappedValue = this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(
-            intent,
-        );
+        const mappedValue =
+            this.props.interactionModel.slotValueConflictExtensions.intentToValueMapper(intent);
         this.setValue(mappedValue!, true);
         await this.validateAndAddActs(input, resultBuilder, this.state.elicitationAction ?? $.Action.Set); // default to set if user just provided value un-elicited.
         return;
@@ -995,9 +993,12 @@ export class ListControl extends Control implements InteractionModelContributor 
     private isOrdinalSelection(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, OrdinalControlIntent.name));
-            const { feedback, action, target, 'AMAZON.Ordinal': value } = unpackOrdinalControlIntent(
-                (input.request as IntentRequest).intent,
-            );
+            const {
+                feedback,
+                action,
+                target,
+                'AMAZON.Ordinal': value,
+            } = unpackOrdinalControlIntent((input.request as IntentRequest).intent);
             okIf(InputUtil.feedbackIsMatchOrUndefined(feedback, FEEDBACK_TYPES));
             okIf(InputUtil.actionIsMatchOrUndefined(action, this.props.interactionModel.actions.set));
             okIf(InputUtil.targetIsMatchOrUndefined(target, this.props.interactionModel.targets));

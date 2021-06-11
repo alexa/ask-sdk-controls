@@ -406,8 +406,7 @@ export const jsonProvider = {
                         variations: [
                             {
                                 type: 'PlainText',
-                                value:
-                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
                             },
                         ],
                     },
@@ -417,12 +416,13 @@ export const jsonProvider = {
                         {
                             name: 'GeneralControlIntent',
                             slots: [
-                                { name: 'feedback', type: 'feedback' },
-                                { name: 'filteredFeedback', type: 'filteredFeedback' },
-                                { name: 'action', type: 'action' },
+                                { name: 'feedback', type: 'feedback', prompts: {} },
+                                { name: 'filteredFeedback', type: 'filteredFeedback', prompts: {} },
+                                { name: 'action', type: 'action', prompts: {} },
                                 {
                                     name: 'target',
                                     type: 'target',
+                                    prompts: {},
                                     elicitationRequired: false,
                                     confirmationRequired: false,
                                     validations: [
@@ -435,8 +435,8 @@ export const jsonProvider = {
                                         },
                                     ],
                                 },
-                                { name: 'head', type: 'head' },
-                                { name: 'tail', type: 'tail' },
+                                { name: 'head', type: 'head', prompts: {} },
+                                { name: 'tail', type: 'tail', prompts: {} },
                             ],
                             delegationStrategy: 'SKILL_RESPONSE',
                         },
@@ -545,8 +545,7 @@ export const jsonProvider = {
                         variations: [
                             {
                                 type: 'PlainText',
-                                value:
-                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
                             },
                         ],
                     },
@@ -559,14 +558,17 @@ export const jsonProvider = {
                                 {
                                     name: 'feedback',
                                     type: 'feedback',
+                                    prompts: {},
                                 },
                                 {
                                     name: 'action',
                                     type: 'action',
+                                    prompts: {},
                                 },
                                 {
                                     name: 'target',
                                     type: 'target',
+                                    prompts: {},
                                     elicitationRequired: false,
                                     confirmationRequired: false,
                                     validations: [
@@ -582,10 +584,12 @@ export const jsonProvider = {
                                 {
                                     name: 'head',
                                     type: 'head',
+                                    prompts: {},
                                 },
                                 {
                                     name: 'tail',
                                     type: 'tail',
+                                    prompts: {},
                                 },
                             ],
                             delegationStrategy: 'SKILL_RESPONSE',

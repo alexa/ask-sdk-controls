@@ -26,6 +26,7 @@ import { IntentUtterances, ModelData } from './ModelTypes';
 
 import Intent = v1.skill.interactionModel.Intent;
 import DialogIntent = v1.skill.interactionModel.DialogIntents;
+import DialogSlotItems = v1.skill.interactionModel.DialogSlotItems;
 import Prompt = v1.skill.interactionModel.Prompt;
 import InteractionModelData = v1.skill.interactionModel.InteractionModelData;
 import SlotType = v1.skill.interactionModel.SlotType;
@@ -38,8 +39,7 @@ const dummyPrompts: Prompt[] = [
         variations: [
             {
                 type: 'PlainText',
-                value:
-                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
             },
         ],
     },
@@ -159,8 +159,10 @@ function buildDialogIntent(intent: Intent): DialogIntent {
     const dialogIntent = _.cloneDeep(intent);
     delete dialogIntent.samples;
     (dialogIntent as DialogIntent).delegationStrategy = 'SKILL_RESPONSE';
-
-    return dialogIntent;
+    (dialogIntent as DialogIntent).slots?.forEach((slot) => {
+        slot.prompts = {};
+    });
+    return dialogIntent as DialogIntent;
 }
 
 /**
