@@ -56,6 +56,7 @@ const TEST_DIALOG_INTENT: DialogIntent = {
         {
             name: 'TEST_SLOT_NAME',
             type: 'TEST_SLOT_TYPE',
+            prompts: {},
         },
     ],
 };

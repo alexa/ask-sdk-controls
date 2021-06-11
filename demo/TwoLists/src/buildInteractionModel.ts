@@ -112,15 +112,15 @@ export namespace TwoListsIM {
             },
             {
                 id: 'petKind',
-                name: { value: 'petKind' },
+                name: { value: 'petKind', synonyms: ['kind of pet', 'pet kind'] },
             },
             {
                 id: 'breed',
-                name: { value: 'breed' },
+                name: { value: 'breed', synonyms: ['type', 'variety'] },
             },
             {
                 id: 'transaction',
-                name: { value: 'transaction' },
+                name: { value: 'transaction', synonyms: ['contract', 'agreement'] },
             },
         );
 }

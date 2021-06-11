@@ -152,7 +152,8 @@ export class DynamicContainerControlState extends ContainerControlState {
  */
 export abstract class DynamicContainerControl
     extends ContainerControl
-    implements IContainerControl, ControlStateDiagramming {
+    implements IContainerControl, ControlStateDiagramming
+{
     state: DynamicContainerControlState;
     log: ILogger;
 
