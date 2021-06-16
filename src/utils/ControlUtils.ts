@@ -32,7 +32,7 @@ const log = new Logger('AskSdkControls:ControlUtils');
  */
 export async function evaluateInputHandlers(control: Control, input: ControlInput): Promise<boolean> {
     const stdHandlers = (control as any).standardInputHandlers ?? [];
-    const customHandlers = (control as any).props.inputHandling.customHandlingFuncs ?? [];
+    const customHandlers = ((control as any).props.inputHandling ?? []).customHandlingFuncs ?? [];
 
     const aplProps = (control as any).props.apl;
 
