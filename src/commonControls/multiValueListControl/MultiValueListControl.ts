@@ -512,8 +512,8 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     private rawProps: MultiValueListControlProps;
     protected props: DeepRequired<MultiValueListControlProps>;
-    private handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
-    private initiativeFunc?: (
+    protected handleFunc?: (input: ControlInput, resultBuilder: ControlResultBuilder) => void | Promise<void>;
+    protected initiativeFunc?: (
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ) => void | Promise<void>;
@@ -757,7 +757,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    private isAddWithValue(input: ControlInput): boolean {
+    protected isAddWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, values, valueType } = unpackValueControlIntent(
@@ -774,11 +774,11 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    private async handleAddWithValue(
+    protected async handleAddWithValue(
         input: ControlInput,
         resultBuilder: ControlResultBuilder,
     ): Promise<void> {
-        const slotValues = InputUtil.getMultiValueResolution(input);
+        const slotValues = InputUtil.getMultiValueResolution(input, this.props.slotType);
         let values = this.getSlotValues(slotValues);
         const validationResult = await this.validate(values, input);
         const valueIds: string[] = [];
@@ -813,7 +813,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         return;
     }
 
-    private isRemoveWithValue(input: ControlInput): boolean {
+    protected isRemoveWithValue(input: ControlInput): boolean {
         try {
             okIf(InputUtil.isIntent(input, ValueControlIntent.intentName(this.props.slotType)));
             const { feedback, action, target, values, valueType } = unpackValueControlIntent(
@@ -830,7 +830,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
     }
 
-    private handleRemoveWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
+    protected handleRemoveWithValue(input: ControlInput, resultBuilder: ControlResultBuilder) {
         const slotValues = InputUtil.getMultiValueResolution(input);
         const valueIds = this.getSlotValues(slotValues);
         const deletedValues = [];
@@ -1298,7 +1298,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
     // tsDoc - see ControlStateDiagramming
     stringifyStateForDiagram(): string {
-        let text = this.state.value.length > 0 ? this.state.value.join(', ') : '<none>';
+        let text = this.state.value.length > 0 ? JSON.stringify(this.state.value) : '<none>';
         if (this.state.elicitationAction !== undefined) {
             text += `[eliciting, ${this.state.elicitationAction}]`;
         }
@@ -1431,6 +1431,10 @@ export class MultiValueListControl extends Control implements InteractionModelCo
     // tsDoc - see InteractionModelContributor
     getTargetIds() {
         return this.props.interactionModel.targets;
+    }
+
+    setTargetIds(targets: string[]) {
+        this.props.interactionModel.targets = targets;
     }
 
     protected evaluateRenderedValue(value: StringOrList, input: ControlInput): string {

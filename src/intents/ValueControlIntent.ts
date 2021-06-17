@@ -51,7 +51,7 @@ export interface MultiValuePayload {
  *   the implementation of predicates.
  * @param intent - Intent
  */
-export function unpackValueControlIntent(intent: Intent): MultiValuePayload {
+export function unpackValueControlIntent(intent: Intent, slotTypeName?: string): MultiValuePayload {
     if (!intent.name.endsWith('ControlIntent')) {
         throw new Error(`Not a ControlIntent: ${intent.name}`);
     }
@@ -93,10 +93,16 @@ export function unpackValueControlIntent(intent: Intent): MultiValuePayload {
                 break;
             case '__Conjunction':
                 break;
+            case 'ordinal':
+                break;
+            case 'number':
+                break;
             default:
-                if (slotValue !== undefined) {
-                    values = slotValue;
-                    valueType = name;
+                if (slotTypeName === undefined || slotTypeName === name) {
+                    if (slotValue !== undefined) {
+                        values = slotValue;
+                        valueType = name;
+                    }
                 }
         }
     }

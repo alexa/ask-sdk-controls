@@ -62,7 +62,8 @@ export namespace ComponentModeDemo {
                         targets: ['builtin_choice', 'builtin_it', 'theme'],
                     },
                     apl: {
-                        renderComponent: MultiValueListControlComponentAPLBuiltIns.CheckBoxRenderer.default,
+                        renderComponent:
+                            MultiValueListControlComponentAPLBuiltIns.AggregateDuplicatesRenderer.default,
                     },
                 })),
             );

@@ -383,8 +383,8 @@ export namespace InputUtil {
      * Extracts the value and erMatch array list from a ValueControlIntent
      * @param input - Input
      */
-    export function getMultiValueResolution(input: ControlInput): MultiValueSlot[] {
-        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent);
+    export function getMultiValueResolution(input: ControlInput, slotTypeName?: string): MultiValueSlot[] {
+        const { values } = unpackValueControlIntent((input.request as IntentRequest).intent, slotTypeName);
         return values;
     }
 }
