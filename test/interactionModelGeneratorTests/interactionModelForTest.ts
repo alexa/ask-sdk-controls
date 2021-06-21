@@ -406,7 +406,8 @@ export const jsonProvider = {
                         variations: [
                             {
                                 type: 'PlainText',
-                                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                value:
+                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
                             },
                         ],
                     },
@@ -545,7 +546,8 @@ export const jsonProvider = {
                         variations: [
                             {
                                 type: 'PlainText',
-                                value: 'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
+                                value:
+                                    'This prompt is included to ensure there is a dialog model present. It is not used by skills.',
                             },
                         ],
                     },

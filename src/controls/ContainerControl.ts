@@ -14,7 +14,7 @@
 import _ from 'lodash';
 import { InputUtil } from '..';
 import { findControlById } from '../utils/ControlUtils';
-import { Control, ControlProps, ControlState } from './Control';
+import { Control, ControlInputHandlingProps, ControlProps, ControlState } from './Control';
 import { ControlInput } from './ControlInput';
 import { ControlResultBuilder } from './ControlResult';
 import { ControlServices } from './ControlServices';
@@ -57,6 +57,10 @@ export class ContainerControlProps implements ControlProps {
 
 export class ContainerControlCompleteProps implements ControlProps {
     id: string;
+    /**
+     * Props to configure input handling.
+     */
+    inputHandling?: ControlInputHandlingProps;
 }
 
 /**
@@ -119,6 +123,9 @@ export class ContainerControl extends Control implements IContainerControl, Cont
     static mergeWithDefaultProps(props: ContainerControlProps): any {
         const defaults: ContainerControlCompleteProps = {
             id: 'dummy',
+            inputHandling: {
+                customHandlingFuncs: [],
+            },
         };
         return _.merge(defaults, props);
     }
