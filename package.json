@@ -34,10 +34,14 @@
     },
     "peerDependencies": {
         "ask-sdk-core": "^2.10.2",
+        "ask-sdk-local-debug": "^1.1.0",
         "ask-sdk-model": "^1.35.1",
         "ask-smapi-model": "^1.15.3",
-        "i18next": "^19.5.4",
-        "lodash": "^4.17.15"
+        "chai": "^4.2.0",
+        "debug": "^4.1.1",
+        "i18next": "^19.9.2",
+        "lodash": "^4.17.15",
+        "tslib": "^2.0.0"
     },
     "devDependencies": {
         "@commitlint/cli": "^9.1.2",
