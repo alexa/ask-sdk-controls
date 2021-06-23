@@ -22,9 +22,14 @@
         "release": "npm run coverage && npm run lint && npm run format-check"
     },
     "dependencies": {
+        "ask-sdk-core": "^2.10.2",
         "ask-sdk-local-debug": "^1.1.0",
+        "ask-sdk-model": "^1.35.1",
+        "ask-smapi-model": "^1.15.3",
         "chai": "^4.2.0",
         "debug": "^4.1.1",
+        "i18next": "^19.9.2",
+        "lodash": "^4.17.15",
         "tslib": "^2.0.0"
     },
     "peerDependencies": {
