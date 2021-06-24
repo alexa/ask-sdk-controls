@@ -19,7 +19,6 @@ const log = ControlServices.getLogger('HelloWorld:InteractionModel');
 
 export namespace TwoListsIM {
     export const imGen = new ControlInteractionModelGenerator()
-        .buildCoreModelForControls(new MultipleLists.DemoControlManager())
         .withInvocationName('controls demo')
         .addIntent({ name: 'AMAZON.StopIntent' })
         .addIntent({ name: 'AMAZON.NavigateHomeIntent' })
@@ -104,25 +103,28 @@ export namespace TwoListsIM {
             ],
         })
 
-        .addValuesToSlotType(
-            'target',
-            {
-                id: 'species',
-                name: { value: 'species', synonyms: ['type of pet'] },
-            },
-            {
-                id: 'petKind',
-                name: { value: 'petKind', synonyms: ['kind of pet', 'pet kind'] },
-            },
-            {
-                id: 'breed',
-                name: { value: 'breed', synonyms: ['type', 'variety'] },
-            },
-            {
-                id: 'transaction',
-                name: { value: 'transaction', synonyms: ['contract', 'agreement'] },
-            },
-        );
+        .addOrMergeSlotType({
+            name: 'target',
+            values: [
+                {
+                    id: 'species',
+                    name: { value: 'species', synonyms: ['type of pet'] },
+                },
+                {
+                    id: 'petKind',
+                    name: { value: 'petKind', synonyms: ['kind of pet', 'pet kind'] },
+                },
+                {
+                    id: 'breed',
+                    name: { value: 'breed', synonyms: ['type', 'variety'] },
+                },
+                {
+                    id: 'transaction',
+                    name: { value: 'transaction', synonyms: ['contract', 'agreement'] },
+                },
+            ],
+        })
+        .buildCoreModelForControls(new MultipleLists.DemoControlManager());
 }
 
 // If launched directly, build and write to a file
