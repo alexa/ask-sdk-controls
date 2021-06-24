@@ -312,7 +312,7 @@ suite('== Custom Handler function scenarios ==', () => {
         expect(dateControlState.state.value).eq('2020-01-01');
     });
 
-    test('Check conflicts in canHandle throws a error log', async () => {
+    test('Check conflicts in canHandle throws Error', async () => {
         const rootControl = new DateSelectorManager().createControlTree();
         const input = TestInput.of(
             ValueControlIntent.of(AmazonBuiltInSlotType.DATE, {
@@ -320,23 +320,13 @@ suite('== Custom Handler function scenarios ==', () => {
                 action: $.Action.Set,
             }),
         );
-        const spy = sinon.stub(DefaultLogger.prototype, 'error');
-        const result = new ControlResultBuilder(undefined!);
-        await rootControl.canHandle(input);
-        await rootControl.handle(input, result);
-
-        expect(
-            spy.calledOnceWith(
-                'More than one handler matched. Handlers in a single control should be mutually exclusive. Defaulting to the first. handlers: ["SetWithValue (built-in)","SetValue"]',
-            ),
-        ).eq(true);
-
-        spy.restore();
-
-        const dateControlState = findControlInTreeById(rootControl, 'dateControl');
-        expect(dateControlState.state.value).eq('2018');
-        expect(result.acts).length(1);
-        expect(result.acts[0]).instanceOf(ValueSetAct);
+        try {
+            await rootControl.canHandle(input);
+        } catch (e) {
+            expect(e.message).eq(
+                'More than one handler matched. Handlers in a single control should be mutually exclusive. handlers: ["SetWithValue (built-in)","SetValue"]',
+            );
+        }
     });
 });
 
