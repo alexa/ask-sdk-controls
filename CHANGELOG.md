@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.1](https://github.com/alexa/ask-sdk-controls/compare/v0.6.0...v0.6.1) (2021-06-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Whenever a request is processed by a Control and evaluated with its defined handlers, if more than one handler matches are found, control throws an error with matching handlers.
+* **NumberControl:** Renamed NumberControlProp `ambiguousPairs` to `mostLikelyMisunderstanding`.
+Changed default prompts on NumberControl actions such as valueChanged, valueCleared.
+* converted `Control.renderAct()` function to async type and its
+                 return type to  Promise<void> and `renderAPLComponent` function to async
+                 and its return type to Promise<{[key:string]: any}> to support asynchronous functionalities
+
+### Features
+
+* builtin APL support for both blocking and non-blocking UI ([0c42a6d](https://github.com/alexa/ask-sdk-controls/commit/0c42a6d92068442f06f71ab15fc91b01f4f1332d))
+* Introduced restrictive logging of sensitive data and configuration of logging output ([56f78cf](https://github.com/alexa/ask-sdk-controls/commit/56f78cf5dedae9ac08b6c5485ef421732ebec917))
+* refactored NumberControl and its APL Components ([46f2e7d](https://github.com/alexa/ask-sdk-controls/commit/46f2e7d683b6e83c57c2de1902606116d53e8623))
+
+
+### Bug Fixes
+
+* adding optional chaining when evaluating custom handler funcs ([9e77eff](https://github.com/alexa/ask-sdk-controls/commit/9e77eff9fdf018639f88be0c8697f8a71bfca366))
+* Changed the evaluateInputHandlers function on Control to throw an error if more than one matching handlers are found ([430623b](https://github.com/alexa/ask-sdk-controls/commit/430623bf5216fb4a1a612ca3821c628eb98ac6d4))
+* Fixed MultiValueListControl StateDiagram to log state ojects as strings ([a61d4b9](https://github.com/alexa/ask-sdk-controls/commit/a61d4b9ba3c03917ff874b5ae0850252d1213993))
+* Moved global initialization of logger into functions/classes scope ([9d6944a](https://github.com/alexa/ask-sdk-controls/commit/9d6944a2da1e8d5c691223eae0e07ce8a692b167))
+* NumberControl slot elicitation ([d8de5ff](https://github.com/alexa/ask-sdk-controls/commit/d8de5ffaedbb6278afcdd617b30d1cd6b4d9303f))
+* **NumberControl:** typedoc fixes, changed logic to use map instead of switch statements ([97c934b](https://github.com/alexa/ask-sdk-controls/commit/97c934b3c295db62e677cfef7f131975950e6a93))
+* remove dead code in QuestionnaireControlBuiltins ([f74b50b](https://github.com/alexa/ask-sdk-controls/commit/f74b50b6bd74c767d5d4ab780fea65c6017fecca))
+* resolve dropped inputs in questionnaire (UserEvent race-condition) ([6a0567a](https://github.com/alexa/ask-sdk-controls/commit/6a0567a8651570efc7f85a1180d0ebf68ecf3d1c))
+
 ## [0.6.0](https://github.com/alexa/ask-sdk-controls/compare/v0.5.1...v0.6.0) (2021-03-29)
 
 
