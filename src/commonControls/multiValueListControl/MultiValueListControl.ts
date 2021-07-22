@@ -16,8 +16,8 @@ import { Intent, IntentRequest, interfaces } from 'ask-sdk-model';
 import { assert } from 'chai';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { ModelData, StringOrList } from '../..';
-import { Strings as $ } from '../../constants/Strings';
+import { getMVSSlotResolutions, ModelData, SlotResolutionValue, StringOrList } from '../..';
+import { Strings as $, Strings } from '../../constants/Strings';
 import {
     Control,
     ControlInitiativeHandler,
@@ -60,6 +60,7 @@ import { SystemAct } from '../../systemActs/SystemAct';
 import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
+import { getSlotResolutions } from '../../utils/IntentUtils';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
 import {
     MultiValueListControlAPLPropsBuiltIns,
@@ -715,6 +716,11 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             handle: this.handleRemoveWithValue,
         },
         {
+            name: 'RemoveWithOrdinal (builtin)',
+            canHandle: this.isRemoveByOrdinalIntent,
+            handle: this.handleRemoveWithOrder,
+        },
+        {
             name: 'ClearValue (builtin)',
             canHandle: this.isClearValue,
             handle: this.handleClearValue,
@@ -886,6 +892,34 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             );
             this.askElicitationQuestion(input, resultBuilder, $.Action.Remove);
         }
+        return;
+    }
+
+    private handleRemoveWithOrder(input: ControlInput, resultBuilder: ControlResultBuilder) {
+        const intent = (input.request as IntentRequest).intent;
+        const itemPositionValues = getMVSSlotResolutions(intent.slots!['ordinal']);
+        const deletedValues: StringOrList = [];
+
+        const itemPositions = Array.isArray(itemPositionValues) ? itemPositionValues : [itemPositionValues];
+        itemPositions.forEach((itemPosition: SlotResolutionValue | undefined) => {
+            const itemPositionValue = Number(itemPosition!.slotValue);
+            const index = itemPositionValue - deletedValues.length - 1;
+            if (this.state.value.length > index && index > -1) {
+                deletedValues.push(this.state.value[itemPositionValue].id);
+                this.state.value.splice(index, 1);
+            }
+        });
+
+        if (deletedValues.length > 0) {
+            resultBuilder.addAct(
+                new ValueRemovedAct(this, {
+                    value: deletedValues,
+                    renderedValue: this.evaluateRenderedValue(deletedValues, input),
+                }),
+            );
+        }
+
+        // TODO: Display invalid scenario collection message.
         return;
     }
 
@@ -1113,6 +1147,20 @@ export class MultiValueListControl extends Control implements InteractionModelCo
                 .arguments![1] as string;
             okIf(controlId === this.id);
             okIf(action === 'Complete');
+            return true;
+        } catch (e) {
+            return falseIfGuardFailed(e);
+        }
+    }
+
+    private isRemoveByOrdinalIntent(input: ControlInput): boolean {
+        try {
+            okIf(InputUtil.isIntent(input, 'GeneralMultiValueListControl_RemoveByOrderIntent'));
+            const intent = (input.request as IntentRequest).intent;
+            const ordinal = getMVSSlotResolutions(intent.slots!['ordinal']);
+            okIf(ordinal !== undefined);
+            const action = getSlotResolutions(intent.slots!['action'])?.slotValue;
+            okIf(InputUtil.actionIsMatch(action, this.props.interactionModel.actions.remove));
             return true;
         } catch (e) {
             return falseIfGuardFailed(e);
@@ -1425,6 +1473,21 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
         generator.addYesAndNoIntents();
 
+        generator.addOrMergeSlotType({
+            name: 'multiValueListItem',
+            values: [
+                {
+                    id: 'item',
+                    name: {
+                        value: 'item',
+                        synonyms: ['one', 'thing'],
+                    },
+                },
+            ],
+        });
+
+        this.addBuiltInIntents(generator);
+
         generator.ensureSlotIsDefined(this.id, this.props.slotType);
         generator.ensureSlotIsNoneOrDefined(
             this.id,
@@ -1436,6 +1499,42 @@ export class MultiValueListControl extends Control implements InteractionModelCo
         }
 
         generator.ensureSlotValueIDsAreDefined(this.id, 'target', this.props.interactionModel.targets);
+    }
+
+    private addBuiltInIntents(generator: ControlInteractionModelGenerator) {
+        this.addRemoveByOrderIntent(generator);
+    }
+
+    private addRemoveByOrderIntent(generator: ControlInteractionModelGenerator) {
+        generator.addIntent({
+            name: 'GeneralMultiValueListControl_RemoveByOrderIntent',
+            slots: [
+                {
+                    name: 'ordinal',
+                    type: 'AMAZON.Ordinal',
+                    multipleValues: {
+                        enabled: true,
+                    },
+                },
+                {
+                    name: 'item',
+                    type: 'multiValueListItem',
+                },
+                {
+                    name: 'action',
+                    type: 'action',
+                },
+                {
+                    name: 'preposition',
+                    type: 'preposition',
+                },
+                {
+                    name: 'target',
+                    type: 'target',
+                },
+            ],
+            samples: ['{action} {ordinal} {item} {preposition} {target}'],
+        });
     }
 
     // tsDoc - see InteractionModelContributor

@@ -1,0 +1,1054 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "mvl",
+      "intents": [
+        {
+          "name": "AMAZON.StopIntent"
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent"
+        },
+        {
+          "name": "AMAZON.HelpIntent"
+        },
+        {
+          "name": "AMAZON.CancelIntent"
+        },
+        {
+          "name": "AMAZON.YesIntent"
+        },
+        {
+          "name": "AMAZON.NoIntent"
+        },
+        {
+          "name": "AMAZON.FallbackIntent"
+        },
+        {
+          "name": "GeneralControlIntent",
+          "slots": [
+            {
+              "name": "feedback",
+              "type": "feedback"
+            },
+            {
+              "name": "filteredFeedback",
+              "type": "filteredFeedback"
+            },
+            {
+              "name": "action",
+              "type": "action"
+            },
+            {
+              "name": "target",
+              "type": "target"
+            },
+            {
+              "name": "head",
+              "type": "head"
+            },
+            {
+              "name": "tail",
+              "type": "tail"
+            }
+          ],
+          "samples": [
+            "{feedback} {action}",
+            "{feedback} {action} {target}",
+            "{filteredFeedback} {tail}",
+            "{feedback} {action} {tail}",
+            "{feedback} {action} {target} {tail}",
+            "{target}",
+            "{feedback} {target}",
+            "{head} {target}",
+            "{target} {tail}",
+            "{action} {target}",
+            "{head} {action}",
+            "{head} {action} {target}",
+            "{action} {tail}",
+            "{action} {target} {tail}",
+            "{head} {action} {tail}",
+            "{head} {action} {target} {tail}"
+          ]
+        },
+        {
+          "name": "GroceryItem_ValueControlIntent",
+          "slots": [
+            {
+              "name": "feedback",
+              "type": "feedback"
+            },
+            {
+              "name": "action",
+              "type": "action"
+            },
+            {
+              "name": "target",
+              "type": "target"
+            },
+            {
+              "name": "preposition",
+              "type": "preposition"
+            },
+            {
+              "name": "head",
+              "type": "head"
+            },
+            {
+              "name": "tail",
+              "type": "tail"
+            },
+            {
+              "name": "GroceryItem",
+              "type": "GroceryItem",
+              "multipleValues": {
+                "enabled": true
+              }
+            }
+          ],
+          "samples": [
+            "{GroceryItem}",
+            "{action} {GroceryItem}",
+            "{action} {preposition} {GroceryItem}",
+            "{action} {target} {preposition} {GroceryItem}",
+            "{target} {preposition} {GroceryItem}",
+            "{target} {GroceryItem}",
+            "{feedback} {GroceryItem}",
+            "{feedback} {action} {GroceryItem}",
+            "{feedback} {preposition} {GroceryItem}",
+            "{feedback} {action} {preposition} {GroceryItem}",
+            "{feedback} {action} {target} {preposition} {GroceryItem}",
+            "{feedback} {target} {preposition} {GroceryItem}",
+            "{feedback} {target} {GroceryItem}",
+            "{head} {GroceryItem}",
+            "{head} {action} {GroceryItem}",
+            "{head} {action} {preposition} {GroceryItem}",
+            "{head} {action} {target} {preposition} {GroceryItem}",
+            "{head} {target} {preposition} {GroceryItem}",
+            "{head} {target} {GroceryItem}",
+            "{GroceryItem} {tail}",
+            "{preposition} {GroceryItem} {tail}",
+            "{action} {preposition} {GroceryItem} {tail}",
+            "{action} {target} {preposition} {GroceryItem} {tail}",
+            "{target} {preposition} {GroceryItem} {tail}",
+            "{feedback} {GroceryItem} {tail}",
+            "{feedback} {preposition} {GroceryItem} {tail}",
+            "{feedback} {action} {GroceryItem} {tail}",
+            "{feedback} {action} {preposition} {GroceryItem} {tail}",
+            "{feedback} {action} {target} {preposition} {GroceryItem} {tail}",
+            "{feedback} {target} {preposition} {GroceryItem} {tail}",
+            "{feedback} {target} {GroceryItem} {tail}",
+            "{head} {GroceryItem} {tail}",
+            "{head} {preposition} {GroceryItem} {tail}",
+            "{head} {action} {GroceryItem} {tail}",
+            "{head} {action} {preposition} {GroceryItem} {tail}",
+            "{head} {target} {preposition} {GroceryItem} {tail}",
+            "{head} {target} {GroceryItem} {tail}",
+            "{head} {action} {target} {preposition} {GroceryItem} {tail}",
+            "{GroceryItem} {target}",
+            "{feedback} {GroceryItem} {target}",
+            "{head} {GroceryItem} {target}",
+            "{GroceryItem} {target} {tail}",
+            "{head} {GroceryItem} {target} {tail}"
+          ]
+        },
+        {
+          "name": "GeneralMultiValueListControl_RemoveByOrderIntent",
+          "slots": [
+            {
+              "name": "ordinal",
+              "type": "AMAZON.Ordinal",
+              "multipleValues": {
+                "enabled": true
+              }
+            },
+            {
+              "name": "item",
+              "type": "multiValueListItem"
+            },
+            {
+              "name": "action",
+              "type": "action"
+            },
+            {
+              "name": "preposition",
+              "type": "preposition"
+            },
+            {
+              "name": "target",
+              "type": "target"
+            }
+          ],
+          "samples": [
+            "{action} {ordinal} {item} {preposition} {target}"
+          ]
+        },
+        {
+          "name": "BurgerItem_ValueControlIntent",
+          "slots": [
+            {
+              "name": "feedback",
+              "type": "feedback"
+            },
+            {
+              "name": "action",
+              "type": "action"
+            },
+            {
+              "name": "target",
+              "type": "target"
+            },
+            {
+              "name": "preposition",
+              "type": "preposition"
+            },
+            {
+              "name": "head",
+              "type": "head"
+            },
+            {
+              "name": "tail",
+              "type": "tail"
+            },
+            {
+              "name": "BurgerItem",
+              "type": "BurgerItem",
+              "multipleValues": {
+                "enabled": true
+              }
+            }
+          ],
+          "samples": [
+            "{BurgerItem}",
+            "{action} {BurgerItem}",
+            "{action} {preposition} {BurgerItem}",
+            "{action} {target} {preposition} {BurgerItem}",
+            "{target} {preposition} {BurgerItem}",
+            "{target} {BurgerItem}",
+            "{feedback} {BurgerItem}",
+            "{feedback} {action} {BurgerItem}",
+            "{feedback} {preposition} {BurgerItem}",
+            "{feedback} {action} {preposition} {BurgerItem}",
+            "{feedback} {action} {target} {preposition} {BurgerItem}",
+            "{feedback} {target} {preposition} {BurgerItem}",
+            "{feedback} {target} {BurgerItem}",
+            "{head} {BurgerItem}",
+            "{head} {action} {BurgerItem}",
+            "{head} {action} {preposition} {BurgerItem}",
+            "{head} {action} {target} {preposition} {BurgerItem}",
+            "{head} {target} {preposition} {BurgerItem}",
+            "{head} {target} {BurgerItem}",
+            "{BurgerItem} {tail}",
+            "{preposition} {BurgerItem} {tail}",
+            "{action} {preposition} {BurgerItem} {tail}",
+            "{action} {target} {preposition} {BurgerItem} {tail}",
+            "{target} {preposition} {BurgerItem} {tail}",
+            "{feedback} {BurgerItem} {tail}",
+            "{feedback} {preposition} {BurgerItem} {tail}",
+            "{feedback} {action} {BurgerItem} {tail}",
+            "{feedback} {action} {preposition} {BurgerItem} {tail}",
+            "{feedback} {action} {target} {preposition} {BurgerItem} {tail}",
+            "{feedback} {target} {preposition} {BurgerItem} {tail}",
+            "{feedback} {target} {BurgerItem} {tail}",
+            "{head} {BurgerItem} {tail}",
+            "{head} {preposition} {BurgerItem} {tail}",
+            "{head} {action} {BurgerItem} {tail}",
+            "{head} {action} {preposition} {BurgerItem} {tail}",
+            "{head} {target} {preposition} {BurgerItem} {tail}",
+            "{head} {target} {BurgerItem} {tail}",
+            "{head} {action} {target} {preposition} {BurgerItem} {tail}",
+            "{BurgerItem} {target}",
+            "{feedback} {BurgerItem} {target}",
+            "{head} {BurgerItem} {target}",
+            "{BurgerItem} {target} {tail}",
+            "{head} {BurgerItem} {target} {tail}"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "YesNoMaybe",
+          "values": [
+            {
+              "id": "yes",
+              "name": {
+                "value": "yes",
+                "synonyms": [
+                  "yep",
+                  "correct",
+                  "affirmative",
+                  "yup",
+                  "yeah"
+                ]
+              }
+            },
+            {
+              "id": "no",
+              "name": {
+                "value": "no",
+                "synonyms": [
+                  "no",
+                  "nope",
+                  "no way"
+                ]
+              }
+            },
+            {
+              "id": "maybe",
+              "name": {
+                "value": "maybe",
+                "synonyms": [
+                  "maybe",
+                  "perhaps",
+                  "I haven't decided"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maybe",
+          "values": [
+            {
+              "id": "maybe",
+              "name": {
+                "value": "maybe",
+                "synonyms": [
+                  "maybe",
+                  "perhaps",
+                  "I haven't decided"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GroceryItem",
+          "values": [
+            {
+              "id": "Milk",
+              "name": {
+                "value": "Milk",
+                "synonyms": [
+                  "milk",
+                  "almond milk",
+                  "low fat milk"
+                ]
+              }
+            },
+            {
+              "id": "Eggs",
+              "name": {
+                "value": "Eggs",
+                "synonyms": [
+                  "egg",
+                  "eggs"
+                ]
+              }
+            },
+            {
+              "id": "Cereal",
+              "name": {
+                "value": "Cereal",
+                "synonyms": [
+                  "cereal",
+                  "oats",
+                  "breakfast food"
+                ]
+              }
+            },
+            {
+              "id": "Bread",
+              "name": {
+                "value": "Bread",
+                "synonyms": [
+                  "bread"
+                ]
+              }
+            },
+            {
+              "id": "Honey",
+              "name": {
+                "value": "Honey",
+                "synonyms": [
+                  "honey",
+                  "nectar"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "BurgerItem",
+          "values": [
+            {
+              "id": "Chicken",
+              "name": {
+                "value": "Chicken burger",
+                "synonyms": [
+                  "Chicken burger"
+                ]
+              }
+            },
+            {
+              "id": "Tofu",
+              "name": {
+                "value": "Tofu burger",
+                "synonyms": [
+                  "Tofu burger"
+                ]
+              }
+            },
+            {
+              "id": "Cheese",
+              "name": {
+                "value": "Cheese burger",
+                "synonyms": [
+                  "Cheese burger"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "feedback",
+          "values": [
+            {
+              "id": "builtin_affirm",
+              "name": {
+                "value": "affirm",
+                "synonyms": [
+                  "yes I do",
+                  "okay",
+                  "kay",
+                  "k",
+                  "yes",
+                  "yup",
+                  "yep",
+                  "yes",
+                  "ya",
+                  "yes I want",
+                  "yes I need",
+                  "yes I said",
+                  "yes that's right",
+                  "that's correct",
+                  "ah yes",
+                  "affirmative",
+                  "makes sense",
+                  "right",
+                  "sounds good",
+                  "sure",
+                  "that's right",
+                  "totally",
+                  "works for me",
+                  "yeah",
+                  "yeah ok",
+                  "yes ok",
+                  "yes that's good",
+                  "yes sure",
+                  "yes good",
+                  "yes exactly",
+                  "exactly",
+                  "yes I do",
+                  "absolutely",
+                  "yes absolutely",
+                  "fine",
+                  "yes fine",
+                  "I have",
+                  "yes I have"
+                ]
+              }
+            },
+            {
+              "id": "builtin_disaffirm",
+              "name": {
+                "value": "disaffirm",
+                "synonyms": [
+                  "no",
+                  "no no",
+                  "no no no",
+                  "no no no no",
+                  "no I want",
+                  "no I said",
+                  "no not that",
+                  "not even close",
+                  "nope",
+                  "incorrect",
+                  "you misunderstood",
+                  "you have it wrong",
+                  "that's wrong",
+                  "thats wrong",
+                  "wrong",
+                  "absolutely not",
+                  "I don't think so",
+                  "naw",
+                  "naw",
+                  "negative",
+                  "never",
+                  "no alexa",
+                  "no amazon",
+                  "no incorrect",
+                  "no that's wrong",
+                  "no it's not",
+                  "definitely not",
+                  "no definitely not",
+                  "not ever",
+                  "oh no",
+                  "ohh no",
+                  "o no no",
+                  "please no",
+                  "that's not what I want",
+                  "that was totally wrong",
+                  "that is totally wrong",
+                  "that is wrong",
+                  "I do not have",
+                  "I don't have",
+                  "I do not",
+                  "I don't",
+                  "no I do not",
+                  "no I don't",
+                  "no I do not have",
+                  "no I do not have",
+                  "no I don't have",
+                  "no I don't have"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "filteredFeedback",
+          "values": [
+            {
+              "id": "placeholder",
+              "name": {
+                "value": "placeholder_awaiting_real_values",
+                "synonyms": [
+                  "placeholder_awaiting_real_values_synonym"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "head",
+          "values": [
+            {
+              "id": "builtin_head",
+              "name": {
+                "value": "head",
+                "synonyms": [
+                  "I",
+                  "I'll",
+                  "please",
+                  "thanks",
+                  "thank you",
+                  "I will",
+                  "I want you to",
+                  "I want you to just",
+                  "I need you to",
+                  "I need you to just",
+                  "I think",
+                  "I think just",
+                  "I think I want",
+                  "I think I need",
+                  "I think you can",
+                  "I think you can just",
+                  "I think that",
+                  "I'm pretty sure",
+                  "I'm pretty sure that",
+                  "I am pretty sure",
+                  "I am pretty sure that",
+                  "I believe",
+                  "I believe that",
+                  "You can",
+                  "You can just",
+                  "You can just go ahead and",
+                  "You should",
+                  "You should just",
+                  "Just",
+                  "Go ahead and",
+                  "Just go ahead",
+                  "Just go ahead and",
+                  "I only"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "tail",
+          "values": [
+            {
+              "id": "builtin_tail",
+              "name": {
+                "value": "tail",
+                "synonyms": [
+                  "please",
+                  "thanks",
+                  "now please",
+                  "now thanks",
+                  "please thanks",
+                  "will be fine",
+                  "will be fine thanks",
+                  "is good",
+                  "is good thanks",
+                  "will be good",
+                  "will be good thanks",
+                  "is plenty",
+                  "is plenty thanks",
+                  "will be plenty",
+                  "will be plenty thanks",
+                  "is great",
+                  "is great thanks",
+                  "will be great",
+                  "will be great thanks",
+                  "will work",
+                  "will work thanks",
+                  "is correct",
+                  "is correct thanks",
+                  "is right",
+                  "is right thanks",
+                  "at a time",
+                  "for some reason"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "conjunction",
+          "values": [
+            {
+              "id": "builtin_conjunction",
+              "name": {
+                "value": "conjunction",
+                "synonyms": [
+                  "and",
+                  "and then",
+                  "then",
+                  "and also"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "preposition",
+          "values": [
+            {
+              "id": "builtin_preposition",
+              "name": {
+                "value": "preposition",
+                "synonyms": [
+                  "the",
+                  "to",
+                  "to the",
+                  "to be",
+                  "to go",
+                  "in",
+                  "in to",
+                  "into",
+                  "is",
+                  "equal to",
+                  "to be equal to",
+                  "also",
+                  "to also be",
+                  "to be also",
+                  "from",
+                  "until"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "action",
+          "values": [
+            {
+              "id": "builtin_set",
+              "name": {
+                "value": "set",
+                "synonyms": [
+                  "set",
+                  "assign",
+                  "make",
+                  "will be",
+                  "must be",
+                  "must be set to",
+                  "must be equal to",
+                  "should be",
+                  "should be",
+                  "should be set to",
+                  "should be equal to",
+                  "needs to be",
+                  "needs to be set to"
+                ]
+              }
+            },
+            {
+              "id": "builtin_change",
+              "name": {
+                "value": "change",
+                "synonyms": [
+                  "update",
+                  "move",
+                  "alter",
+                  "change",
+                  "switch",
+                  "should be",
+                  "should be changed to",
+                  "should be changed",
+                  "should be updated to",
+                  "should be updated",
+                  "should be altered to",
+                  "should be altered",
+                  "needs to be changed to",
+                  "needs to be changed",
+                  "needs to be updated to",
+                  "needs to be updated",
+                  "needs to be altered to",
+                  "needs to be altered"
+                ]
+              }
+            },
+            {
+              "id": "builtin_select",
+              "name": {
+                "value": "select",
+                "synonyms": [
+                  "select",
+                  "choose",
+                  "take",
+                  "pick",
+                  "want",
+                  "need",
+                  "go with",
+                  "be fine with",
+                  "going to go with",
+                  "gonna pick",
+                  "gonna go with",
+                  "be taking"
+                ]
+              }
+            },
+            {
+              "id": "builtin_complete",
+              "name": {
+                "value": "complete",
+                "synonyms": [
+                  "complete",
+                  "am done",
+                  "can be done",
+                  "am complete",
+                  "don't have anything else",
+                  "nothing further",
+                  "that's it",
+                  "all done",
+                  "no more",
+                  "submit",
+                  "nothing else",
+                  "got nothing else",
+                  "got nothing more",
+                  "not nothing further"
+                ]
+              }
+            },
+            {
+              "id": "builtin_goBack",
+              "name": {
+                "value": "goBack",
+                "synonyms": [
+                  "back",
+                  "go back",
+                  "go back to previous",
+                  "go back to the last",
+                  "go back to last",
+                  "return",
+                  "go backward",
+                  "back to previous",
+                  "back to last"
+                ]
+              }
+            },
+            {
+              "id": "builtin_start",
+              "name": {
+                "value": "start",
+                "synonyms": [
+                  "start",
+                  "commence",
+                  "begin"
+                ]
+              }
+            },
+            {
+              "id": "builtin_restart",
+              "name": {
+                "value": "restart",
+                "synonyms": [
+                  "recommence",
+                  "start over"
+                ]
+              }
+            },
+            {
+              "id": "builtin_resume",
+              "name": {
+                "value": "resume",
+                "synonyms": [
+                  "continue"
+                ]
+              }
+            },
+            {
+              "id": "builtin_add",
+              "name": {
+                "value": "add",
+                "synonyms": [
+                  "add"
+                ]
+              }
+            },
+            {
+              "id": "builtin_remove",
+              "name": {
+                "value": "remove",
+                "synonyms": [
+                  "remove",
+                  "delete"
+                ]
+              }
+            },
+            {
+              "id": "builtin_clear",
+              "name": {
+                "value": "clear",
+                "synonyms": [
+                  "remove all",
+                  "clear"
+                ]
+              }
+            },
+            {
+              "id": "builtin_ignore",
+              "name": {
+                "value": "ignore",
+                "synonyms": [
+                  "ignore"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "target",
+          "values": [
+            {
+              "id": "builtin_it",
+              "name": {
+                "value": "it",
+                "synonyms": [
+                  "it",
+                  "this",
+                  "that",
+                  "them",
+                  "them all",
+                  "those",
+                  "all those",
+                  "most",
+                  "most all",
+                  "most all of them",
+                  "most of them",
+                  "almost all",
+                  "almost all of them"
+                ]
+              }
+            },
+            {
+              "id": "builtin_date",
+              "name": {
+                "value": "date",
+                "synonyms": [
+                  "date",
+                  "the date",
+                  "day",
+                  "the day"
+                ]
+              }
+            },
+            {
+              "id": "builtin_number",
+              "name": {
+                "value": "number",
+                "synonyms": [
+                  "the number"
+                ]
+              }
+            },
+            {
+              "id": "builtin_choice",
+              "name": {
+                "value": "choice",
+                "synonyms": [
+                  "my choice",
+                  "selection",
+                  "my selection"
+                ]
+              }
+            },
+            {
+              "id": "builtin_start",
+              "name": {
+                "value": "start",
+                "synonyms": [
+                  "the start"
+                ]
+              }
+            },
+            {
+              "id": "builtin_end",
+              "name": {
+                "value": "end",
+                "synonyms": [
+                  "the end"
+                ]
+              }
+            },
+            {
+              "id": "builtin_start_date",
+              "name": {
+                "value": "startDate",
+                "synonyms": [
+                  "start date",
+                  "the start date",
+                  "starting date",
+                  "the starting date"
+                ]
+              }
+            },
+            {
+              "id": "builtin_end_date",
+              "name": {
+                "value": "endDate",
+                "synonyms": [
+                  "end date",
+                  "the end date",
+                  "ending date",
+                  "the ending date"
+                ]
+              }
+            },
+            {
+              "id": "builtin_date_range",
+              "name": {
+                "value": "dateRange",
+                "synonyms": [
+                  "date range",
+                  "the date range",
+                  "dates",
+                  "the dates"
+                ]
+              }
+            },
+            {
+              "id": "builtin_questionnaire",
+              "name": {
+                "value": "questionnaire",
+                "synonyms": [
+                  "questionnaire",
+                  "the questionnaire",
+                  "the questions",
+                  "survey",
+                  "the survey"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "multiValueListItem",
+          "values": [
+            {
+              "id": "item",
+              "name": {
+                "value": "item",
+                "synonyms": [
+                  "one",
+                  "thing"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "HIGH"
+        }
+      }
+    },
+    "prompts": [
+      {
+        "id": "Slot.Validation.564246223579.1467418044248.678461230495",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "This prompt is included to ensure there is a dialog model present. It is not used by skills."
+          }
+        ]
+      }
+    ],
+    "dialog": {
+      "intents": [
+        {
+          "name": "GeneralControlIntent",
+          "slots": [
+            {
+              "name": "feedback",
+              "type": "feedback",
+              "prompts": {}
+            },
+            {
+              "name": "filteredFeedback",
+              "type": "filteredFeedback",
+              "prompts": {}
+            },
+            {
+              "name": "action",
+              "type": "action",
+              "prompts": {}
+            },
+            {
+              "name": "target",
+              "type": "target",
+              "prompts": {},
+              "elicitationRequired": false,
+              "confirmationRequired": false,
+              "validations": [
+                {
+                  "type": "isNotInSet",
+                  "prompt": "Slot.Validation.564246223579.1467418044248.678461230495",
+                  "values": [
+                    "This prompt is included to ensure there is a dialog model present. It is not used by skills."
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "head",
+              "type": "head",
+              "prompts": {}
+            },
+            {
+              "name": "tail",
+              "type": "tail",
+              "prompts": {}
+            }
+          ],
+          "delegationStrategy": "SKILL_RESPONSE"
+        }
+      ]
+    }
+  }
+}
