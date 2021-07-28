@@ -404,7 +404,7 @@ export class ControlHandler implements RequestHandler {
 
         if (response.reprompt === undefined) {
             response.reprompt = { outputSpeech: { type: 'PlainText', text: repromptPrefix } };
-        } else if (response.reprompt.outputSpeech.type === 'SSML') {
+        } else if (response.reprompt.outputSpeech?.type === 'SSML') {
             response.reprompt.outputSpeech = {
                 type: 'SSML',
                 ssml: reprompt.replace('<speak>', `<speak>${repromptPrefix}`),
@@ -427,9 +427,11 @@ export class ControlHandler implements RequestHandler {
         const reprompt =
             response.reprompt === undefined
                 ? ''
-                : response.reprompt.outputSpeech.type === 'SSML'
+                : response.reprompt.outputSpeech?.type === 'SSML'
                 ? response.reprompt.outputSpeech.ssml.replace('<ssml>', '').replace('</ssml>', '')
-                : response.reprompt.outputSpeech.text;
+                : response.reprompt.outputSpeech?.type === 'PlainText'
+                ? response.reprompt.outputSpeech?.text
+                : '';
         return [prompt, reprompt];
     }
 

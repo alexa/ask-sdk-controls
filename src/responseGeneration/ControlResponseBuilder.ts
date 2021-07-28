@@ -279,7 +279,10 @@ export class ControlResponseBuilder implements ResponseBuilder {
         this.coreBuilder.addDirective(directive);
         return this;
     }
-
+    addDirectiveToReprompt(directive: Directive): this {
+        this.coreBuilder.addDirectiveToReprompt(directive);
+        return this;
+    }
     // helpers for common directives (incomplete)
     addDynamicEntitiesDirective(dynamicEntitiesDirective: dialog.DynamicEntitiesDirective) {
         this.coreBuilder.addDirective(dynamicEntitiesDirective);
