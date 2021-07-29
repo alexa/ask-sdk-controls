@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.2](https://github.com/alexa/ask-sdk-controls/compare/v0.6.1...v0.6.2) (2021-07-29)
+
+
+### Features
+
+* Adding Directive support for RePrompt SPI ([550ca98](https://github.com/alexa/ask-sdk-controls/commit/550ca981dc1b30087ed7169aa75cd99887ca516e))
+
 ### [0.6.1](https://github.com/alexa/ask-sdk-controls/compare/v0.6.0...v0.6.1) (2021-06-24)
 
 
