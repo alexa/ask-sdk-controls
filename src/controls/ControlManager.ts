@@ -372,7 +372,7 @@ function updateIMForControlTree(
  * @param locale - The locale to specialize to.
  * @param resources - Resources for all supported locales.
  */
-function i18nInit(locale: string, resources: Resource): void {
+export function i18nInit(locale: string, resources: Resource): void {
     if (!locale) {
         throw new Error('Please specify the language.');
     }
