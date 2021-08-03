@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.3](https://github.com/alexa/ask-sdk-controls/compare/v0.6.2...v0.6.3) (2021-08-03)
+
+
+### Bug Fixes
+
+* exported i18Init function on ControlManager ([60897e3](https://github.com/alexa/ask-sdk-controls/commit/60897e3d358ae6c5dcff75f4bf9e030c1e9d44f1))
+
 ### [0.6.2](https://github.com/alexa/ask-sdk-controls/compare/v0.6.1...v0.6.2) (2021-07-29)
 
 
