@@ -24,6 +24,7 @@ import {
     ValueClearedPayload,
     ValueRemovedPayload,
     ValueSetPayload,
+    CanFulfillIntentPayload as CanFulfillIntentPayload,
 } from './PayloadTypes';
 import { SystemAct } from './SystemAct';
 
@@ -408,5 +409,20 @@ export class InvalidRemoveValueAct<T> extends ContentAct {
                 value: this.payload.value,
             }),
         );
+    }
+}
+
+export class CanFulfillIntentAct extends ContentAct {
+    payload: CanFulfillIntentPayload;
+
+    constructor(control: Control, payload: CanFulfillIntentPayload) {
+        super(control);
+        this.payload = {
+            intent: payload.intent,
+        };
+    }
+
+    render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
+        controlResponseBuilder.withCanFulfillIntent(this.payload.intent);
     }
 }

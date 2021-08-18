@@ -19,7 +19,15 @@ import {
     ResponseFactory,
     Skill,
 } from 'ask-sdk-core';
-import { Intent, IntentRequest, interfaces, LaunchRequest, Request, RequestEnvelope } from 'ask-sdk-model';
+import {
+    Intent,
+    IntentRequest,
+    interfaces,
+    LaunchRequest,
+    Request,
+    RequestEnvelope,
+    canfulfill,
+} from 'ask-sdk-model';
 import { expect } from 'chai';
 import _ from 'lodash';
 import { Control } from '../../controls/Control';
@@ -185,7 +193,10 @@ export async function testTurn(
     } else {
         const expectedPrompt: string =
             typeof expectedResponse === 'string' ? expectedResponse : expectedResponse.prompt;
-        if (!expectedPrompt.toLowerCase().startsWith('a:')) {
+        if (
+            !expectedPrompt.toLowerCase().startsWith('a:') &&
+            input.handlerInput.requestEnvelope.request.type !== 'CanFulfillIntentRequest'
+        ) {
             throw new Error(
                 `test configuration error: Alexa prompt should start with A: -->${expectedResponse}`,
             );
@@ -284,6 +295,24 @@ export class TestInput {
         };
 
         return dummyControlInput(userEvent);
+    }
+
+    public static canFulfillIntentRequest(
+        nameOrIntent: string | Intent,
+        slotValues?: { [k: string]: any },
+    ): ControlInput {
+        const intent =
+            typeof nameOrIntent === 'string' ? IntentBuilder.of(nameOrIntent, slotValues) : nameOrIntent;
+        const canFulfillIntentRequest: canfulfill.CanFulfillIntentRequest = {
+            type: 'CanFulfillIntentRequest',
+            requestId: makeRequestId(),
+            timestamp: '2020-10-19T18:46:20Z',
+            locale: 'en-US',
+            dialogState: 'STARTED',
+            intent,
+        };
+
+        return dummyControlInput(canFulfillIntentRequest);
     }
 }
 
