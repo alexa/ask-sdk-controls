@@ -10,6 +10,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import { canfulfill } from 'ask-sdk-model';
 
 /**
  * Payload for ValueSetAct
@@ -183,4 +184,11 @@ export interface RequestRemovedValueByListActPayload {
 export interface LiteralContentPayload {
     promptFragment: string;
     repromptFragment?: string;
+}
+
+/**
+ * Payload for CanFulfillIntentAct
+ */
+export interface CanFulfillIntentPayload {
+    intent: canfulfill.CanFulfillIntent;
 }
