@@ -24,7 +24,7 @@ import {
     ValueClearedPayload,
     ValueRemovedPayload,
     ValueSetPayload,
-    CanFulfillIntentPayload as CanFulfillIntentPayload,
+    CanFulfillIntentPayload
 } from './PayloadTypes';
 import { SystemAct } from './SystemAct';
 
@@ -417,9 +417,7 @@ export class CanFulfillIntentAct extends ContentAct {
 
     constructor(control: Control, payload: CanFulfillIntentPayload) {
         super(control);
-        this.payload = {
-            intent: payload.intent,
-        };
+        this.payload = payload;
     }
 
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
