@@ -29,7 +29,7 @@ import { Control } from '../../src/controls/Control';
 import { ControlManager } from '../../src/controls/ControlManager';
 import { ValueControlIntent } from '../../src/intents/ValueControlIntent';
 import { ControlHandler } from '../../src/runtime/ControlHandler';
-import { testE2E, TestInput, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
+import { testE2E, TestInput, testTurn, waitForDebugger } from '../../src/utils/testSupport/TestingUtils';
 import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
 
 waitForDebugger();
@@ -50,6 +50,9 @@ suite('NumberControl e2e tests', () => {
                     (state) => state.value > 0 || { renderedReason: 'the age must be positive' },
                     (state) => state.value % 2 === 0 || { renderedReason: 'the age must be even' },
                 ],
+                apl: {
+                    validationFailedMessage: 'Sorry, that value is not valid.',
+                },
             });
         }
     }
@@ -282,24 +285,38 @@ suite('NumberControl e2e tests', () => {
             'A: How old will you be?',
             'U: <APL Touch>',
             TestInput.simpleUserEvent(['ageSelector', 40]),
-            'A: Great.',
+            'A: ', // No voice prompt for touch
         ]);
         expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(40);
     });
 
     test('APL screen input is invalid, set to a new valid value', async () => {
         const requestHandler = new ControlHandler(new AgeControlManager());
-        await testE2E(requestHandler, [
+        const invoker = new SkillInvoker(requestHandler);
+
+        await testTurn(
+            invoker,
             'U: set my age',
             TestInput.of(GeneralControlIntent.of({ action: $.Action.Set })),
             'A: How old will you be?',
+        );
+
+        await testTurn(
+            invoker,
             'U: <APL Touch>',
             TestInput.simpleUserEvent(['ageSelector', 3]),
-            "A: Sorry but that's not a valid choice because the age must be even. How old will you be?",
+            'A: ', // No voice prompt for touch
+        );
+
+        expect(requestHandler.getSerializableControlStates().ageSelector.value).equals(3);
+        expect(requestHandler.getSerializableControlStates().ageSelector.confirmed).equals(false);
+
+        await testTurn(
+            invoker,
             'U: fourteen',
             TestInput.of(ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, { 'AMAZON.NUMBER': '14' })),
             'A: Great.',
-        ]);
+        );
     });
 
     test('set age value with explicit disaffirmation and suggestions', async () => {

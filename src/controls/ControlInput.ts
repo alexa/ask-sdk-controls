@@ -16,6 +16,40 @@ import { Request } from 'ask-sdk-model';
 import _ from 'lodash';
 import { IControlInput } from './interfaces/IControlInput';
 import { IControl } from './interfaces/IControl';
+import { InputModality, ResponseStyle } from '../modality/ModalityEvaluation';
+
+/**
+ * Properties for creating a ControlInput instance.
+ */
+export interface ControlInputProps {
+    /**
+     * The core input for the request.
+     */
+    handlerInput: HandlerInput;
+
+    /**
+     * The turn number of the current request.
+     */
+    turnNumber: number;
+
+    /**
+     * A map of Control IDs to Controls for the current control tree.
+     */
+    controlMap: { [index: string]: IControl };
+
+    /**
+     * The style in which the skill is recommended to respond to the current request,
+     * e.g. with a screen or voice interface, based on how the user responded to
+     * previous requests.
+     */
+    suggestedResponseStyle: ResponseStyle;
+
+    /**
+     * The history of how the user responded to previous requests,
+     * e.g. with touch or voice.
+     */
+    inputModalityHistory: InputModality[];
+}
 
 /**
  * Defines an expanded input object passed around during processing by Controls.
@@ -43,6 +77,18 @@ export class ControlInput implements IControlInput {
     readonly turnNumber: number;
 
     /**
+     * The style in which the skill is recommended to respond to the request,
+     * e.g. with a screen or voice modality.
+     */
+    readonly suggestedResponseStyle: ResponseStyle;
+
+    /**
+     * The history of what modality the user responded with for each turn,
+     * e.g. voice or touch.
+     */
+    readonly inputModalityHistory: InputModality[];
+
+    /**
      * All the controls of the control tree, indexed by controlID.
      *
      * Usage:
@@ -55,10 +101,12 @@ export class ControlInput implements IControlInput {
      */
     readonly controls: { [index: string]: IControl };
 
-    constructor(handlerInput: HandlerInput, turnNumber: number, controlMap: { [index: string]: IControl }) {
-        this.handlerInput = handlerInput;
+    constructor(props: ControlInputProps) {
+        this.handlerInput = props.handlerInput;
         this.request = this.handlerInput.requestEnvelope.request;
-        this.turnNumber = turnNumber;
-        this.controls = controlMap;
+        this.turnNumber = props.turnNumber;
+        this.controls = props.controlMap;
+        this.suggestedResponseStyle = props.suggestedResponseStyle;
+        this.inputModalityHistory = props.inputModalityHistory;
     }
 }

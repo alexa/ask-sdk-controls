@@ -11,6 +11,7 @@
  * permissions and limitations under the License.
  */
 
+import { expect } from 'chai';
 import { suite, test } from 'mocha';
 import { GeneralControlIntent } from '../../src';
 import { ListControl } from '../../src/commonControls/listControl/ListControl';
@@ -142,6 +143,21 @@ suite('ListControl e2e tests', () => {
             TestInput.of(IntentBuilder.of(AmazonIntent.YesIntent)),
             'A: Great.',
         );
+    });
+
+    test('Select by touch', async () => {
+        const requestHandler = new ControlHandler(new ListControlManager());
+        const invoker = new SkillInvoker(requestHandler);
+
+        await testTurn(
+            invoker,
+            'U: <touches "MacBook">',
+            TestInput.simpleUserEvent(['apple', 3]),
+            'A: ', // No voice prompt for touch
+        );
+
+        expect(requestHandler.getSerializableControlStates().apple.value).equals('MacBook');
+        expect(requestHandler.getSerializableControlStates().apple.erMatch).equals(true);
     });
 
     //--

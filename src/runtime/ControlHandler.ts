@@ -25,6 +25,7 @@ import { IControlInput } from '../controls/interfaces/IControlInput';
 import { IControlManager } from '../controls/interfaces/IControlManager';
 import { IControlResultBuilder } from '../controls/interfaces/IControlResultBuilder';
 import { ILogger } from '../controls/interfaces/ILogger';
+import { InputModality, InputModalityEvaluator } from '../modality/ModalityEvaluation';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { generateControlTreeTextDiagram } from '../utils/ControlTreeVisualization';
 import { visitControls } from '../utils/ControlVisitor';
@@ -123,16 +124,43 @@ export class ControlHandler implements RequestHandler {
         const stateMap = await this.controlManager.loadControlStateMap(handlerInput);
         this.controlManager.reestablishControlStates(this.rootControl, stateMap);
 
-        // create the input object for use in the main processing.
-        const controlsMap = ControlHandler.createControlMap(this.rootControl, {});
-        this.controlInput = new ControlInput(
-            handlerInput,
-            this.additionalSessionContext.turnNumber,
-            controlsMap,
+        // determine the input modality and recommended output modality
+        const inputModality = this.controlManager.evaluateInputModality(handlerInput);
+        const inputModalityHistory = this.recordInputModality(
+            handlerInput.attributesManager.getSessionAttributes(),
+            inputModality,
         );
+        const suggestedResponseStyle = this.controlManager.evaluateResponseStyle(
+            handlerInput,
+            inputModalityHistory,
+        );
+
+        // create the input object for use in the main processing.
+        const controlMap = ControlHandler.createControlMap(this.rootControl, {});
+        this.controlInput = new ControlInput({
+            handlerInput,
+            turnNumber: this.additionalSessionContext.turnNumber,
+            controlMap,
+            suggestedResponseStyle,
+            inputModalityHistory,
+        });
 
         // userAgent setup
         UserAgentManager.registerComponent(this.userAgentInfo());
+    }
+
+    private recordInputModality(
+        stateMap: { [key: string]: any; modalityHistory?: InputModality[] },
+        modalityToRecord: InputModality,
+    ) {
+        if (!stateMap.modalityHistory) {
+            stateMap.modalityHistory = [];
+        }
+
+        const modalityHistory = stateMap.modalityHistory as InputModality[];
+        modalityHistory.push(modalityToRecord);
+
+        return modalityHistory;
     }
 
     private static createControlMap(

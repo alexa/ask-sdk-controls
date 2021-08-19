@@ -84,8 +84,11 @@ suite('Number Demo', () => {
             invoker,
             'U: __',
             TestInput.simpleUserEvent(['number', 40]),
-            'A: Ok. Value set to 40.',
+            'A: ', // No voice prompt for touch
         );
+
+        expect(requestHandler.getSerializableControlStates().number.value).equals(40);
+        expect(requestHandler.getSerializableControlStates().number.confirmed).equals(true);
     });
 
     test('Number Demo - screen input, invalid, new value valid', async () => {
@@ -97,8 +100,11 @@ suite('Number Demo', () => {
             invoker,
             'U: __',
             TestInput.simpleUserEvent(['number', 3]),
-            "A: Sorry but that's not a valid choice because the value must be even. What number?",
+            'A: ', // No voice prompt for touch
         );
+
+        expect(requestHandler.getSerializableControlStates().number.value).equals(3);
+        expect(requestHandler.getSerializableControlStates().number.confirmed).equals(false);
 
         await testTurn(
             invoker,

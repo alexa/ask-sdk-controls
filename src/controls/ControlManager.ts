@@ -32,6 +32,13 @@ import { isContainerControl } from './interfaces/IContainerControl';
 import { IControl } from './interfaces/IControl';
 import { IControlManager } from './interfaces/IControlManager';
 import { ILogger } from './interfaces/ILogger';
+import {
+    InputModality,
+    ResponseStyle,
+    InputModalityEvaluator,
+    ResponseStyleEvaluator,
+    ModalityEvaluationDefaults,
+} from '../modality/ModalityEvaluation';
 
 const MODULE_NAME = 'AskSdkControls:ControlManager';
 /**
@@ -65,6 +72,22 @@ export interface ControlManagerProps {
      * to be used across all Controls.
      */
     services?: ControlServicesProps;
+
+    /**
+     * Overrides the built-in function for determining how a user responded to a
+     * request.
+     *
+     * Default: The default is defined in `src/modlity/ModalityEvaluation.ts`
+     */
+    inputModalityEvaluator?: InputModalityEvaluator;
+
+    /**
+     * Overrides the built-in function for determining how the next turn should be
+     * presented to a user.
+     *
+     * Default: The default is defined in `src/modlity/ModalityEvaluation.ts`
+     */
+    responseStyleEvaluator?: ResponseStyleEvaluator;
 }
 
 /**
@@ -133,6 +156,18 @@ export abstract class ControlManager implements IControlManager {
     log: ILogger;
 
     /**
+     * Configured function for determining how a user responded to a
+     * request.
+     */
+    inputModalityEvaluator: InputModalityEvaluator;
+
+    /**
+     * Configured function for determining how the next turn should be
+     * presented to a user.
+     */
+    responseStyleEvaluator: ResponseStyleEvaluator;
+
+    /**
      * Creates an instance of a Control Manager.
      * @param props - props
      */
@@ -142,6 +177,8 @@ export abstract class ControlManager implements IControlManager {
         this.log = this.props.services.logger.getLogger(MODULE_NAME);
         const resource: Resource = _.merge(defaultI18nResources, this.props.i18nResources);
         i18nInit(this.props.locale, resource);
+        this.inputModalityEvaluator = this.props.inputModalityEvaluator;
+        this.responseStyleEvaluator = this.props.responseStyleEvaluator;
     }
 
     /**
@@ -154,6 +191,8 @@ export abstract class ControlManager implements IControlManager {
             locale: 'en-US',
             i18nResources: {},
             services: ControlServices.getDefaults(),
+            inputModalityEvaluator: ModalityEvaluationDefaults.defaultInputModalityEvaluator,
+            responseStyleEvaluator: ModalityEvaluationDefaults.defaultResponseStyleEvaluator,
         };
 
         return _.mergeWith(defaults, props);
@@ -304,21 +343,49 @@ export abstract class ControlManager implements IControlManager {
         );
     }
 
+    /**
+     * Retrieves a specific attribute in the state map of this session.
+     * @param attributeKey - Attribute to retrieve
+     * @param handlerInput - Input for the current turn
+     * @returns The value of the attribute, or undefined if not present.
+     */
+    static getStateAttribute(attributeKey: string, handlerInput: HandlerInput): any {
+        return handlerInput.attributesManager.getSessionAttributes()[attributeKey];
+    }
+
+    /**
+     * Modifies a specific attribute in the state map of this session.
+     * @param attributeKey - Attribute to modify
+     * @param value - New value for the attribute being modified
+     * @param handlerInput - Input for the current turn
+     */
+    static setStateAttribute(attributeKey: string, value: any, handlerInput: HandlerInput): void {
+        handlerInput.attributesManager.getSessionAttributes()[attributeKey] = value;
+    }
+
     static saveControlStateToSessionAttributes(
         state: any,
         handlerInput: HandlerInput,
         attributeKey: string,
     ): void {
-        handlerInput.attributesManager.getSessionAttributes()[attributeKey] = state;
+        this.setStateAttribute(attributeKey, state, handlerInput);
     }
 
     static loadControlStateMapFromSessionAttributes(
         handlerInput: HandlerInput,
         attributeKey: string,
     ): { [key: string]: any } {
-        const retrievedStateJSON = handlerInput.attributesManager.getSessionAttributes()[attributeKey];
+        const retrievedStateJSON = this.getStateAttribute(attributeKey, handlerInput);
         const stateMap = retrievedStateJSON !== undefined ? JSON.parse(retrievedStateJSON) : {};
         return stateMap;
+    }
+
+    evaluateInputModality(handlerInput: HandlerInput): InputModality {
+        return this.inputModalityEvaluator(handlerInput);
+    }
+
+    evaluateResponseStyle(handlerInput: HandlerInput, history: InputModality[]): ResponseStyle {
+        return this.responseStyleEvaluator(handlerInput, history);
     }
 }
 
