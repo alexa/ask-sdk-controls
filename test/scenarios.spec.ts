@@ -446,9 +446,8 @@ suite('== Custom List APL Props ==', () => {
         const dataSource = (response as any).directive[0].datasources;
 
         expect(response.directive?.length).eq(1);
-        expect(response.prompt).eq(
-            'Sorry, Wizard House: Muggle is not a valid choice because houseControl validation Failed. What is your selection? Some suggestions are Wizard House: Gryffindor, Wizard House: Ravenclaw or Wizard House: Slytherin.',
-        );
+        expect(requestHandler.getSerializableControlStates().hogwarts.value).equals('Muggle');
+        expect(requestHandler.getSerializableControlStates().hogwarts.isValueConfirmed).equals(false);
         expect(dataSource).deep.equals(expectedDataSource);
     });
 });

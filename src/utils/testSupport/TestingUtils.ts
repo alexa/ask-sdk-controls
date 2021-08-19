@@ -37,6 +37,7 @@ import { ControlServices, ControlServicesProps } from '../../controls/ControlSer
 import { IControl } from '../../controls/interfaces/IControl';
 import { IControlInput } from '../../controls/interfaces/IControlInput';
 import { IControlResult } from '../../controls/interfaces/IControlResult';
+import { InputModality, OutputModality } from '../../modality/ModalityEvaluation';
 import { ControlHandler } from '../../runtime/ControlHandler';
 import { IntentBuilder } from '../IntentUtils';
 import { SkillInvoker, TestResponseObject } from './SkillInvoker';
@@ -188,6 +189,7 @@ export async function testTurn(
     expectedResponse: string | string[] | TestResponseObject,
 ): Promise<TestResponseObject> {
     const testResponse = await invoker.invoke(input);
+
     if (Array.isArray(expectedResponse)) {
         expect(_.includes(expectedResponse, testResponse.prompt)).equals(true);
     } else {
@@ -225,6 +227,8 @@ export async function testTurn(
  */
 export class TestInput {
     static turnNumber = 1;
+    static responseStyle = { modality: OutputModality.VOICE };
+    static inputModality = InputModality.VOICE;
 
     /**
      * Reset the turn counter.
@@ -430,6 +434,8 @@ function dummyControlInput(request?: Request): ControlInput {
         request: handlerInput.requestEnvelope.request,
         turnNumber: TestInput.turnNumber,
         controls: {},
+        suggestedResponseStyle: TestInput.responseStyle,
+        inputModalityHistory: [TestInput.inputModality],
     };
 }
 const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({

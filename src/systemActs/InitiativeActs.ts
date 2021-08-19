@@ -16,6 +16,7 @@ import { Control } from '../controls/Control';
 import { ControlInput } from '../controls/ControlInput';
 import { ListFormatting } from '../intl/ListFormat';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
+import { addFragmentsForResponseStyle } from '../utils/ResponseUtils';
 import {
     LiteralContentPayload,
     RequestChangedValueByListPayload,
@@ -95,16 +96,16 @@ export class RequestValueAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                 }),
-            );
-            controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
+                voiceReprompt: i18next.t('REQUEST_VALUE_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                 }),
-            );
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render RequestValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
@@ -133,16 +134,16 @@ export class RequestChangedValueAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                 }),
-            );
-            controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
+                voiceReprompt: i18next.t('REQUEST_CHANGED_VALUE_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                 }),
-            );
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render RequestChangedValueAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
@@ -172,18 +173,18 @@ export class RequestValueByListAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
-            );
-            controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                voiceReprompt: i18next.t('REQUEST_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
-            );
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render RequestValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
@@ -213,18 +214,18 @@ export class RequestChangedValueByListAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: ListFormatting.format(this.payload.choicesFromActivePage),
                 }),
-            );
-            controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                voiceReprompt: i18next.t('REQUEST_CHANGED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: ListFormatting.format(this.payload.choicesFromActivePage),
                 }),
-            );
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render RequestChangedValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
@@ -243,18 +244,18 @@ export class RequestRemovedValueByListAct extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined && this.payload.renderedChoices !== undefined) {
-            controlResponseBuilder.addPromptFragment(
-                i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
-            );
-            controlResponseBuilder.addRepromptFragment(
-                i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
+                voiceReprompt: i18next.t('REQUEST_REMOVED_VALUE_BY_LIST_ACT_DEFAULT_PROMPT', {
                     value: this.payload.renderedTarget,
                     choices: this.payload.renderedChoices,
                 }),
-            );
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render RequestRemovedValueByListAct as payload.renderedTarget is undefined. ${this.toString()}. ` +
@@ -277,16 +278,16 @@ export class ConfirmValueAct<T> extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(
-            i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
+        addFragmentsForResponseStyle({
+            responseStyle: input.suggestedResponseStyle,
+            voicePrompt: i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
                 value: this.payload.value,
             }),
-        );
-        controlResponseBuilder.addRepromptFragment(
-            i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
+            voiceReprompt: i18next.t('CONFIRM_VALUE_ACT_DEFAULT_PROMPT', {
                 value: this.payload.value,
             }),
-        );
+            builder: controlResponseBuilder,
+        });
     }
 }
 
@@ -312,8 +313,12 @@ export class LiteralInitiativeAct extends InitiativeAct {
         };
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(this.payload.promptFragment);
-        controlResponseBuilder.addRepromptFragment(this.payload.repromptFragment!);
+        addFragmentsForResponseStyle({
+            responseStyle: input.suggestedResponseStyle,
+            voicePrompt: this.payload.promptFragment,
+            voiceReprompt: this.payload.repromptFragment!,
+            builder: controlResponseBuilder,
+        });
     }
 }
 
@@ -330,16 +335,16 @@ export class SuggestValueAct<T> extends InitiativeAct {
         this.payload = payload;
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
-        controlResponseBuilder.addPromptFragment(
-            i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
+        addFragmentsForResponseStyle({
+            responseStyle: input.suggestedResponseStyle,
+            voicePrompt: i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
                 value: this.payload.value,
             }),
-        );
-        controlResponseBuilder.addRepromptFragment(
-            i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
+            voiceReprompt: i18next.t('SUGGEST_VALUE_ACT_DEFAULT_PROMPT', {
                 value: this.payload.value,
             }),
-        );
+            builder: controlResponseBuilder,
+        });
     }
 }
 
@@ -352,8 +357,12 @@ export class SuggestActionAct<T> extends InitiativeAct {
     }
     render(input: ControlInput, controlResponseBuilder: ControlResponseBuilder): void {
         if (this.payload.renderedTarget !== undefined) {
-            controlResponseBuilder.addPromptFragment(i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'));
-            controlResponseBuilder.addRepromptFragment(i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'));
+            addFragmentsForResponseStyle({
+                responseStyle: input.suggestedResponseStyle,
+                voicePrompt: i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'),
+                voiceReprompt: i18next.t('SUGGEST_ACTION_ACT_DEFAULT_PROMPT'),
+                builder: controlResponseBuilder,
+            });
         } else {
             throw new Error(
                 `Cannot directly render SuggestActionAct as payload.renderedTarget is undefined. ${this.toString()}. ` +

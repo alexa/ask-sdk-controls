@@ -34,6 +34,7 @@ import { GeneralControlIntent, unpackGeneralControlIntent } from '../../intents/
 import { unpackValueControlIntent, ValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ModelData } from '../../interactionModelGeneration/ModelTypes';
+import { ModalityEvaluationDefaults, ResponseStyleEvaluator } from '../../modality/ModalityEvaluation';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import { ActiveAPLInitiativeAct } from '../../systemActs/InitiativeActs';
 import { SystemAct } from '../../systemActs/SystemAct';
@@ -43,6 +44,7 @@ import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { failIf, okIf, verifyErrorIsGuardFailure } from '../../utils/Predicates';
+import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
 import { QuestionnaireControlAPLPropsBuiltIns } from './QuestionnaireControlBuiltIns';
 import { Question, QuestionnaireContent } from './QuestionnaireControlStructs';
 import {
@@ -155,6 +157,15 @@ export interface QuestionnaireControlProps extends ControlProps {
      * Props to customize services used by the control.
      */
     services?: ControlServicesProps;
+
+    /**
+     * Function that determines the preferred response style based on input
+     * and input modality history.
+     *
+     * Default: Function always returns indeterminate response style, which
+     * causes the decision to be deferred to the function configured in ControlManager.
+     */
+    responseStyleEvaluator?: ResponseStyleEvaluator;
 }
 
 /**
@@ -633,6 +644,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
                 customHandlingFuncs: [],
             },
             services: props.services ?? ControlServices.getDefaults(),
+            responseStyleEvaluator: ModalityEvaluationDefaults.indeterminateResponseStyleEvaluator,
         };
 
         return _.merge(defaults, props);
@@ -1318,58 +1330,84 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         input: ControlInput,
         builder: ControlResponseBuilder,
     ): Promise<void> {
+        const responseStyle = getDeterminateResponseStyle(this.props.responseStyleEvaluator, input);
+
         // initiative acts (which include APL generation)
         if (act instanceof AskQuestionAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.askQuestionAct, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.askQuestionAct, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.askQuestionAct, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.askQuestionAct, input),
+                builder,
+            });
             this.addStandardAPL(input, builder);
         } else if (act instanceof AskIfCompleteAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.askIfComplete, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.askIfComplete, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.askIfComplete, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.askIfComplete, input),
+                builder,
+            });
             this.addStandardAPL(input, builder);
         } else if (act instanceof AskIfCompleteTerseAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.askIfCompleteTerse, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.askIfCompleteTerse, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.askIfCompleteTerse, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.askIfCompleteTerse, input),
+                builder,
+            });
             this.addStandardAPL(input, builder);
         }
 
         // content acts.
         else if (act instanceof QuestionAnsweredAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.questionAnsweredAct, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.questionAnsweredAct, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.questionAnsweredAct, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.questionAnsweredAct, input),
+                builder,
+            });
         } else if (act instanceof CompletedAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.questionnaireCompleted, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.questionnaireCompleted, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.questionnaireCompleted, input),
+                voiceReprompt: this.evaluatePromptProp(
+                    act,
+                    this.props.reprompts.questionnaireCompleted,
+                    input,
+                ),
+                builder,
+            });
         } else if (act instanceof QuestionnaireCompletionRejectedAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.questionnaireCompletionRejected, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.questionnaireCompletionRejected, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(
+                    act,
+                    this.props.prompts.questionnaireCompletionRejected,
+                    input,
+                ),
+                voiceReprompt: this.evaluatePromptProp(
+                    act,
+                    this.props.reprompts.questionnaireCompletionRejected,
+                    input,
+                ),
+                builder,
+            });
         } else if (act instanceof AcknowledgeNotCompleteAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.acknowledgeNotCompleteAct, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.acknowledgeNotCompleteAct, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(
+                    act,
+                    this.props.prompts.acknowledgeNotCompleteAct,
+                    input,
+                ),
+                voiceReprompt: this.evaluatePromptProp(
+                    act,
+                    this.props.reprompts.acknowledgeNotCompleteAct,
+                    input,
+                ),
+                builder,
+            });
         } else if (act instanceof ActiveAPLInitiativeAct) {
             this.reEnableExistingAPLForUserInput(input, builder);
         } else {

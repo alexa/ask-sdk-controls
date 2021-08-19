@@ -39,6 +39,7 @@ import { OrdinalControlIntent, unpackOrdinalControlIntent } from '../../intents/
 import { unpackValueControlIntent, ValueControlIntent } from '../../intents/ValueControlIntent';
 import { ControlInteractionModelGenerator } from '../../interactionModelGeneration/ControlInteractionModelGenerator';
 import { ListFormatting } from '../../intl/ListFormat';
+import { ModalityEvaluationDefaults, ResponseStyleEvaluator } from '../../modality/ModalityEvaluation';
 import { APLMode } from '../../responseGeneration/AplMode';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import {
@@ -62,6 +63,7 @@ import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
+import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
 import { ListControlAPLPropsBuiltIns, ListControlComponentAPLBuiltIns } from './ListControlAPL';
 
 // TODO: feature: support "what are my choices"
@@ -169,6 +171,15 @@ export interface ListControlProps extends ControlProps {
      * Props to customize services used by the control.
      */
     services?: ControlServicesProps;
+
+    /**
+     * Function that determines the preferred response style based on input
+     * and input modality history.
+     *
+     * Default: Function always returns indeterminate response style, which
+     * causes the decision to be deferred to the function configured in ControlManager.
+     */
+    responseStyleEvaluator?: ResponseStyleEvaluator;
 }
 
 /**
@@ -660,6 +671,7 @@ export class ListControl extends Control implements InteractionModelContributor 
                 renderComponent: ListControlComponentAPLBuiltIns.TextListRenderer.default,
             },
             services: props.services ?? ControlServices.getDefaults(),
+            responseStyleEvaluator: ModalityEvaluationDefaults.indeterminateResponseStyleEvaluator,
         };
 
         return _.merge(defaults, props);
@@ -1268,65 +1280,81 @@ export class ListControl extends Control implements InteractionModelContributor 
 
     // tsDoc - see Control
     async renderAct(act: SystemAct, input: ControlInput, builder: ControlResponseBuilder): Promise<void> {
+        const responseStyle = getDeterminateResponseStyle(this.props.responseStyleEvaluator, input);
+
         if (act instanceof RequestValueByListAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.requestValue, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.requestValue, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.requestValue, input),
+                builder,
+            });
 
             if (builder.aplMode === APLMode.DIRECT) {
                 const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestValue, input);
                 this.addStandardAPL(input, builder, renderedAPL);
             }
         } else if (act instanceof RequestChangedValueByListAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.requestChangedValue, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.requestChangedValue, input),
+                builder,
+            });
 
             if (builder.aplMode === APLMode.DIRECT) {
                 const renderedAPL = this.evaluateAPLPropNewStyle(this.props.apl.requestChangedValue, input);
                 this.addStandardAPL(input, builder, renderedAPL);
             }
         } else if (act instanceof UnusableInputValueAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.unusableInputValue, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.unusableInputValue, input),
+                builder,
+            });
         } else if (act instanceof InvalidValueAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.invalidValue, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.invalidValue, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.invalidValue, input),
+                builder,
+            });
         } else if (act instanceof ValueSetAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueSet, input));
-            builder.addRepromptFragment(this.evaluatePromptProp(act, this.props.reprompts.valueSet, input));
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.valueSet, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.valueSet, input),
+                builder,
+            });
         } else if (act instanceof ValueChangedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueChanged, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.valueChanged, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.valueChanged, input),
+                builder,
+            });
         } else if (act instanceof ConfirmValueAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.confirmValue, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.confirmValue, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.confirmValue, input),
+                builder,
+            });
         } else if (act instanceof ValueConfirmedAct) {
-            builder.addPromptFragment(this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input));
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.valueConfirmed, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.valueConfirmed, input),
+                builder,
+            });
         } else if (act instanceof ValueDisconfirmedAct) {
-            builder.addPromptFragment(
-                this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
-            );
-            builder.addRepromptFragment(
-                this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input),
-            );
+            addFragmentsForResponseStyle({
+                responseStyle,
+                voicePrompt: this.evaluatePromptProp(act, this.props.prompts.valueDisconfirmed, input),
+                voiceReprompt: this.evaluatePromptProp(act, this.props.reprompts.valueDisconfirmed, input),
+                builder,
+            });
         } else {
             this.throwUnhandledActError(act);
         }

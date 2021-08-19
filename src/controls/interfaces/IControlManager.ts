@@ -12,6 +12,7 @@
  */
 
 import { HandlerInput } from 'ask-sdk-core';
+import { InputModality, ResponseStyle } from '../../modality/ModalityEvaluation';
 import { ControlResponseBuilder } from '../../responseGeneration/ControlResponseBuilder';
 import { IControl } from './IControl';
 import { IControlInput } from './IControlInput';
@@ -88,4 +89,21 @@ export interface IControlManager {
      *
      */
     saveControlStateMap(state: any, handlerInput: HandlerInput): Promise<void>;
+
+    /**
+     * Determines the input modality of the current turn, based on the
+     * currently-configured evaluator function.
+     * @param handlerInput - Input for the current turn.
+     * @returns InputModality - Input modality determined for the current turn.
+     */
+    evaluateInputModality(handlerInput: HandlerInput): InputModality;
+
+    /**
+     * Determines the recommended response style for the current turn, based on the
+     * current-configured evaluator function.
+     * @param handlerInput - Input for the current turn.
+     * @param history - History of input modality of previous turns.
+     * @returns ResponseStyle - Recommended response style for the current turn.
+     */
+    evaluateResponseStyle(input: HandlerInput, history: InputModality[]): ResponseStyle;
 }

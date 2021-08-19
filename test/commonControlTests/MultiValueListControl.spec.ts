@@ -231,18 +231,23 @@ suite('MultiValueListControl e2e tests', () => {
         test('Select by touch', async () => {
             const requestHandler = new ControlHandler(new CategorySuiteManager());
             const invoker = new SkillInvoker(requestHandler);
+
             await testTurn(
                 invoker,
-                'U: _',
+                'U: <touches "AirPods">',
                 TestInput.simpleUserEvent(['apple', 'Select', 1]),
-                'A: OK, added AirPods. Is that all?',
+                'A: ', // No voice prompt for touch
             );
+
+            expect(requestHandler.getSerializableControlStates().apple.value).deep.equals([
+                { id: 'AirPods', erMatch: true },
+            ]);
 
             const response = await testTurn(
                 invoker,
-                'U: _',
+                'U: <touches "iPhone">',
                 TestInput.simpleUserEvent(['apple', 'Select', 3]),
-                'A: OK, added iPhone. Is that all?',
+                'A: ', // No voice prompt for touch
             );
 
             expect(response.directive !== undefined); // APL re-renders with updated selected list
@@ -254,9 +259,9 @@ suite('MultiValueListControl e2e tests', () => {
 
             await testTurn(
                 invoker,
-                'U: _',
+                'U: <removes "AirPods">',
                 TestInput.simpleUserEvent(['apple', 'Remove', 1]),
-                'A: OK, removed AirPods. Is that all?',
+                'A: ', // No voice prompt for touch
             );
 
             expect(requestHandler.getSerializableControlStates().apple.value).deep.equals([
