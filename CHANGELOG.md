@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/alexa/ask-sdk-controls/compare/v0.6.3...v0.7.0) (2021-08-20)
+
+
+### Features
+
+* Add support for CanFulfillIntentRequest ([7587a46](https://github.com/alexa/ask-sdk-controls/commit/7587a460702a03dc8ccbb8dafb03f7635c9bb557))
+
 ### [0.6.3](https://github.com/alexa/ask-sdk-controls/compare/v0.6.2...v0.6.3) (2021-08-03)
 
 
