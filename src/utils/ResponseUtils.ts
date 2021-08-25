@@ -16,6 +16,9 @@ import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBui
 import { Response } from 'ask-sdk-model';
 import { ControlInput } from '../controls/ControlInput';
 
+/**
+ * Properties for building a response based on ResponseStyle.
+ */
 export interface ResponseStyleBuilderProps {
     voicePrompt: string;
     voiceReprompt?: string;
@@ -23,7 +26,17 @@ export interface ResponseStyleBuilderProps {
     builder: ControlResponseBuilder;
 }
 
-export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps) {
+/**
+ * Adds voice prompt and reprompt to a ControlResponseBuilder conditionally based on
+ * the ResponseStyle contained in the ResponseStyleBuilderProps.
+ * 
+ * If the modality of the response style is SCREEN, the voice prompt and reprompt
+ * will not be added. In any other case, they will be added.
+ * 
+ * @param props ResponseStyleBuilderProps - properties needed for adding prompts to
+ * the response.
+ */
+export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps): void {
     const voicePrompt = props.voicePrompt;
     const voiceReprompt = props.voiceReprompt;
     const responseStyle = props.responseStyle;
@@ -40,12 +53,33 @@ export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps) {
     }
 }
 
+/**
+ * Adds voice prompt and reprompt to a ControlResponseBuilder conditionally based on
+ * the ResponseStyle contained in the ResponseStyleBuilderProps.
+ * 
+ * If the modality of the response style is SCREEN, the voice prompt and reprompt
+ * will not be added. In any other case, they will be added.
+ * 
+ * After adding the prompts, the response is built.
+ * 
+ * @param props ResponseStyleBuilderProps - properties needed for adding prompts to
+ * the response.
+ * @returns Response - The response for the current skill turn.
+ */
 export function buildResponseForStyle(props: ResponseStyleBuilderProps): Response {
     addFragmentsForResponseStyle(props);
 
     return props.builder.build();
 }
 
+/**
+ * Executes a ResponseStyleEvaluator override function and determines whether to use
+ * the result from it or the base, non-overridden result.
+ * @param evaluator ResponseStyleEvaluator - Overridden ResponseStyleEvaluator
+ * @param input ControlInput - Input for the current skill turn
+ * @returns ResponseStyle - Uses the result from the provided evaluator if it was
+ * determinate, otherwise uses the ResponseStyle present in the provided ControlInput.
+ */
 export function getDeterminateResponseStyle(
     evaluator: ResponseStyleEvaluator,
     input: ControlInput,
