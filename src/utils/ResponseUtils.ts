@@ -11,10 +11,10 @@
  * permissions and limitations under the License.
  */
 
-import { OutputModality, ResponseStyle, ResponseStyleEvaluator } from '../modality/ModalityEvaluation';
-import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 import { Response } from 'ask-sdk-model';
 import { ControlInput } from '../controls/ControlInput';
+import { OutputModality, ResponseStyle, ResponseStyleEvaluator } from '../modality/ModalityEvaluation';
+import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
 
 /**
  * Properties for building a response based on ResponseStyle.
@@ -29,11 +29,11 @@ export interface ResponseStyleBuilderProps {
 /**
  * Adds voice prompt and reprompt to a ControlResponseBuilder conditionally based on
  * the ResponseStyle contained in the ResponseStyleBuilderProps.
- * 
+ *
  * If the modality of the response style is SCREEN, the voice prompt and reprompt
  * will not be added. In any other case, they will be added.
- * 
- * @param props ResponseStyleBuilderProps - properties needed for adding prompts to
+ *
+ * @param props - ResponseStyleBuilderProps properties needed for adding prompts to
  * the response.
  */
 export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps): void {
@@ -56,13 +56,13 @@ export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps): 
 /**
  * Adds voice prompt and reprompt to a ControlResponseBuilder conditionally based on
  * the ResponseStyle contained in the ResponseStyleBuilderProps.
- * 
+ *
  * If the modality of the response style is SCREEN, the voice prompt and reprompt
  * will not be added. In any other case, they will be added.
- * 
+ *
  * After adding the prompts, the response is built.
- * 
- * @param props ResponseStyleBuilderProps - properties needed for adding prompts to
+ *
+ * @param props - ResponseStyleBuilderProps properties needed for adding prompts to
  * the response.
  * @returns Response - The response for the current skill turn.
  */
@@ -75,8 +75,8 @@ export function buildResponseForStyle(props: ResponseStyleBuilderProps): Respons
 /**
  * Executes a ResponseStyleEvaluator override function and determines whether to use
  * the result from it or the base, non-overridden result.
- * @param evaluator ResponseStyleEvaluator - Overridden ResponseStyleEvaluator
- * @param input ControlInput - Input for the current skill turn
+ * @param evaluator - Overridden ResponseStyleEvaluator
+ * @param input - ControlInput for the current skill turn
  * @returns ResponseStyle - Uses the result from the provided evaluator if it was
  * determinate, otherwise uses the ResponseStyle present in the provided ControlInput.
  */
