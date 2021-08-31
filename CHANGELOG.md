@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/alexa/ask-sdk-controls/compare/v0.7.0...v0.8.0) (2021-08-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* Default Act rendering will no longer include voice prompts if the request input modality is from a touch event.
+
+### Features
+
+* introduce functionality to determine request input modality and preferred response style. Adds utility to add appropriate prompts based on preferred response style. Modifies Act render methods and Control renderAct methods to use this utility ([92a39d2](https://github.com/alexa/ask-sdk-controls/commit/92a39d230116a78c9d5c7970d828cffc31d61288))
+
+
+### Docs
+
+* Adding documentation for new functions in ResponseUtils ([7afc8a8](https://github.com/alexa/ask-sdk-controls/commit/7afc8a8b7949fa841b06e644af32f7676ca2f300))
+* fixed doc param lint issues ([90f0f76](https://github.com/alexa/ask-sdk-controls/commit/90f0f76373888bc90816c539887b1ae6b54bc2a6))
+
 ## [0.7.0](https://github.com/alexa/ask-sdk-controls/compare/v0.6.3...v0.7.0) (2021-08-20)
 
 
