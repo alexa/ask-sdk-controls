@@ -1063,6 +1063,7 @@ export class ValueControl extends Control implements InteractionModelContributor
                 head: { name: 'head', value: '', confirmationStatus: 'NONE' },
                 tail: { name: 'tail', value: '', confirmationStatus: 'NONE' },
                 assign: { name: 'assign', value: '', confirmationStatus: 'NONE' },
+                preposition: { name: 'preposition', value: '', confirmationStatus: 'NONE' },
             },
             confirmationStatus: 'NONE',
         };
