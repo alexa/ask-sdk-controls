@@ -342,7 +342,7 @@ export class ControlHandler implements RequestHandler {
         }
 
         // Optional INITIATIVE PHASE
-        if (!resultBuilder.hasInitiativeAct() && resultBuilder.sessionBehavior === SessionBehavior.OPEN) {
+        if (!resultBuilder.hasInitiativeAct() && resultBuilder.sessionBehavior !== SessionBehavior.END) {
             await ControlHandler.initiativePhase(rootControl, input, resultBuilder, services);
         }
 

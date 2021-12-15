@@ -14,7 +14,12 @@
 import { ResponseFactory } from 'ask-sdk-core';
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { ActiveAPLInitiativeAct, ControlResponseBuilder, GeneralControlIntent } from '../../src';
+import {
+    ActiveAPLInitiativeAct,
+    ControlResponseBuilder,
+    GeneralControlIntent,
+    wrapRequestHandlerAsSkill,
+} from '../../src';
 import { QuestionnaireControl } from '../../src/commonControls/questionnaireControl/QuestionnaireControl';
 import { Strings } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
@@ -199,5 +204,23 @@ suite('QuestionnaireControl e2e tests', () => {
             responseBuilder,
         );
         expect(responseBuilder.isDisplayUsed()).true; // display marked as used.
+    });
+
+    test('session behavior is OPEN for voice responses', async () => {
+        const requestHandler = new ControlHandler(createControlManager({ confirmationRequired: false }));
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(
+            TestInput.of(GeneralControlIntent.of({ action: Strings.Action.Start })),
+        );
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.false;
+    });
+
+    test('session behavior is IDLE for touch responses', async () => {
+        const requestHandler = new ControlHandler(createControlManager({ confirmationRequired: false }));
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(
+            TestInput.simpleUserEvent(['question', 'radioClick', 'cough', 1]),
+        );
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.undefined;
     });
 });

@@ -193,6 +193,12 @@ export {
 } from './utils/IntentUtils';
 export { failIf, falseIfGuardFailed, GuardFailed, okIf, StateConsistencyError } from './utils/Predicates';
 export { requestToString } from './utils/RequestUtils';
+export {
+    addFragmentsForResponseStyle,
+    buildResponseForStyle,
+    getDeterminateResponseStyle,
+    setSessionBehaviorForStyle,
+} from './utils/ResponseUtils';
 export { SkillInvoker, TestResponseObject } from './utils/testSupport/SkillInvoker';
 export { wrapRequestHandlerAsSkill } from './utils/testSupport/SkillWrapper';
 export {

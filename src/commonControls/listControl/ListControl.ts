@@ -63,7 +63,11 @@ import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { falseIfGuardFailed, okIf, StateConsistencyError } from '../../utils/Predicates';
-import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
+import {
+    addFragmentsForResponseStyle,
+    getDeterminateResponseStyle,
+    setSessionBehaviorForStyle,
+} from '../../utils/ResponseUtils';
 import { ListControlAPLPropsBuiltIns, ListControlComponentAPLBuiltIns } from './ListControlAPL';
 
 // TODO: feature: support "what are my choices"
@@ -749,6 +753,7 @@ export class ListControl extends Control implements InteractionModelContributor 
         }
 
         await this.handleFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
@@ -1090,6 +1095,7 @@ export class ListControl extends Control implements InteractionModelContributor 
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         return;
     }
 

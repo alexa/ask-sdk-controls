@@ -86,7 +86,7 @@ export namespace ModalityEvaluationDefaults {
     export function defaultInputModalityEvaluator(input: HandlerInput): InputModality {
         const request = input.requestEnvelope.request;
         if (request.type === 'Alexa.Presentation.APL.UserEvent') {
-            if (request.source?.type === 'TouchWrapper') {
+            if (['TouchWrapper', 'EditText', 'VectorGraphic'].includes(request.source?.type)) {
                 return InputModality.TOUCH;
             }
         }

@@ -13,6 +13,7 @@
 
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
+import { wrapRequestHandlerAsSkill } from '../../src';
 import {
     MultiValueListControl,
     MultiValueListStateValue,
@@ -275,6 +276,27 @@ suite('MultiValueListControl e2e tests', () => {
                 'A: ', //<next initiative>
             );
             expect(requestHandler.getSerializableControlStates().apple.confirmed).equal(true); // Submit button on APL confirms all selected values.
+        });
+
+        test('session behavior is OPEN for voice responses', async () => {
+            const requestHandler = new ControlHandler(new CategorySuiteManager());
+            const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+            const response = await skill.invoke(
+                TestInput.of(
+                    ValueControlIntent.of('AppleSuite', {
+                        AppleSuite: ['iPhone', 'AirPods'],
+                        action: $.Action.Add,
+                    }),
+                ),
+            );
+            expect(response.responseEnvelope.response.shouldEndSession).to.be.false;
+        });
+
+        test('session behavior is IDLE for touch responses', async () => {
+            const requestHandler = new ControlHandler(new CategorySuiteManager());
+            const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+            const response = await skill.invoke(TestInput.simpleUserEvent(['apple', 'Select', 1]));
+            expect(response.responseEnvelope.response.shouldEndSession).to.be.undefined;
         });
     });
 });

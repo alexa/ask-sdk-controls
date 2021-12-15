@@ -435,7 +435,30 @@ suite('NumberControl e2e tests', () => {
         ]);
         expect(requestHandler.getSerializableControlStates().ageSelector.value).eq(51);
     });
+
+    test('session behavior is OPEN for voice responses', async () => {
+        const requestHandler = new ControlHandler(new AgeControlManager());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(
+            TestInput.of(
+                ValueControlIntent.of(AmazonBuiltInSlotType.NUMBER, {
+                    'AMAZON.NUMBER': '16',
+                    action: $.Action.Set,
+                }),
+            ),
+        );
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.false;
+    });
+
+    test('session behavior is IDLE for touch responses', async () => {
+        const requestHandler = new ControlHandler(new AgeControlManager());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(TestInput.simpleUserEvent(['ageSelector', 40]));
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.undefined;
+    });
 });
+
+suite('== NumberControl session behavior ==', () => {});
 
 /**
  * TODO: test cases
@@ -494,9 +517,7 @@ suite('== Custom Number APL Props ==', () => {
         expect((response as any).directive[0].slotToElicit).eq('AMAZON.NUMBER');
         const dataSource = (response as any).directive[1].datasources;
 
-        expect(response.prompt).eq(
-            "Sorry but that's not a valid choice because the value must be even. What number?",
-        );
+        expect(response.prompt).to.be.empty;
         expect(dataSource).deep.equals(expectedDataSource);
     });
 });

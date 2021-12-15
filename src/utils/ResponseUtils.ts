@@ -11,10 +11,11 @@
  * permissions and limitations under the License.
  */
 
-import { Response } from 'ask-sdk-model';
-import { ControlInput } from '../controls/ControlInput';
 import { OutputModality, ResponseStyle, ResponseStyleEvaluator } from '../modality/ModalityEvaluation';
 import { ControlResponseBuilder } from '../responseGeneration/ControlResponseBuilder';
+import { Response } from 'ask-sdk-model';
+import { ControlInput } from '../controls/ControlInput';
+import { ControlResultBuilder } from '..';
 
 /**
  * Properties for building a response based on ResponseStyle.
@@ -33,7 +34,7 @@ export interface ResponseStyleBuilderProps {
  * If the modality of the response style is SCREEN, the voice prompt and reprompt
  * will not be added. In any other case, they will be added.
  *
- * @param props - ResponseStyleBuilderProps properties needed for adding prompts to
+ * @param props - ResponseStyleBuilderProps - properties needed for adding prompts to
  * the response.
  */
 export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps): void {
@@ -62,7 +63,7 @@ export function addFragmentsForResponseStyle(props: ResponseStyleBuilderProps): 
  *
  * After adding the prompts, the response is built.
  *
- * @param props - ResponseStyleBuilderProps properties needed for adding prompts to
+ * @param props - ResponseStyleBuilderProps - properties needed for adding prompts to
  * the response.
  * @returns Response - The response for the current skill turn.
  */
@@ -75,8 +76,8 @@ export function buildResponseForStyle(props: ResponseStyleBuilderProps): Respons
 /**
  * Executes a ResponseStyleEvaluator override function and determines whether to use
  * the result from it or the base, non-overridden result.
- * @param evaluator - Overridden ResponseStyleEvaluator
- * @param input - ControlInput for the current skill turn
+ * @param evaluator - ResponseStyleEvaluator - Overridden ResponseStyleEvaluator
+ * @param input - ControlInput - Input for the current skill turn
  * @returns ResponseStyle - Uses the result from the provided evaluator if it was
  * determinate, otherwise uses the ResponseStyle present in the provided ControlInput.
  */
@@ -91,4 +92,20 @@ export function getDeterminateResponseStyle(
     }
 
     return input.suggestedResponseStyle;
+}
+
+/**
+ * Overrides the default session behavior depending on the requested response style.
+ * If the response style includes a screen output modality, the session will enter an idle state.
+ * In all other cases, the default behavior is preserved.
+ * @param resultBuilder - ControlResultBuilder - The ControlResultBuilder for the current skill turn
+ * @param responseStyle  - ResponseStyle - The ResponseStyle for the current skill turn
+ */
+export function setSessionBehaviorForStyle(
+    resultBuilder: ControlResultBuilder,
+    responseStyle: ResponseStyle,
+): void {
+    if (responseStyle.modality === OutputModality.SCREEN) {
+        resultBuilder.enterIdleState();
+    }
 }

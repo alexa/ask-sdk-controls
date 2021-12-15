@@ -62,7 +62,11 @@ import { evaluateInputHandlers } from '../../utils/ControlUtils';
 import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { falseIfGuardFailed, okIf } from '../../utils/Predicates';
-import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
+import {
+    addFragmentsForResponseStyle,
+    getDeterminateResponseStyle,
+    setSessionBehaviorForStyle,
+} from '../../utils/ResponseUtils';
 import {
     MultiValueListControlAPLPropsBuiltIns,
     MultiValueListControlComponentAPLBuiltIns,
@@ -774,6 +778,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
 
         this.props.required = true;
         await this.handleFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         if (resultBuilder.hasInitiativeAct() !== true && (await this.canTakeInitiative(input)) === true) {
             await this.takeInitiative(input, resultBuilder);
         }
@@ -1208,6 +1213,7 @@ export class MultiValueListControl extends Control implements InteractionModelCo
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         return;
     }
 
