@@ -211,3 +211,10 @@ export {
     testTurn,
     waitForDebugger,
 } from './utils/testSupport/TestingUtils';
+export {
+    InputModality,
+    OutputModality,
+    ResponseStyle,
+    InputModalityEvaluator,
+    ResponseStyleEvaluator,
+} from './modality/ModalityEvaluation';
