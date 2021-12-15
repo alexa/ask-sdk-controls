@@ -44,7 +44,11 @@ import { DeepRequired } from '../../utils/DeepRequired';
 import { InputUtil } from '../../utils/InputUtil';
 import { defaultIntentToValueMapper } from '../../utils/IntentUtils';
 import { failIf, okIf, verifyErrorIsGuardFailure } from '../../utils/Predicates';
-import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
+import {
+    addFragmentsForResponseStyle,
+    getDeterminateResponseStyle,
+    setSessionBehaviorForStyle,
+} from '../../utils/ResponseUtils';
 import { QuestionnaireControlAPLPropsBuiltIns } from './QuestionnaireControlBuiltIns';
 import { Question, QuestionnaireContent } from './QuestionnaireControlStructs';
 import {
@@ -745,6 +749,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
         }
 
         await this.handleFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         this.state.lastInitiative.actName = undefined; // clear the initiative state so we don't get confused on subsequent turns.
     }
 
@@ -1190,6 +1195,7 @@ export class QuestionnaireControl extends Control implements InteractionModelCon
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         return;
     }
 

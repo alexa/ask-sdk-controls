@@ -13,7 +13,7 @@
 
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { GeneralControlIntent } from '../../src';
+import { GeneralControlIntent, wrapRequestHandlerAsSkill } from '../../src';
 import { ListControl } from '../../src/commonControls/listControl/ListControl';
 import { Strings as $, Strings } from '../../src/constants/Strings';
 import { Control } from '../../src/controls/Control';
@@ -158,6 +158,22 @@ suite('ListControl e2e tests', () => {
 
         expect(requestHandler.getSerializableControlStates().apple.value).equals('MacBook');
         expect(requestHandler.getSerializableControlStates().apple.erMatch).equals(true);
+    });
+
+    test('session behavior is OPEN for voice responses', async () => {
+        const requestHandler = new ControlHandler(new ListControlManager());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(
+            TestInput.of(ValueControlIntent.of('AppleSuite', { AppleSuite: 'iPhone' })),
+        );
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.false;
+    });
+
+    test('session behavior is IDLE for touch responses', async () => {
+        const requestHandler = new ControlHandler(new ListControlManager());
+        const skill = new SkillInvoker(wrapRequestHandlerAsSkill(requestHandler));
+        const response = await skill.invoke(TestInput.simpleUserEvent(['apple', 3]));
+        expect(response.responseEnvelope.response.shouldEndSession).to.be.undefined;
     });
 
     //--

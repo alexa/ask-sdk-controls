@@ -27,10 +27,14 @@ import { ControlManager, ControlManagerProps } from '../src/controls/ControlMana
 import { ControlInput } from '../src/controls/ControlInput';
 import { ContainerControl } from '../src/controls/ContainerControl';
 import { ControlResultBuilder } from '../src/controls/ControlResult';
+import UserEvent = interfaces.alexa.presentation.apl.UserEvent;
+import { interfaces } from 'ask-sdk-model';
 
 suite('== Modality evaluation and tracking scenarios ==', () => {
     const touchInput = TestInput.simpleUserEvent([]);
     const voiceInput = TestInput.of('VoiceIntent');
+    const editTextInput = TestInput.userEvent(userEventWithSource('EditText'));
+    const vectorGraphicInput = TestInput.userEvent(userEventWithSource('EditText'));
     let manager: TestControlManager;
     let handler: ControlHandler;
     let rootControl: TestControl;
@@ -52,6 +56,12 @@ suite('== Modality evaluation and tracking scenarios ==', () => {
         await invoker.invoke(touchInput);
         expect(await rootControl.lastKnownModality).to.equal(OutputModality.SCREEN);
 
+        await invoker.invoke(editTextInput);
+        expect(await rootControl.lastKnownModality).to.equal(OutputModality.SCREEN);
+
+        await invoker.invoke(vectorGraphicInput);
+        expect(await rootControl.lastKnownModality).to.equal(OutputModality.SCREEN);
+
         await invoker.invoke(voiceInput);
         expect(await rootControl.lastKnownModality).to.equal(OutputModality.VOICE);
     });
@@ -65,6 +75,22 @@ suite('== Modality evaluation and tracking scenarios ==', () => {
     function responseStyleEvaluator(input: HandlerInput, history: InputModality[]): ResponseStyle {
         lastHistory = JSON.parse(JSON.stringify(history));
         return ModalityEvaluationDefaults.defaultResponseStyleEvaluator(input, history);
+    }
+
+    function userEventWithSource(source: string): UserEvent {
+        return {
+            type: 'Alexa.Presentation.APL.UserEvent',
+            requestId: 'amzn1.echo-api.request.1234567890',
+            timestamp: '2019-10-04T18:48:22Z',
+            locale: 'en-US',
+            components: {},
+            source: {
+                type: source,
+                handler: 'Press',
+                id: 'TestComponent',
+            },
+            token: 'testToken',
+        };
     }
 });
 

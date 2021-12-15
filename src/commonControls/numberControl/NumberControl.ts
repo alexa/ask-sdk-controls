@@ -66,7 +66,11 @@ import {
 import { SystemAct } from '../../systemActs/SystemAct';
 import { StringOrList } from '../../utils/BasicTypes';
 import { evaluateInputHandlers } from '../../utils/ControlUtils';
-import { addFragmentsForResponseStyle, getDeterminateResponseStyle } from '../../utils/ResponseUtils';
+import {
+    addFragmentsForResponseStyle,
+    getDeterminateResponseStyle,
+    setSessionBehaviorForStyle,
+} from '../../utils/ResponseUtils';
 import { NumberControlAPLComponentBuiltIns, NumberControlAPLPropsBuiltIns } from './NumberControlAPL';
 import { NumberControlBuiltIns } from './NumberControlBuiltIns';
 
@@ -634,6 +638,7 @@ export class NumberControl extends Control implements InteractionModelContributo
         }
 
         await this.handleFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
 
         if (!resultBuilder.hasInitiativeAct() && (await this.canTakeInitiative(input))) {
             return this.takeInitiative(input, resultBuilder);
@@ -1195,6 +1200,7 @@ export class NumberControl extends Control implements InteractionModelContributo
             throw new Error(errorMsg);
         }
         await this.initiativeFunc(input, resultBuilder);
+        setSessionBehaviorForStyle(resultBuilder, input.suggestedResponseStyle);
         return;
     }
 
