@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/alexa/ask-sdk-controls/compare/v0.8.0...v0.9.0) (2021-12-16)
+
+
+### Bug Fixes
+
+* adding missing exports ([a5f8c0b](https://github.com/alexa/ask-sdk-controls/commit/a5f8c0bb6e169c7b3443e76420b269cff8451d93))
+* elicit preposition slot ([3a724c0](https://github.com/alexa/ask-sdk-controls/commit/3a724c06511163df8126e8177cc8c2acd6fa570e))
+* modifying session behavior to enter idle state for screen output modality, exporting modality-related functions, and adding modifying default modality evaluators to correctly classify VectorGraphic and EditText touch events ([7ca6d0b](https://github.com/alexa/ask-sdk-controls/commit/7ca6d0b5d9a0dd51d57246ae72152f038c5a42c6))
+
 ## [0.8.0](https://github.com/alexa/ask-sdk-controls/compare/v0.7.0...v0.8.0) (2021-08-31)
 
 
