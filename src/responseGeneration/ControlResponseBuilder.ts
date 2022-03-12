@@ -330,4 +330,9 @@ export class ControlResponseBuilder implements ResponseBuilder {
     addAPLDocumentLayout(key: string, data: { [key: string]: any }) {
         this.aplDocumentLayouts[key] = data;
     }
+
+    addExperimentTrigger(experimentId: string): this {
+        this.coreBuilder.addExperimentTrigger(experimentId);
+        return this;
+    }
 }
