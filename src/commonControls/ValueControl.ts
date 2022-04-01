@@ -997,7 +997,7 @@ export class ValueControl extends Control implements InteractionModelContributor
                     ? this.props.prompts.requestValue
                     : this.props.prompts.requestChangedValue;
             const reprompt =
-                act instanceof RequestChangedValueAct
+                act instanceof RequestValueAct
                     ? this.props.reprompts.requestValue
                     : this.props.reprompts.requestChangedValue;
 
