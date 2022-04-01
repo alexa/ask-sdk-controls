@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.1](https://github.com/alexa/ask-sdk-controls/compare/v0.9.0...v0.9.1) (2022-04-01)
+
+
+### Bug Fixes
+
+* Add addExperimentTrigger method to ControlResponseBuilder ([cbafd13](https://github.com/alexa/ask-sdk-controls/commit/cbafd134b79f9028afec65040fd3e804e1586fdb))
+* incorrect reprompt chosen based on act ([6281838](https://github.com/alexa/ask-sdk-controls/commit/6281838c5bdf2ca41ecc9b039ba77ba81d20e2ac))
+* update ask-sdk-core versions and fix vulnerabilities ([124ec2c](https://github.com/alexa/ask-sdk-controls/commit/124ec2c705ddf34473567f1a9f7222ac306e3214))
+
 ## [0.9.0](https://github.com/alexa/ask-sdk-controls/compare/v0.8.0...v0.9.0) (2021-12-16)
 
 
