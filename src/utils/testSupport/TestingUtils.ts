@@ -18,6 +18,7 @@ import {
     ResponseBuilder,
     ResponseFactory,
     Skill,
+    PersistenceAdapter,
 } from 'ask-sdk-core';
 import {
     Intent,
@@ -420,6 +421,26 @@ function dummyRequestEnvelope(request?: Request): RequestEnvelope {
     };
 }
 
+class DummyPersistenceAdapter implements PersistenceAdapter {
+    private attributes: { [key: string]: any } | undefined = {};
+
+    async getAttributes(_: RequestEnvelope) {
+        if (this.attributes) {
+            return this.attributes;
+        } else {
+            return {};
+        }
+    }
+
+    async saveAttributes(_: RequestEnvelope, attributes: { [key: string]: any }) {
+        this.attributes = attributes;
+    }
+
+    async deleteAttributes(_: RequestEnvelope) {
+        this.attributes = undefined;
+    }
+}
+
 function dummyControlInput(request?: Request): ControlInput {
     const handlerInput = {
         requestEnvelope: dummyRequestEnvelope(request),
@@ -440,5 +461,6 @@ function dummyControlInput(request?: Request): ControlInput {
 }
 const dummyAttributesManager: AttributesManager = AttributesManagerFactory.init({
     requestEnvelope: dummyRequestEnvelope(),
+    persistenceAdapter: new DummyPersistenceAdapter(),
 });
 const dummyResponseBuilder: ResponseBuilder = ResponseFactory.init();
